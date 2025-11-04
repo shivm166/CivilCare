@@ -4,6 +4,7 @@ import userRoutes from "./routes/user.route.js";
 import connDB from "./utils/db.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
 
@@ -12,6 +13,12 @@ connDB();
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // frontend or Postman domain
+    credentials: true, // ✅ allows cookies
+  })
+);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
