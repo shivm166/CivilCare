@@ -76,3 +76,24 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const getprofile = async (req, res) => {
+  try {
+    const userId = req.user._id; // <-- error happens here
+    console.log(req);
+    const user = await User.findById(userId);
+    res.json(user);
+    console.log(user);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("jwt");
+    res.status(200).json({ success: true, message: "logout successffully" });
+  } catch (error) {
+    console.log(error);
+  }
+};
