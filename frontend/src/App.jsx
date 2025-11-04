@@ -1,7 +1,12 @@
-import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/layout/Layout.jsx";
 
 const App = () => {
-  return <div className="bg-red-400">civilCare jainjiiish </div>;
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />} />
+    </Routes>
+  );
 };
 
 export default App;
