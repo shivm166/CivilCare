@@ -1,13 +1,13 @@
 import React from "react";
 import Container from "./Container.jsx";
-import HomePage from "../../pages/home/HomePage";
+import { Outlet } from "react-router-dom";
 
 const Layout = () => {
   return (
     <>
       <div>
         <Container>
-          <HomePage />
+          <Outlet/>
         </Container>
       </div>
     </>
