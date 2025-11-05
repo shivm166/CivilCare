@@ -13,6 +13,7 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    console.log(loginData);
     loginMutation(loginData);
   };
 
@@ -28,14 +29,14 @@ const Login = () => {
           <div className="mb-4 flex items-center justify-start gap-2">
             <Headset className="size-9 text-primary" />
             <span className="text-3xl font-bold font-mono bg-clip-text text-transparent  from-primary to-secondary  tracking-wider">
-              CivilCare
+              civilCare
             </span>
           </div>
 
           {/* ERROR MESSAGE DISPLAY */}
           {error && (
             <div className="alert alert-error mb-4">
-              <span>{error.response.data.message}</span>
+              <span>{error.message}</span>
             </div>
           )}
 

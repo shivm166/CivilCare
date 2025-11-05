@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Headset, Phone } from "lucide-react";
+import { Headset } from "lucide-react";
 import { Link } from "react-router-dom";
 import useSignup from "../../hooks/useSignup";
 
@@ -11,7 +11,7 @@ const Signup = () => {
     phone: "",
   });
 
-  const { isPending, error, signUpMutation } = useSignup();
+  const { isPending, error, signupMutation } = useSignup();
 
   const handleChange = (e) => {
     setSignUpData({ ...signUpData, [e.target.name]: e.target.value });
@@ -19,11 +19,14 @@ const Signup = () => {
 
   const handleSignup = (e) => {
     e.preventDefault();
-    signUpMutation(signUpData);
+    signupMutation(signUpData);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8   ">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
+      data-theme="cmyk"
+    >
       <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto bg-base-100/80 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-primary/30">
         {/* LEFT SIDE - SIGNUP FORM */}
         <div className="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col justify-center">
@@ -38,7 +41,7 @@ const Signup = () => {
           {/* ERROR MESSAGE IF ANY */}
           {error && (
             <div className="alert alert-error mb-4">
-              <span>{error.response.data.message}</span>
+              <span>{error.message}</span>
             </div>
           )}
 
@@ -47,8 +50,8 @@ const Signup = () => {
               Create an Account
             </h2>
             <p className="text-sm opacity-70">
-              Join <span className="font-medium text-primary">Callyx</span> and
-              start your calling adventures.
+              Join <span className="font-medium text-primary">CivilCare</span>{" "}
+              and start your adventures.
             </p>
           </div>
 
@@ -59,10 +62,10 @@ const Signup = () => {
               </label>
               <input
                 type="text"
-                placeholder="ex shivam gauswami"
-                name="fullName"
+                placeholder="enter name"
+                name="name"
                 className="input input-bordered w-full rounded-lg"
-                value={signUpData.fullName}
+                value={signUpData.name}
                 onChange={handleChange}
                 required
               />
@@ -168,7 +171,7 @@ const Signup = () => {
             <h2 className="text-2xl font-bold mb-2">Welcome to Callyx</h2>
             <p className="opacity-90 text-sm leading-relaxed">
               Experience real-time WebRTC calling, crystal-clear audio, and
-              instant peer-to-peer connections — all in one place.
+              instant
             </p>
           </div>
         </div>
