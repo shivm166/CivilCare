@@ -21,6 +21,11 @@ export const signup = async (signUpData) => {
 };
 
 export const login = async (loginData) => {
-  const response = await axiosInstance.post("/user/login", loginData);
-  return response.data;
+  try {
+    const response = await axiosInstance.post("/user/login", loginData);
+    return response.data;
+  } catch (error) {
+    console.log("Error in login", error);
+    return null;
+  }
 };

@@ -36,7 +36,7 @@ const Login = () => {
           {/* ERROR MESSAGE DISPLAY */}
           {error && (
             <div className="alert alert-error mb-4">
-              <span>{error.message}</span>
+              <span>{error}</span>
             </div>
           )}
 
