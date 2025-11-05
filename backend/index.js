@@ -1,10 +1,11 @@
 import express from "express";
-import userRoutes from "./routes/user.route.js";
+import userRouter from "./routes/user.route.js";
 import connDB from "./utils/db.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
+import societyRouter from './routes/society.route.js'
 
 const app = express();
 
@@ -22,7 +23,8 @@ app.use(
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/user", userRoutes);
+app.use("/api/user", userRouter);
+app.use("/api/society", societyRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
