@@ -16,7 +16,7 @@ const App = () => {
       <Route path="/" element={<PublicLayout />}>
         <Route
           path="/"
-          element={isAuthenticated ? <LandingPage /> : <Login />}
+          element={<LandingPage />}
         />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
