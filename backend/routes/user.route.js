@@ -15,6 +15,11 @@ const router = express.Router();
 router.post("/signup", validateRequest(validateUser), signup);
 router.post("/login", validateRequest(validateLogin), login);
 router.get("/profile", protectRoute, getprofile);
+
+router.get("/me", protectRoute, (req, res) => {
+  res.status(200).json({ success: true, user: req.user });
+});
+
 router.post("/logout", protectRoute, logout);
 
 export default router;
