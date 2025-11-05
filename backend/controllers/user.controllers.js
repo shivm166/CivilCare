@@ -1,6 +1,5 @@
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/jwtToken.js";
-import bcrypt from "bcrypt";
 
 export const signup = async (req, res) => {
   try {
@@ -15,13 +14,10 @@ export const signup = async (req, res) => {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    // ✅ Hash the password correctly
-    const hashPassword = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       name,
       email,
-      password: hashPassword,
+      password,
       phone,
     });
     const jwt = generateTokenAndSetCookie(res, newUser._id, newUser.role);
@@ -47,14 +43,14 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("-password  ");
     if (!user) {
       return res
         .status(409)
         .json({ message: "Credential details are incorrect" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res
         .status(409)
