@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Headset } from "lucide-react";
 import { Link } from "react-router";
+import useLogin from "../../hooks/useLogin";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -16,14 +17,17 @@ const Login = () => {
   };
 
   return (
-    <div className=" h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br  backdrop-blur-md">
+    <div
+      className=" h-screen flex items-center justify-center p-4 sm:p-6 md:p-8   backdrop-blur-md"
+      data-theme="cmyk"
+    >
       <div className="border border-primary/25 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-xl shadow-lg overflow-hidden">
         {/* LOGIN FORM SECTION */}
         <div className="w-full lg:w-1/2 p-4 sm:p-8 flex flex-col">
           {/* LOGO */}
           <div className="mb-4 flex items-center justify-start gap-2">
             <Headset className="size-9 text-primary" />
-            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary  tracking-wider">
+            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent  from-primary to-secondary  tracking-wider">
               CivilCare
             </span>
           </div>
