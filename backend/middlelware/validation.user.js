@@ -41,8 +41,7 @@ export const validateLogin = (credentials) => {
       "string.email": "Email must be valid",
       "any.required": "Email is required",
     }),
-    password: Joi.string().min(6).required().messages({
-      "string.min": "Password must be at least 6 characters",
+    password: Joi.string().required().messages({
       "any.required": "Password is required",
     }),
   });

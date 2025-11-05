@@ -41,9 +41,6 @@ const Signup = () => {
           {/* ERROR MESSAGE IF ANY */}
           {error && (
             <div className="alert alert-error mb-4">
-              {
-                console.log("meeeeeeeee",error)
-              }
               {Array.isArray(error.response?.data?.errors) ? (
                 <ul className="list-disc pl-5">
                   {error.response.data.errors.map((err, index) => (
