@@ -9,3 +9,13 @@ export const getAuthUser = async () => {
     return null;
   }
 };
+
+export const signup = async (signUpData) => {
+  const response = await axiosInstance.post("/user/signup", signUpData);
+  return response.data;
+};
+
+export const login = async (loginData) => {
+  const response = await axiosInstance.post("/user/login", loginData);
+  return response.data;
+};
