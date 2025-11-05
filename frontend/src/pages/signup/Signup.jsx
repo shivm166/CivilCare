@@ -41,10 +41,18 @@ const Signup = () => {
           {/* ERROR MESSAGE IF ANY */}
           {error && (
             <div className="alert alert-error mb-4">
-              <span>{error.message}</span>
+              {Array.isArray(error.response?.data?.errors) ? (
+                <ul className="list-disc pl-5">
+                  {error.response.data.errors.map((err, index) => (
+                    <li key={index}>{err}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span>{error.response?.data?.message || error.message}</span>
+              )}
             </div>
           )}
-
+          <button onClick={() => toast.success("hello")}></button>
           <div className="space-y-2 mb-6">
             <h2 className="text-2xl font-semibold text-base-content">
               Create an Account

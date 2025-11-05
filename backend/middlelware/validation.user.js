@@ -7,7 +7,7 @@ export const validateUser = (user) => {
       "string.base": "Name must be a string",
       "string.empty": "Name is required",
       "string.min": "Name must be at least 3 characters",
-      "string.max": "Name cannot exceed 30 characters",
+      "string.max": "Name cannot exceed 40 characters",
       "any.required": "Name is required",
     }),
     email: Joi.string().email().required().messages({
