@@ -16,7 +16,7 @@ export const signup = async (signUpData) => {
     return response.data;
   } catch (error) {
     console.log("Error in signup", error);
-    return null;
+    throw error;
   }
 };
 
@@ -26,6 +26,6 @@ export const login = async (loginData) => {
     return response.data;
   } catch (error) {
     console.log("Error in login", error);
-    return null;
+    throw error;
   }
 };
