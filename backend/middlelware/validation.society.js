@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 // -------------------- Society Creation Validation --------------------
-export const validateSocietyCreate = (credentials) => {
+export const validateSocietyCreate = (societyData) => {
   const schema = Joi.object({
     name: Joi.string().min(3).max(100).required().messages({
         "string.base": "Society name must be a string",
@@ -30,5 +30,25 @@ export const validateSocietyCreate = (credentials) => {
       }),
   })
 
-  return schema.validate(credentials, {abortEarly: false})
+  return schema.validate(societyData, {abortEarly: false})
 }
+
+export const validateSocietyUpdate = (societyData) => {
+  const schema = Joi.object({
+    name: Joi.string().min(3).max(100).optional().messages({
+      "string.min": "Society name must be at least 3 characters",
+      "string.max": "Society name cannot exceed 100 characters",
+    }),
+    address: Joi.string().max(200).allow("", null),
+    city: Joi.string().max(50).allow("", null),
+    state: Joi.string().max(50).allow("", null),
+    pincode: Joi.string()
+      .pattern(/^[0-9]{4,10}$/)
+      .allow("", null)
+      .messages({
+        "string.pattern.base": "Pincode must be numeric (4–10 digits)",
+      }),
+  }).min(1); // require at least one field
+
+  return schema.validate(societyData, { abortEarly: false });
+};
