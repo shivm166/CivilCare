@@ -6,37 +6,41 @@ import React, {
   useMemo,
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSocieties } from "../lib/api"; // (ધારો કે તમે આ API ફંક્શન બનાવ્યું છે)
+import { getSocieties } from "../lib/api";
 
 const SocietyContext = createContext(null);
 
 export const SocietyProvider = ({ children }) => {
   const queryClient = useQueryClient();
-  // 1. શરૂઆતમાં localStorage માંથી active society ID મેળવો
   const [activeSocietyId, setActiveSocietyId] = useState(
     () => localStorage.getItem("activeSocietyId") || null
   );
 
   // 2. Backend માંથી યુઝરની બધી societies મેળવો
-  const { data: societies, isLoading: isSocietiesLoading } = useQuery({
+  const { data: societiesData, isLoading: isSocietiesLoading } = useQuery({
     queryKey: ["userSocieties"],
     queryFn: getSocieties, // /api/user/societies ને કોલ કરશે
-    enabled: true, // યુઝર લોગિન થયેલ છે એમ માનીને
+    enabled: true,
   });
+
+  const societies = Array.isArray(societiesData) ? societiesData : [];
+  console.log("Societies in Context:", societies);
 
   // 3. activeSocietyId ના આધારે વર્તમાન society ની વિગતો મેળવો
   const activeSociety = useMemo(() => {
-    return societies?.find((s) => s.societyId === activeSocietyId) || null;
+    // હવે societies એ હંમેશા Array હશે, તેથી .find() સુરક્ષિત રીતે વાપરી શકાય છે
+    return societies.find((s) => s.societyId === activeSocietyId) || null;
   }, [societies, activeSocietyId]);
 
   // 4. જો કોઈ society પસંદ ન હોય તો પ્રથમ society ને default તરીકે સેટ કરો
   useEffect(() => {
-    if (!activeSocietyId && societies && societies.length > 0) {
+    // isLoading = false હોય અને societies હોય અને કોઈ activeSocietyId સેટ ન હોય
+    if (!activeSocietyId && !isSocietiesLoading && societies.length > 0) {
       const defaultId = societies[0].societyId;
       setActiveSocietyId(defaultId);
       localStorage.setItem("activeSocietyId", defaultId);
     }
-  }, [societies, activeSocietyId]);
+  }, [societies, activeSocietyId, isSocietiesLoading]);
 
   // 5. Society બદલવા માટેનું મુખ્ય ફંક્શન
   const switchSociety = (societyId) => {
@@ -44,16 +48,12 @@ export const SocietyProvider = ({ children }) => {
       setActiveSocietyId(societyId);
       localStorage.setItem("activeSocietyId", societyId);
 
-      // TanStack Query ને Forcefully invalidate (ફરીથી fetch) કરો
-      // જેથી Dashboard નો ડેટા નવી society ના સંદર્ભમાં આવે (દા.ત., Complaints, Announcements)
-      queryClient.invalidateQueries({ queryKey: ["dashboardData"] });
-
-      // toast.success(`Switched to ${societies.find(s => s.societyId === societyId)?.societyName}`);
+      // ... queryClient.invalidateQueries(...)
     }
   };
 
   const contextValue = {
-    societies: societies || [],
+    societies, // હવે આ હંમેશા Array છે
     activeSociety,
     activeSocietyId,
     isSocietiesLoading,
@@ -66,6 +66,7 @@ export const SocietyProvider = ({ children }) => {
 
   return (
     <SocietyContext.Provider value={contextValue}>
+      {/* Loading state અહીંયા handle કરી શકાય છે */}
       {isSocietiesLoading ? <div>Loading Societies...</div> : children}
     </SocietyContext.Provider>
   );
