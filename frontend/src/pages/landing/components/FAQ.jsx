@@ -45,7 +45,7 @@ const FAQ = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             Frequently Asked{" "}
-            <span className=" from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Questions
             </span>
           </h2>
@@ -80,18 +80,6 @@ const FAQ = () => {
               )}
             </div>
           ))}
-        </div>
-
-        <div className="mt-12 text-center p-6  from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200">
-          <p className="text-lg font-semibold text-slate-900 mb-2">
-            Still have questions?
-          </p>
-          <p className="text-slate-600 mb-4">
-            Our team is here to help you 24/7
-          </p>
-          <button className="px-6 py-3  from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all">
-            Contact Support
-          </button>
         </div>
       </div>
     </section>
