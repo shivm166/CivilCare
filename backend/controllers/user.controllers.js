@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../utils/jwtToken.js";
+import { UserSocietyRel } from "../models/user_society_rel.model.js";
 
 export const signup = async (req, res) => {
   try {
@@ -74,7 +75,7 @@ export const login = async (req, res) => {
 
 export const getprofile = async (req, res) => {
   try {
-    const userId = req.user._id; // <-- error happens here
+    const userId = req.user._id;
     console.log(req);
     const user = await User.findById(userId);
     res.json(user);
@@ -90,5 +91,31 @@ export const logout = async (req, res) => {
     res.status(200).json({ success: true, message: "logout successffully" });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getSocieties = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const societies = await UserSocietyRel.find({
+      user: userId,
+      isActive: true,
+    })
+      .populate("society", "name city state")
+      .select("roleInSociety unit society");
+
+    res.status(200).json({
+      message: "User societies fetched successfully",
+      societies: societies.map((rel) => ({
+        societyId: rel.society._id,
+        societyName: rel.society.name,
+        role: rel.roleInSociety,
+        details: rel.society,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching societies:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
