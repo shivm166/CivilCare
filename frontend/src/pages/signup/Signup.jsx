@@ -25,7 +25,7 @@ const Signup = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
-      data-theme="cmyk"
+      data-theme="nord"
     >
       <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto bg-base-100/80 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-primary/30">
         {/* LEFT SIDE - SIGNUP FORM */}
@@ -172,7 +172,7 @@ const Signup = () => {
           <div className="absolute inset-0  backdrop-blur-sm"></div>
           <div className="relative aspect-square max-w-sm mx-auto">
             <img
-              src="/signup.png"
+              src="/logo.png"
               alt="Connect illustration"
               className="w-full h-full"
             />
