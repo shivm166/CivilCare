@@ -29,3 +29,13 @@ export const login = async (loginData) => {
     throw error;
   }
 };
+
+export const getSocieties = async () => {
+  try {
+    const response = await axiosInstance.get("/user/societies");
+    return response.data.societies;
+  } catch (error) {
+    console.log("Error in getting societies", error);
+    throw error;
+  }
+};

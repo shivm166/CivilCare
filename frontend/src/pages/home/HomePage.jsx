@@ -1,7 +1,12 @@
 import React from "react";
+import SocietySwitcher from "../../components/SocietySwitcher";
 
 const HomePage = () => {
-  return <div>HomePage</div>;
+  return (
+    <div>
+      <SocietySwitcher />
+    </div>
+  );
 };
 
 export default HomePage;

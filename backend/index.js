@@ -5,7 +5,8 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
-import societyRouter from './routes/society.route.js'
+import societyRouter from "./routes/society.route.js";
+import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 
 const app = express();
 
@@ -23,8 +24,10 @@ app.use(
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(attachSocietyContext);
+
 app.use("/api/user", userRouter);
-app.use("/api/society", societyRouter)
+app.use("/api/society", societyRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
