@@ -65,7 +65,7 @@ const Features = () => {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 px-4">
             Everything You Need in{" "}
-            <span className=" from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               One Platform
             </span>
           </h2>
