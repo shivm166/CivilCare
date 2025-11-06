@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Zap, Phone, Mail } from 'lucide-react';
+import { Menu, X, Zap, Phone, Mail, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -97,9 +97,14 @@ const Navbar = () => {
             {/* Desktop Login Button */}
             <div className="hidden lg:flex items-center gap-3">
               <button 
-                onClick={handleLoginClick}
-                className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
-              >
+                className="px-5 py-2.5 border-2 border-emerald-600 text-emerald-600 rounded-xl font-semibold hover:bg-emerald-50 transition-all text-sm"
+                onClick={() =>{
+                  navigate("/login")
+                }}
+                >
+                Login
+              </button>
+              <button className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2">
                 <Zap className="w-4 h-4" />
                 Login
               </button>

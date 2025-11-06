@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout.jsx";
 import HomePage from "./pages/home/HomePage.jsx";
 import PublicLayout from "./components/layout/PublicLayout.jsx";
@@ -17,8 +17,14 @@ const App = () => {
       <Routes>
         <Route path="/" element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/login"
+            element={!isAuthenticated ? <Login /> : <Navigate to="/home" />}
+          />
+          <Route
+            path="/signup"
+            element={!isAuthenticated ? <Signup /> : <Navigate to="/home" />}
+          />
         </Route>
 
         <Route element={<Layout />}>
