@@ -1,11 +1,56 @@
 import { Router } from "express";
-import { validateSocietyCreate } from "../middlelware/validation.society.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
-import { createSociety } from "../controllers/society.controllers.js";
 import protectRoute from "../middlelware/isProtected.js";
+import { validateRequest } from "../middlelware/validateMiddleware.js";
+import {
+  validateSocietyCreate,
+  validateSocietyUpdate,
+  validateSocietyId,
+} from "../middlelware/validation.society.js";
 
-const router = Router()
+import {
+  createSociety,
+  getAllSocieties,
+  getSocietyById,
+  updateSociety,
+  deleteSociety,
+} from "../controllers/society.controllers.js";
 
-router.post("/add",protectRoute, validateRequest(validateSocietyCreate), createSociety)
+const router = Router();
 
-export default router
+// ✅ CREATE
+router.post(
+  "/add",
+  protectRoute,
+  validateRequest(validateSocietyCreate),
+  createSociety
+);
+
+// ✅ READ ALL
+router.get("/", protectRoute, getAllSocieties);
+
+// ✅ READ SINGLE
+router.get(
+  "/:id",
+  protectRoute,
+  validateRequest(validateSocietyId, "params"),
+  getSocietyById
+);
+
+// ✅ UPDATE
+router.put(
+  "/:id",
+  protectRoute,
+  validateRequest(validateSocietyId, "params"),
+  validateRequest(validateSocietyUpdate),
+  updateSociety
+);
+
+// ✅ DELETE
+router.delete(
+  "/:id",
+  protectRoute,
+  validateRequest(validateSocietyId, "params"),
+  deleteSociety
+);
+
+export default router;
