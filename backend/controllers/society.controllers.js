@@ -11,6 +11,22 @@ export const createSociety = async (req,res) =>{
             })
         }
 
+        const existedSocietyName = await Society.findOne({name: name})
+
+        if(existedSocietyName){
+            return res.status(409).json({
+                message: "Society name is already exist"
+            })
+        }
+
+        const existedSocietyAddress = await Society.findOne({address: address})
+
+        if(existedSocietyAddress){
+            return res.status(409).json({
+                message: "Society address is already exist"
+            })
+        }
+
         const society = await Society.create({
             name,
             address,

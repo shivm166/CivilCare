@@ -6,11 +6,13 @@ const societySchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     address: {
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     city: {
       type: String,

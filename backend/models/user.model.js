@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    globalRole: {
+      type: String,
+      ennum: ["super_admin", "user"],
+      default: "user",
+    }
   },
   {
     timestamps: true,
