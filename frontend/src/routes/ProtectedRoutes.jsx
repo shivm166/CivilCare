@@ -1,27 +1,49 @@
-// frontend/src/routes/ProtectedRoutes.jsx
-import HomePage from "../pages/home/HomePage.jsx";
-import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
-import DashboardLayout from "../components/layout/DashboardLayout.jsx"; // Renamed/Updated layout
-import { Route, Navigate } from "react-router-dom";
+import { Route, Navigate, Outlet } from "react-router-dom";
 import {
   SocietyProvider,
   useSocietyContext,
 } from "../context/SocietyContext.jsx";
-import BillingPage from "../pages/features/BillingPage.jsx";
-import MaintenancePage from "../pages/features/MaintenancePage.jsx";
-import NoticeBoardPage from "../pages/features/NoticeBoardPage.jsx";
-import VisitorPage from "../pages/features/VisitorPage.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
+import React from "react";
+
+// --- Placeholder Components (New) ---
+const AdminDashboard = () => (
+  <div className="text-3xl font-bold">Admin Dashboard: Welcome Admin!</div>
+);
+const UserDashboard = () => (
+  <div className="text-3xl font-bold">User Dashboard: Your Home Screen</div>
+);
+const AnnouncementsPage = () => (
+  <div className="text-xl font-semibold">Announcements Page</div>
+);
+const ComplaintsPage = () => (
+  <div className="text-xl font-semibold">Complaints Management (Admin)</div>
+);
+const ResidentsPage = () => (
+  <div className="text-xl font-semibold">Residents Directory</div>
+);
+const NotificationsPage = () => (
+  <div className="text-xl font-semibold">Notifications</div>
+);
+const RaiseComplaintPage = () => (
+  <div className="text-xl font-semibold">Raise a Complaint (User)</div>
+);
+const ProfilePage = () => (
+  <div className="text-xl font-semibold">User Profile Settings</div>
+);
 
 // Wrapper component to check society status
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
+  // Loading state is handled inside the context now, but keeping a fallback
   if (isSocietiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading society context...</p>
         </div>
       </div>
     );
@@ -39,55 +61,71 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
   return (
     <>
       {!isAuthenticated ? (
+        // Catch all other paths and redirect to login
         <Route path="*" element={<Navigate to="/login" replace />} />
       ) : (
+        // All authenticated routes live here
         <Route
           element={
             <SocietyProvider>
-              <SocietyChecker>
-                <DashboardLayout /> {/* Using the new DashboardLayout */}
-              </SocietyChecker>
+              <Layout />
             </SocietyProvider>
           }
         >
-          {/* Onboarding Route - No society check wrapper is needed here as it's outside the SocietyChecker in the outer Route element*/}
+          {/* Base URL Fallback for authenticated user */}
+          <Route index element={<Navigate to="/user/dashboard" replace />} />
+          <Route
+            path="/home"
+            element={<Navigate to="/user/dashboard" replace />}
+          />
+
+          {/* Onboarding Route - Accessible when no societies are active */}
           <Route path="/onboarding" element={<SocietyOnboarding />} />
 
-          {/* Default Route redirects to /app/dashboard based on role */}
-          <Route path="/home" element={<HomePage />} />
-
-          {/* Core Protected App Routes (Role-based components are handled inside DashboardLayout/Homepage redirects) */}
-          <Route path="/app">
-            {/* Dashboard: Renders the correct Admin/Resident dashboard based on Outlet context */}
-            <Route path="dashboard" element={<HomePage />} />
-            <Route index element={<Navigate to="dashboard" replace />} />
-
-            {/* Other Feature Pages (Access controlled by Sidebar.jsx) */}
-            <Route path="billing" element={<BillingPage />} />
-            <Route path="maintenance" element={<MaintenancePage />} />
-            <Route path="notice-board" element={<NoticeBoardPage />} />
-            <Route path="visitor-management" element={<VisitorPage />} />
-
-            {/* Placeholder Pages for Admin/Resident specific navigation */}
-            <Route
-              path="residents"
-              element={<h1>Admin: Residents Management Page</h1>}
-            />
-            <Route
-              path="settings"
-              element={<h1>Admin: Global Settings Page</h1>}
-            />
-            <Route
-              path="profile"
-              element={<h1>Resident: User Profile Page</h1>}
-            />
-
-            {/* Catch-all for /app/* */}
+          {/* --- Admin Routes --- */}
+          <Route
+            path="/admin"
+            element={
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="complaints" element={<ComplaintsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route
               path="*"
-              element={<Navigate to="/app/dashboard" replace />}
+              element={<Navigate to="/admin/dashboard" replace />}
             />
           </Route>
+
+          {/* --- User/Member Routes --- */}
+          <Route
+            path="/user"
+            element={
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
+            }
+          >
+            <Route path="dashboard" element={<UserDashboard />} />
+            <Route path="raise-complaint" element={<RaiseComplaintPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="*"
+              element={<Navigate to="/user/dashboard" replace />}
+            />
+          </Route>
+
+          {/* Final catch-all protected route fallback */}
+          <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
         </Route>
       )}
     </>

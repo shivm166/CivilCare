@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar";
-import SocietySwitcher from "../SocietySwitcher";
+import SocietySwitcher from "../RoleSocietySwitcher";
 import { Menu } from "lucide-react";
 import { useSocietyContext } from "../../context/SocietyContext";
 import AdminDashboard from "../../pages/dashboard/AdminDashboard";
