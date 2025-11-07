@@ -6,6 +6,10 @@ import {
 import Layout from "../components/layout/Layout.jsx";
 import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
 import ProfilePage from "../pages/features/ProfilePage.jsx";
+import AnnouncementsPage from "../pages/features/AnnouncementsPage.jsx";
+import ComplaintsPage from "../pages/features/ComplaintsPage.jsx";
+import ResidentsPage from "../pages/features/ResidentsPage.jsx";
+import NotificationsPage from "../pages/features/NotificationsPage.jsx";
 
 // --- Placeholder Components (New) ---
 const AdminDashboard = () => (
