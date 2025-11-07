@@ -1,53 +1,133 @@
 import React from 'react';
 import { XCircle, CheckCircle2 } from 'lucide-react';
 
-const ProblemSolution = () => {
-  const problems = ['Manual billing and collection tracking', 'Paper-based complaints and requests', 'No visitor tracking system', 'Communication gaps with residents', 'Lack of transparency in finances'];
-  const solutions = ['Automated billing with online payment gateway', 'Digital complaint management with status tracking', 'Smart visitor management with QR codes', 'Instant notifications and announcements', 'Complete financial transparency dashboard'];
+export default function ProblemSolution({ className = '' }) {
+  const problems = [
+    'Manual billing and collection tracking',
+    'Paper-based complaints and requests',
+    'No visitor tracking system',
+    'Communication gaps with residents',
+    'Lack of transparency in finances',
+  ];
+  const solutions = [
+    'Automated billing with online payment gateway',
+    'Digital complaint management with status tracking',
+    'Smart visitor management with QR codes',
+    'Instant notifications and announcements',
+    'Complete financial transparency dashboard',
+  ];
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 px-4">
-            From <span className="text-red-600">Challenges</span> to <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Solutions</span>
+    <section
+      aria-labelledby="ps-heading"
+      className={`py-8 sm:py-12 lg:py-16 px-4 bg-gray-50 ${className}`}
+    >
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-8 sm:mb-10">
+          <h2
+            id="ps-heading"
+            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight"
+          >
+            From <span className="text-red-600">Challenges</span> to{' '}
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+              Solutions
+            </span>
           </h2>
+          <p className="mt-3 text-sm sm:text-base text-slate-500 max-w-2xl mx-auto">
+            Make community management effortless — reduce paperwork, improve
+            transparency and keep residents informed.
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 sm:p-8 border-2 border-red-200">
-            <h3 className="text-xl sm:text-2xl font-bold text-red-900 mb-6 flex items-center gap-3">
-              <XCircle className="w-6 sm:w-8 h-6 sm:h-8 flex-shrink-0" />
-              <span>Traditional Challenges</span>
-            </h3>
-            <div className="space-y-4">
-              {problems.map((problem, index) => (
-                <div key={index} className="flex items-start gap-3 bg-white/80 rounded-lg p-3 sm:p-4">
-                  <XCircle className="w-5 sm:w-6 h-5 sm:h-6 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm sm:text-base text-slate-700">{problem}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          {/* Problems column */}
+          <article
+            className="group rounded-2xl p-4 sm:p-6 border transition-shadow duration-200 shadow-sm hover:shadow-md bg-white/80 border-red-100"
+            aria-labelledby="problems-title"
+          >
+            <header className="flex items-center gap-3 mb-4">
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 sm:p-8 border-2 border-emerald-200">
-            <h3 className="text-xl sm:text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
-              <CheckCircle2 className="w-6 sm:w-8 h-6 sm:h-8 flex-shrink-0" />
-              <span>Modern Solutions</span>
-            </h3>
-            <div className="space-y-4">
-              {solutions.map((solution, index) => (
-                <div key={index} className="flex items-start gap-3 bg-white/80 rounded-lg p-3 sm:p-4">
-                  <CheckCircle2 className="w-5 sm:w-6 h-5 sm:h-6 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm sm:text-base text-slate-700">{solution}</p>
-                </div>
+              <h3 id="problems-title" className="text-xl sm:text-2xl font-semibold text-red-900">
+                Traditional Challenges
+              </h3>
+            </header>
+
+            <ul className="space-y-3 sm:space-y-4">
+              {problems.map((p, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-3 rounded-lg p-3 sm:p-3.5 bg-red-50/60"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <XCircle className="w-5 h-5 text-red-500" />
+                  </div>
+                  <p className="text-sm sm:text-sm leading-snug text-slate-700">{p}</p>
+                </li>
               ))}
+            </ul>
+
+            {/* subtle footer on large screens */}
+            <div className="hidden lg:flex items-center justify-end mt-6 text-xs text-slate-500">
+              Problems snapshot
             </div>
-          </div>
+          </article>
+
+          {/* Solutions column */}
+          <article
+            className="group rounded-2xl p-4 sm:p-6 border transition-transform duration-200 hover:-translate-y-1 bg-white/80 border-emerald-100 shadow-sm"
+            aria-labelledby="solutions-title"
+          >
+            <header className="flex items-center gap-3 mb-4">
+              <h3 id="solutions-title" className="text-xl sm:text-2xl font-semibold text-emerald-900">
+                Modern Solutions
+              </h3>
+            </header>
+
+            <ul className="space-y-3 sm:space-y-4">
+              {solutions.map((s, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-3 rounded-lg p-3 sm:p-3.5 bg-emerald-50/60"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  </div>
+                  <p className="text-sm sm:text-sm leading-snug text-slate-700">{s}</p>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden lg:flex items-center justify-end mt-6 text-xs text-slate-500">
+              Solutions snapshot
+            </div>
+          </article>
         </div>
       </div>
+
+      {/* Mobile-only compact adjustments using utility classes */}
+      <style jsx>{`
+        /* extra fine-tuned mobile shrink using CSS variables and media query */
+        @media (max-width: 640px) {
+          section[aria-labelledby='ps-heading'] {
+            padding-top: 1.25rem; /* reduce vertical padding */
+            padding-bottom: 1.25rem;
+          }
+
+          /* slightly reduce card padding and font size for very small screens */
+          .group > ul > li {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+
+          .group h3 {
+            font-size: 1rem;
+          }
+
+          .group p {
+            font-size: 0.86rem;
+          }
+        }
+      `}</style>
     </section>
   );
-};
-
-export default ProblemSolution;
+}

@@ -96,16 +96,11 @@ const Navbar = () => {
 
             {/* Desktop Login Button */}
             <div className="hidden lg:flex items-center gap-3">
-              <button 
-                className="px-5 py-2.5 border-2 border-emerald-600 text-emerald-600 rounded-xl font-semibold hover:bg-emerald-50 transition-all text-sm"
-                onClick={() =>{
+              <button  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
+              onClick={() =>{
                   navigate("/login")
-                }}
-                >
-                Login
-              </button>
-              <button className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2">
-                <Zap className="w-4 h-4" />
+                }}>
+                <Zap className="w-8 h-8" />
                 Login
               </button>
             </div>

@@ -17,31 +17,7 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Basic client-side validation
-    if (!loginData.email || !loginData.password) {
-      toast.error("Please fill in all fields!");
-      return;
-    }
-
-    // Email validation (simple regex)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(loginData.email)) {
-      toast.error("Please enter a valid email address!");
-      return;
-    }
-
-    if (loginData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long!");
-      return;
-    }
-
-    try {
-      await loginMutation(loginData);
-      toast.success("Login successful! Redirecting...");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed. Try again!");
-    }
+    await loginMutation(loginData);
   };
 
   return (

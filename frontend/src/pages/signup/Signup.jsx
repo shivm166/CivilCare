@@ -19,29 +19,7 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    if (
-      !signUpData.name ||
-      !signUpData.email ||
-      !signUpData.password ||
-      !signUpData.phone
-    ) {
-      toast.error("All fields are required!");
-      return;
-    }
-
-    if (signUpData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long!");
-      return;
-    }
-
-    try {
-      await signupMutation(signUpData);
-      toast.success("Account created successfully!");
-      setSignUpData({ name: "", email: "", password: "", phone: "" });
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Signup failed. Try again!");
-    }
+    await signupMutation(signUpData);
   };
 
   return (

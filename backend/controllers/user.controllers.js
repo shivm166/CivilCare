@@ -21,7 +21,7 @@ export const signup = async (req, res) => {
       password,
       phone,
     });
-    const jwt = generateTokenAndSetCookie(res, newUser._id, newUser.role);
+    const jwt = generateTokenAndSetCookie(res, newUser._id, newUser.globalRole);
 
     res.status(201).json({
       message: "User created successfully",

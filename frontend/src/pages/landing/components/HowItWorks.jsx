@@ -22,7 +22,7 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <div key={index} className="relative">
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all h-full">
-                <div className="w-14 sm:w-16 h-14 sm:h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                <div className="w-7 sm:w-8 h-7 sm:h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded flex items-center justify-center mb-4 mx-auto">
                   <span className="text-white text-xl sm:text-2xl font-bold">{step.number}</span>
                 </div>
                 <div className="w-10 sm:w-12 h-10 sm:h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
