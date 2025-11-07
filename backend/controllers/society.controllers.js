@@ -1,9 +1,9 @@
-import { Society } from "../models/society.model.js"
-import { UserSocietyRel } from "../models/user_society_rel.model.js"
+import { Society } from "../models/society.model.js";
+import { UserSocietyRel } from "../models/user_society_rel.model.js";
 
-export const createSociety = async (req,res) =>{
-    try{
-        const { name, address, city, state, pincode} = req.body
+export const createSociety = async (req, res) => {
+  try {
+    const { name, address, city, state, pincode } = req.body;
 
         if (!name || !address || !city || !state || !pincode){
             return res.status(400).json({
