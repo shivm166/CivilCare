@@ -1,22 +1,49 @@
-import HomePage from "../pages/home/HomePage.jsx";
-import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
-import Layout from "../components/layout/Layout.jsx";
-import { Route, Navigate } from "react-router-dom";
+import { Route, Navigate, Outlet } from "react-router-dom";
 import {
   SocietyProvider,
   useSocietyContext,
 } from "../context/SocietyContext.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
+import React from "react";
+
+// --- Placeholder Components (New) ---
+const AdminDashboard = () => (
+  <div className="text-3xl font-bold">Admin Dashboard: Welcome Admin!</div>
+);
+const UserDashboard = () => (
+  <div className="text-3xl font-bold">User Dashboard: Your Home Screen</div>
+);
+const AnnouncementsPage = () => (
+  <div className="text-xl font-semibold">Announcements Page</div>
+);
+const ComplaintsPage = () => (
+  <div className="text-xl font-semibold">Complaints Management (Admin)</div>
+);
+const ResidentsPage = () => (
+  <div className="text-xl font-semibold">Residents Directory</div>
+);
+const NotificationsPage = () => (
+  <div className="text-xl font-semibold">Notifications</div>
+);
+const RaiseComplaintPage = () => (
+  <div className="text-xl font-semibold">Raise a Complaint (User)</div>
+);
+const ProfilePage = () => (
+  <div className="text-xl font-semibold">User Profile Settings</div>
+);
 
 // Wrapper component to check society status
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
+  // Loading state is handled inside the context now, but keeping a fallback
   if (isSocietiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading society context...</p>
         </div>
       </div>
     );
@@ -34,8 +61,10 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
   return (
     <>
       {!isAuthenticated ? (
+        // Catch all other paths and redirect to login
         <Route path="*" element={<Navigate to="/login" replace />} />
       ) : (
+        // All authenticated routes live here
         <Route
           element={
             <SocietyProvider>
@@ -43,20 +72,60 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
             </SocietyProvider>
           }
         >
-          {/* Onboarding Route - No society check */}
-          <Route path="/onboarding" element={<SocietyOnboarding />} />
-
-          {/* Protected routes - Check if user has societies */}
+          {/* Base URL Fallback for authenticated user */}
+          <Route index element={<Navigate to="/user/dashboard" replace />} />
           <Route
             path="/home"
-            element={
-              <SocietyChecker>
-                <HomePage />
-              </SocietyChecker>
-            }
+            element={<Navigate to="/user/dashboard" replace />}
           />
 
-          {/* Add other protected routes here with SocietyChecker wrapper */}
+          {/* Onboarding Route - Accessible when no societies are active */}
+          <Route path="/onboarding" element={<SocietyOnboarding />} />
+
+          {/* --- Admin Routes --- */}
+          <Route
+            path="/admin"
+            element={
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="complaints" element={<ComplaintsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="*"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+          </Route>
+
+          {/* --- User/Member Routes --- */}
+          <Route
+            path="/user"
+            element={
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
+            }
+          >
+            <Route path="dashboard" element={<UserDashboard />} />
+            <Route path="raise-complaint" element={<RaiseComplaintPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="*"
+              element={<Navigate to="/user/dashboard" replace />}
+            />
+          </Route>
+
+          {/* Final catch-all protected route fallback */}
+          <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
         </Route>
       )}
     </>

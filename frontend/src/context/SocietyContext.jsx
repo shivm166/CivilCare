@@ -7,13 +7,33 @@ import React, {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSocieties } from "../lib/api";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const SocietyContext = createContext(null);
 
+// Helper function to determine roles available for a user in a society
+const getAvailableRoles = (roleInSociety) => {
+  const roles = [roleInSociety];
+  // If the user's highest role is admin, they can temporarily switch to a member view.
+  // Assuming 'member' is the general user role.
+  if (roleInSociety === "admin" && !roles.includes("member")) {
+    roles.push("member");
+  }
+  return roles;
+};
+
 export const SocietyProvider = ({ children }) => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Store the active society ID
   const [activeSocietyId, setActiveSocietyId] = useState(
     () => localStorage.getItem("activeSocietyId") || null
+  );
+
+  // Store the currently active role for the active society (e.g., 'admin' or 'member')
+  const [activeRole, setActiveRole] = useState(
+    () => localStorage.getItem("activeRole") || null
   );
 
   const { data: societiesData, isLoading: isSocietiesLoading } = useQuery({
@@ -23,24 +43,82 @@ export const SocietyProvider = ({ children }) => {
   });
 
   const societies = Array.isArray(societiesData) ? societiesData : [];
-  console.log("Societies in Context:", societies);
 
   const activeSociety = useMemo(() => {
-    return societies.find((s) => s.societyId === activeSocietyId) || null;
+    const society =
+      societies.find((s) => s.societyId === activeSocietyId) || null;
+
+    if (society) {
+      // Attach available roles to the active society object
+      society.availableRoles = getAvailableRoles(society.role);
+    }
+
+    return society;
   }, [societies, activeSocietyId]);
 
+  // Effect to handle default selection and role redirection
   useEffect(() => {
-    if (!activeSocietyId && !isSocietiesLoading && societies.length > 0) {
-      const defaultId = societies[0].societyId;
-      setActiveSocietyId(defaultId);
-      localStorage.setItem("activeSocietyId", defaultId);
+    if (!isSocietiesLoading && societies.length > 0) {
+      const defaultId = activeSocietyId || societies[0].societyId;
+      const currentSociety = societies.find((s) => s.societyId === defaultId);
+      const highestRole = currentSociety ? currentSociety.role : null;
+
+      // Update local storage and states if a society is active but context is not initialized
+      if (!activeSocietyId) {
+        setActiveSocietyId(defaultId);
+        localStorage.setItem("activeSocietyId", defaultId);
+      }
+
+      // Set default role to the highest role (admin > member) if not set or invalid
+      if (
+        highestRole &&
+        (!activeRole || !getAvailableRoles(highestRole).includes(activeRole))
+      ) {
+        setActiveRole(highestRole);
+        localStorage.setItem("activeRole", highestRole);
+
+        // Redirect to new dashboard based on highest role
+        const defaultPath =
+          highestRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
+        navigate(defaultPath, { replace: true });
+      }
+    } else if (!isSocietiesLoading && societies.length === 0) {
+      // Redirect to onboarding if no societies are found
+      localStorage.removeItem("activeSocietyId");
+      localStorage.removeItem("activeRole");
+      if (window.location.pathname !== "/onboarding") {
+        navigate("/onboarding", { replace: true });
+      }
     }
-  }, [societies, activeSocietyId, isSocietiesLoading]);
+  }, [societies, activeSocietyId, isSocietiesLoading, activeRole, navigate]);
 
   const switchSociety = (societyId) => {
-    if (societies.some((s) => s.societyId === societyId)) {
+    const newSociety = societies.find((s) => s.societyId === societyId);
+    if (newSociety) {
+      const newHighestRole = newSociety.role;
+
       setActiveSocietyId(societyId);
       localStorage.setItem("activeSocietyId", societyId);
+
+      // Reset role to the highest available role in the new society
+      setActiveRole(newHighestRole);
+      localStorage.setItem("activeRole", newHighestRole);
+
+      // Navigate to the new role's dashboard
+      const newPath =
+        newHighestRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
+      navigate(newPath);
+    }
+  };
+
+  const switchRole = (role) => {
+    if (activeSociety?.availableRoles?.includes(role) && role !== activeRole) {
+      setActiveRole(role);
+      localStorage.setItem("activeRole", role);
+
+      // Navigate to the dashboard for the new role
+      const newPath = role === "admin" ? "/admin/dashboard" : "/user/dashboard";
+      navigate(newPath);
     }
   };
 
@@ -48,17 +126,30 @@ export const SocietyProvider = ({ children }) => {
     societies,
     activeSociety,
     activeSocietyId,
+    activeRole,
     isSocietiesLoading,
     switchSociety,
+    switchRole,
     clearActiveSociety: () => {
       localStorage.removeItem("activeSocietyId");
+      localStorage.removeItem("activeRole");
       setActiveSocietyId(null);
+      setActiveRole(null);
     },
   };
 
   return (
     <SocietyContext.Provider value={contextValue}>
-      {isSocietiesLoading ? <div>Loading Societies...</div> : children}
+      {isSocietiesLoading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading society context...</p>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </SocietyContext.Provider>
   );
 };
