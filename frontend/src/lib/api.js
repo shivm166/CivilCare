@@ -39,3 +39,13 @@ export const getSocieties = async () => {
     throw error;
   }
 };
+
+export const createSociety = async (societyData) => {
+  try {
+    const response = await axiosInstance.post("/society/add", societyData);
+    return response.data;
+  } catch (error) {
+    console.log("Error in creating society", error);
+    throw error;
+  }
+};
