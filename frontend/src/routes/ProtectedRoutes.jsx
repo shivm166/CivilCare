@@ -2,6 +2,7 @@ import HomePage from "../pages/home/HomePage.jsx";
 import Layout from "../components/layout/Layout.jsx";
 import { Route, Navigate } from "react-router-dom";
 import { SocietyProvider } from "../context/SocietyContext.jsx";
+import Anoucements from "../pages/Annoucements/Anoucements.jsx";
 
 const ProtectedRoutes = ({ isAuthenticated }) => {
   return (
@@ -17,7 +18,7 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
       }
     >
       <Route path="/home" element={<HomePage />} />
-      {/* અન્ય કોઈ Protected રૂટ્સ અહીં ઉમેરો */}
+      <Route path="/announcements" element={<Anoucements />} />
     </Route>
   );
 };
