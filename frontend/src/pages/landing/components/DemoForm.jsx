@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
+import PageLoader from "../../components/common/PageLoader";
 
 const DemoForm = () => {
   const [formData, setFormData] = useState({
@@ -235,7 +236,7 @@ const DemoForm = () => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting...
+                  {<PageLoader />}
                 </>
               ) : (
                 <>
