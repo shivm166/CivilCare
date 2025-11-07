@@ -5,7 +5,7 @@ import {
 } from "../context/SocietyContext.jsx";
 import Layout from "../components/layout/Layout.jsx";
 import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
-import React from "react";
+import ProfilePage from "../pages/features/ProfilePage.jsx";
 
 // --- Placeholder Components (New) ---
 const AdminDashboard = () => (
@@ -14,23 +14,8 @@ const AdminDashboard = () => (
 const UserDashboard = () => (
   <div className="text-3xl font-bold">User Dashboard: Your Home Screen</div>
 );
-const AnnouncementsPage = () => (
-  <div className="text-xl font-semibold">Announcements Page</div>
-);
-const ComplaintsPage = () => (
-  <div className="text-xl font-semibold">Complaints Management (Admin)</div>
-);
-const ResidentsPage = () => (
-  <div className="text-xl font-semibold">Residents Directory</div>
-);
-const NotificationsPage = () => (
-  <div className="text-xl font-semibold">Notifications</div>
-);
 const RaiseComplaintPage = () => (
   <div className="text-xl font-semibold">Raise a Complaint (User)</div>
-);
-const ProfilePage = () => (
-  <div className="text-xl font-semibold">User Profile Settings</div>
 );
 
 // Wrapper component to check society status
@@ -103,7 +88,6 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
             />
           </Route>
 
-          {/* --- User/Member Routes --- */}
           <Route
             path="/user"
             element={
@@ -124,7 +108,6 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
             />
           </Route>
 
-          {/* Final catch-all protected route fallback */}
           <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
         </Route>
       )}

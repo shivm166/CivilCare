@@ -12,11 +12,8 @@ import PageLoader from "../components/common/PageLoader";
 
 const SocietyContext = createContext(null);
 
-// Helper function to determine roles available for a user in a society
 const getAvailableRoles = (roleInSociety) => {
   const roles = [roleInSociety];
-  // If the user's highest role is admin, they can temporarily switch to a member view.
-  // Assuming 'member' is the general user role.
   if (roleInSociety === "admin" && !roles.includes("member")) {
     roles.push("member");
   }
@@ -27,7 +24,6 @@ export const SocietyProvider = ({ children }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Store the active society ID
   const [activeSocietyId, setActiveSocietyId] = useState(
     () => localStorage.getItem("activeSocietyId") || null
   );

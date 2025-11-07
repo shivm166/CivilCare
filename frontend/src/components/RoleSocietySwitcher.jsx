@@ -6,7 +6,7 @@ const RoleSocietySwitcher = () => {
   const {
     societies,
     activeSociety,
-    activeSocietyId, // <--- CORRECTED: activeSocietyId is now correctly destructured
+    activeSocietyId,
     activeRole,
     switchSociety,
     switchRole,
