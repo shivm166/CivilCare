@@ -18,7 +18,7 @@ const App = () => {
       <Routes>
         {PublicRoutes({ isAuthenticated })}
 
-        {ProtectedRoutes({ isAuthenticated })}
+        {ProtectedRoutes({ authUser })}
       </Routes>
       <Toaster />
     </>
