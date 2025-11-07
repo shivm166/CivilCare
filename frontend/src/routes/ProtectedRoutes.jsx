@@ -10,24 +10,13 @@ import AnnouncementsPage from "../pages/features/AnnouncementsPage.jsx";
 import ComplaintsPage from "../pages/features/ComplaintsPage.jsx";
 import ResidentsPage from "../pages/features/ResidentsPage.jsx";
 import NotificationsPage from "../pages/features/NotificationsPage.jsx";
+import RaiseComplaintPage from "../pages/features/RaiseComplaintPage.jsx";
+import AdminDashboard from "../pages/features/AdminDashboard.jsx";
+import UserDashboard from "../pages/features/UserDashboard.jsx";
 import SuperAdminLayout from "../components/layout/SuperAdminLayout.jsx";
 
-// --- Placeholder Components (New) ---
-const AdminDashboard = () => (
-  <div className="text-3xl font-bold">Admin Dashboard: Welcome Admin!</div>
-);
-const UserDashboard = () => (
-  <div className="text-3xl font-bold">User Dashboard: Your Home Screen</div>
-);
-const RaiseComplaintPage = () => (
-  <div className="text-xl font-semibold">Raise a Complaint (User)</div>
-);
-
-// Wrapper component to check society status
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
-
-  // Loading state is handled inside the context now, but keeping a fallback
   if (isSocietiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -39,98 +28,85 @@ const SocietyChecker = ({ children }) => {
     );
   }
 
-  // If user has no societies, redirect to onboarding
   if (societies.length === 0) {
     return <Navigate to="/onboarding" replace />;
   }
-
   return children;
 };
 
 const ProtectedRoutes = ({ authUser }) => {
-
   const isAuthenticated = Boolean(authUser);
-  const isSuperAdmin = authUser?.globalRole === "super_admin"
-  
+  const isSuperAdmin = authUser?.globalRole === "super_admin";
+
   return (
     <>
       {!isAuthenticated ? (
-        // Catch all other paths and redirect to login
         <Route path="*" element={<Navigate to="/login" replace />} />
-      ) : (
-        !isSuperAdmin ? (
-          // All authenticated routes live here
+      ) : !isSuperAdmin ? (
+        <Route
+          element={
+            <SocietyProvider>
+              <Layout />
+            </SocietyProvider>
+          }
+        >
+          <Route index element={<Navigate to="/user/dashboard" replace />} />
           <Route
+            path="/home"
+            element={<Navigate to="/user/dashboard" replace />}
+          />
+
+          <Route path="/onboarding" element={<SocietyOnboarding />} />
+
+          <Route
+            path="/admin"
             element={
-              <SocietyProvider>
-                <Layout />
-              </SocietyProvider>
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
             }
           >
-            {/* Base URL Fallback for authenticated user */}
-            <Route index element={<Navigate to="/user/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="complaints" element={<ComplaintsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route
-              path="/home"
+              path="*"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+          </Route>
+
+          <Route
+            path="/user"
+            element={
+              <SocietyChecker>
+                <Outlet />
+              </SocietyChecker>
+            }
+          >
+            <Route path="dashboard" element={<UserDashboard />} />
+            <Route path="raise-complaint" element={<RaiseComplaintPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="residents" element={<ResidentsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="*"
               element={<Navigate to="/user/dashboard" replace />}
             />
-
-            {/* Onboarding Route - Accessible when no societies are active */}
-            <Route path="/onboarding" element={<SocietyOnboarding />} />
-
-            {/* --- Admin Routes --- */}
-            <Route
-              path="/admin"
-              element={
-                <SocietyChecker>
-                  <Outlet />
-                </SocietyChecker>
-              }
-            >
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="announcements" element={<AnnouncementsPage />} />
-              <Route path="complaints" element={<ComplaintsPage />} />
-              <Route path="residents" element={<ResidentsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route
-                path="*"
-                element={<Navigate to="/admin/dashboard" replace />}
-              />
-            </Route>
-
-            <Route
-              path="/user"
-              element={
-                <SocietyChecker>
-                  <Outlet />
-                </SocietyChecker>
-              }
-            >
-              <Route path="dashboard" element={<UserDashboard />} />
-              <Route path="raise-complaint" element={<RaiseComplaintPage />} />
-              <Route path="announcements" element={<AnnouncementsPage />} />
-              <Route path="residents" element={<ResidentsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route
-                path="*"
-                element={<Navigate to="/user/dashboard" replace />}
-              />
-            </Route>
-
-            <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
           </Route>
-        ) : (
-          <Route>
-              <Route
-                path="/home"
-                element={<Navigate to="/superadmin" replace />}
-              />
-              <Route path="/superadmin" element={ <SuperAdminLayout />} >
-                <Route path="/superadmin/dashboard" element={ <></>} />
-              </Route>
+
+          <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
+        </Route>
+      ) : (
+        <Route>
+          <Route path="/home" element={<Navigate to="/superadmin" replace />} />
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+            <Route path="/superadmin/dashboard" element={<></>} />
           </Route>
-        )
+        </Route>
       )}
     </>
   );
