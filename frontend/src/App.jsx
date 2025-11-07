@@ -20,6 +20,7 @@ const App = () => {
 
         {ProtectedRoutes({ isAuthenticated })}
       </Routes>
+
       <Toaster />
     </>
   );
