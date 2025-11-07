@@ -11,10 +11,10 @@ export const axiosInstance = axios.create({
 // Interceptor to attach the active society ID for every request
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 1. localStorage માંથી active society ID મેળવો.
+    // 1. Get active society ID from localStorage
     const activeSocietyId = localStorage.getItem("activeSocietyId");
 
-    // 2. જો ID હોય, તો તેને Society-ID header માં જોડો.
+    // 2. If ID exists, attach it to the Society-ID header
     if (activeSocietyId) {
       config.headers["Society-ID"] = activeSocietyId;
     }
