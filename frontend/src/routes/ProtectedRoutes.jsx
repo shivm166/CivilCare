@@ -13,6 +13,7 @@ import NotificationsPage from "../pages/features/NotificationsPage.jsx";
 import RaiseComplaintPage from "../pages/features/RaiseComplaintPage.jsx";
 import AdminDashboard from "../pages/features/AdminDashboard.jsx";
 import UserDashboard from "../pages/features/UserDashboard.jsx";
+import SuperAdminLayout from "../components/layout/SuperAdminLayout.jsx";
 
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
@@ -33,13 +34,15 @@ const SocietyChecker = ({ children }) => {
   return children;
 };
 
-const ProtectedRoutes = ({ isAuthenticated }) => {
+const ProtectedRoutes = ({ authUser }) => {
+  const isAuthenticated = Boolean(authUser);
+  const isSuperAdmin = authUser?.globalRole === "super_admin";
+
   return (
     <>
       {!isAuthenticated ? (
         <Route path="*" element={<Navigate to="/login" replace />} />
-      ) : (
-        // All authenticated routes live here
+      ) : !isSuperAdmin ? (
         <Route
           element={
             <SocietyProvider>
@@ -96,6 +99,13 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
           </Route>
 
           <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
+        </Route>
+      ) : (
+        <Route>
+          <Route path="/home" element={<Navigate to="/superadmin" replace />} />
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+            <Route path="/superadmin/dashboard" element={<></>} />
+          </Route>
         </Route>
       )}
     </>
