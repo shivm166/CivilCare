@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useSignup from "../../hooks/useSignup";
+import PageLoader from "../../components/common/PageLoader.jsx";
 
 const Signup = () => {
   const [signUpData, setSignUpData] = useState({
@@ -148,7 +149,7 @@ const Signup = () => {
               {isPending ? (
                 <>
                   <span className="loading loading-spinner loading-xs"></span>
-                  Creating Account...
+                  {<PageLoader />}
                 </>
               ) : (
                 "Create Account"

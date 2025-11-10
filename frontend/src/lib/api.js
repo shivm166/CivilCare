@@ -1,5 +1,16 @@
 import { axiosInstance } from "./axios";
 
+// ✅ Get currently logged-in user's profile
+export const getProfile = async () => {
+  try {
+    const response = await axiosInstance.get("/user/profile");
+    return response.data; // expects { success: true, user: {...} }
+  } catch (error) {
+    console.log("Error fetching profile", error);
+    throw error;
+  }
+};
+
 export const getAuthUser = async () => {
   try {
     const response = await axiosInstance.get("/user/me");
@@ -30,6 +41,17 @@ export const login = async (loginData) => {
   }
 };
 
+// ✅ Update profile (name only editable)
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await axiosInstance.put("/user/profile", profileData);
+    return response.data; // expects { success, message, user }
+  } catch (error) {
+    console.log("Error in updating profile", error);
+    throw error;
+  }
+};
+
 export const getSocieties = async () => {
   try {
     const response = await axiosInstance.get("/user/societies");
@@ -50,6 +72,15 @@ export const createSociety = async (societyData) => {
   }
 };
 
+// ✅ Logout API
+export const logout = async () => {
+  try {
+    const response = await axiosInstance.post("/user/logout");
+    return response.data;
+  } catch (error) {
+    console.log("Error in logout", error);
+  }
+};
 // ==================== REQUEST APIs ====================
 
 // Search society by ID
@@ -101,9 +132,7 @@ export const getAllRequestsForSociety = async (societyId) => {
 // Accept a join request (admin only)
 export const acceptRequest = async (requestId) => {
   try {
-    const response = await axiosInstance.patch(
-      `/request/${requestId}/accept`
-    );
+    const response = await axiosInstance.patch(`/request/${requestId}/accept`);
     return response.data;
   } catch (error) {
     console.log("Error in accepting request", error);
@@ -114,9 +143,7 @@ export const acceptRequest = async (requestId) => {
 // Reject a join request (admin only)
 export const rejectRequest = async (requestId) => {
   try {
-    const response = await axiosInstance.patch(
-      `/request/${requestId}/reject`
-    );
+    const response = await axiosInstance.patch(`/request/${requestId}/reject`);
     return response.data;
   } catch (error) {
     console.log("Error in rejecting request", error);
