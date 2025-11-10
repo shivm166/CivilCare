@@ -27,9 +27,9 @@ export const createSociety = async (req, res) => {
         message: "Society address is already exist",
       });
     }
-
+    let JoiningCode;
     try {
-      const JoiningCode = generateSocietyCode(name);
+      JoiningCode = generateSocietyCode(name);
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
@@ -41,7 +41,7 @@ export const createSociety = async (req, res) => {
       state,
       pincode,
       createdBy: req.user._id,
-      // JoiningCode,
+      JoiningCode,
     });
 
     await UserSocietyRel.create({

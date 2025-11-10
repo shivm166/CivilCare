@@ -1,19 +1,20 @@
 import mongoose from "mongoose";
 import { Complaint } from "../models/complaint.model.js";
+import { request } from "express";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // ---------------- USER: CREATE COMPLAINT ----------------
 export const createComplaint = async (req, res) => {
   try {
-    const { title, description, priority, createdBy, society } = req.body;
+    const { title, description, priority, society } = req.body;
 
     // create new complaint
     const complaint = await Complaint.create({
       title,
       description,
       priority: priority || "medium",
-      createdBy,
+      createdBy: req.user._id,
       society,
     });
 

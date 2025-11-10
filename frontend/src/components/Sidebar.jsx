@@ -25,8 +25,8 @@ const adminMenu = [
 
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
-  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
+  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
@@ -65,15 +65,6 @@ const Sidebar = () => {
                 <item.icon className="w-5 h-5" />
                 <span className="font-medium">{item.name}</span>
               </div>
-
-              {/* ⬅️ ADD NOTIFICATION BADGE */}
-              {item.name === "Notifications" &&
-                activeRole === "admin" &&
-                unreadCount > 0 && (
-                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
             </NavLink>
           ))}
         </nav>

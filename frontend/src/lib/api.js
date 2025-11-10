@@ -150,3 +150,24 @@ export const rejectRequest = async (requestId) => {
     throw error;
   }
 };
+
+export const getComplaints = async (societyId) => {
+  try {
+    const res = await axiosInstance.get(`/complaints?societyId=${societyId}`);
+    return res.data; // expect { complaints: [...] }
+  } catch (error) {
+    console.error("Error fetching complaints:", error);
+    throw error;
+  }
+};
+
+// ✅ Create a new complaint
+export const postComplaint = async (payload) => {
+  try {
+    const res = await axiosInstance.post("/complaints", payload);
+    return res.data;
+  } catch (error) {
+    console.error("Error creating complaint:", error);
+    throw error;
+  }
+};
