@@ -2,17 +2,21 @@ import { Society } from "../models/society.model.js";
 import { UserRequest } from "../models/user_request.model.js";
 import { UserSocietyRel } from "../models/user_society_rel.model.js";
 
-// ==================== SEARCH SOCIETY BY ID ====================
-export const searchSocietyById = async (req, res) => {
+// ==================== SEARCH SOCIETY BY JOINING CODE ====================
+export const searchSocietyByCode = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { code } = req.params;
 
-    const society = await Society.findById(id)
-      .select("name address city state pincode")
+    // Convert to uppercase and trim whitespace
+    const joiningCode = code.toUpperCase().trim();
+
+    // Search by JoiningCode instead of _id
+    const society = await Society.findOne({ JoiningCode: joiningCode })
+      .select("_id name address city state pincode JoiningCode")
       .lean();
 
     if (!society) {
-      return res.status(404).json({ message: "Society not found" });
+      return res.status(404).json({ message: "Society not found with this joining code" });
     }
 
     res.status(200).json({
@@ -26,6 +30,7 @@ export const searchSocietyById = async (req, res) => {
 };
 
 // ==================== SEND JOIN REQUEST ====================
+// Keep this function exactly as is - no changes needed
 export const sendJoinRequest = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -71,7 +76,7 @@ export const sendJoinRequest = async (req, res) => {
     });
 
     const populatedRequest = await UserRequest.findById(newRequest._id)
-      .populate("society", "name city state")
+      .populate("society", "name city state JoiningCode")
       .populate("user", "name email");
 
     res.status(201).json({
