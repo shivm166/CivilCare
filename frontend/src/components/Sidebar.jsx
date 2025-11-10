@@ -58,6 +58,22 @@ const Sidebar = () => {
             <span>{item.name}</span>
           </NavLink>
         ))}
+
+        {/* Profile Option for all roles */}
+        <NavLink
+          to={`/${activeRole === "member" ? "user" : activeRole}/profile`}
+          className={({ isActive }) =>
+            `flex items-center gap-3 p-3 rounded-xl transition-all font-medium text-gray-700 
+               ${
+                 isActive
+                   ? "bg-emerald-100 text-emerald-700 font-semibold"
+                   : "hover:bg-gray-100"
+               }`
+          }
+        >
+          <User className="w-5 h-5" />
+          <span>Profile</span>
+        </NavLink>
       </nav>
     </div>
   );

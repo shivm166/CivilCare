@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import societyRouter from "./routes/society.route.js";
+import complaintRoutes from "../backend/routes/complaint.routes.js";
 import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(attachSocietyContext);
 
 app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
+app.use("/api/complaints", complaintRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
