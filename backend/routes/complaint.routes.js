@@ -15,7 +15,7 @@ router.post("/postComplaint", createComplaint);
 router.get("/me", getMyComplaints);
 
 // ADMIN
-router.get("/admin", adminListComplaints);
-router.patch("/admin/:id", adminUpdateComplaint);
+router.get("/admin_com_list", adminListComplaints);
+router.patch("/admin_com/:id", adminUpdateComplaint);
 
 export default router;

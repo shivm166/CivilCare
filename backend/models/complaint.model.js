@@ -4,7 +4,7 @@ const complaintSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
-    attachments: [String],
+    // attachments: [String],
     status: {
       type: String,
       enum: ["pending", "in_progress", "resolved", "rejected"],
@@ -12,7 +12,7 @@ const complaintSchema = new mongoose.Schema(
     },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     society: { type: mongoose.Schema.Types.ObjectId, ref: "Society" },
-    unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
+    // unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit" },
     priority: {
       type: String,
       enum: ["low", "medium", "high"],
