@@ -35,7 +35,7 @@ const Sidebar = () => {
   const menu = activeRole === "admin" ? adminMenu : userMenu;
 
   return (
-    <div className="w-64 min-h-screen bg-white border-r border-gray-200 p-4 sticky top-0 hidden md:block flex-shrink-0">
+    <div className="w-64 min-h-screen bg-white border-r border-gray-200 p-4 sticky top-0 hidden md:block">
       <nav className="space-y-2">
         <p className="text-xs font-semibold uppercase text-gray-500 mb-4">
           {activeRole === "admin" ? "Admin Panel" : "User Panel"}

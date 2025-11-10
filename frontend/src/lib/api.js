@@ -1,5 +1,16 @@
 import { axiosInstance } from "./axios";
 
+// ✅ Get currently logged-in user's profile
+export const getProfile = async () => {
+  try {
+    const response = await axiosInstance.get("/user/profile");
+    return response.data; // expects { success: true, user: {...} }
+  } catch (error) {
+    console.log("Error fetching profile", error);
+    throw error;
+  }
+};
+
 export const getAuthUser = async () => {
   try {
     const response = await axiosInstance.get("/user/me");
@@ -30,6 +41,7 @@ export const login = async (loginData) => {
   }
 };
 
+// ✅ Update profile (name only editable)
 export const updateProfile = async (profileData) => {
   try {
     const response = await axiosInstance.put("/user/profile", profileData);
@@ -56,6 +68,17 @@ export const createSociety = async (societyData) => {
     return response.data;
   } catch (error) {
     console.log("Error in creating society", error);
+    throw error;
+  }
+};
+
+// ✅ Logout API
+export const logout = async () => {
+  try {
+    const response = await axiosInstance.post("/user/logout");
+    return response.data;
+  } catch (error) {
+    console.log("Error in logout", error);
     throw error;
   }
 };

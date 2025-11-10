@@ -1,59 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { LogOut, User, Mail, Phone, Edit3, CheckCircle } from "lucide-react";
 import useProfile from "../../hooks/useProfile.js";
-import { motion, AnimatePresence } from "framer-motion";
+import useLogout from "../../hooks/useLogout.js";
 
 const ProfilePage = () => {
-  const { updateProfileMutation, isPending } = useProfile();
+  const { user, loading, error, updateProfileMutation, updateProfileStatus } =
+    useProfile();
+  const { logoutUser } = useLogout();
 
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-    phone: "",
-  });
-
-  const [formData, setFormData] = useState(user);
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState("");
 
+  // populate form when user loaded
   useEffect(() => {
-    setFormData(user);
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+    }
   }, [user]);
-
   const validate = (data) => {
-    const tempErrors = {};
-    if (!data.name?.trim()) tempErrors.name = "Name is required";
+    const temp = {};
+    if (!data.name?.trim()) temp.name = "Name is required";
     else if (!/^[A-Za-z\s]+$/.test(data.name))
-      tempErrors.name = "Name must contain only letters";
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+      temp.name = "Name must contain only letters and spaces";
+    setErrors(temp);
+    return Object.keys(temp).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "name") {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    if (name === "name") setFormData((s) => ({ ...s, [name]: value }));
   };
 
   const handleEditToggle = () => {
     if (isEditing) {
       if (!validate(formData)) return;
-
       updateProfileMutation(
         { name: formData.name },
         {
-          onSuccess: (data) => {
-            if (data?.success) {
-              setUser((prev) => ({ ...prev, name: data.user.name }));
-              setSuccess(data.message || "Profile updated successfully!");
+          onSuccess: (res) => {
+            if (res?.success) {
+              setSuccess(res.message || "Profile updated successfully!");
               setIsEditing(false);
               setTimeout(() => setSuccess(""), 3000);
             }
           },
-          onError: () => {
+          onError: (err) => {
             setErrors({ general: "Failed to update profile" });
+            console.error(err);
           },
         }
       );
@@ -64,151 +63,118 @@ const ProfilePage = () => {
     }
   };
 
-  const handleLogout = () => {
-    alert("You have been logged out!");
-    window.location.href = "/login";
-  };
-
   return (
-    <motion.div
-      className="min-h-screen bg-base-200 flex flex-col items-center justify-center relative"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
-    >
-      {/* Logout button */}
-      <div className="absolute top-6 right-8">
+    <div className="min-h-screen bg-base-200 flex flex-col items-center py-12 px-4">
+      <div className="w-full max-w-4xl flex justify-end mb-6">
         <button
-          onClick={handleLogout}
-          className="btn btn-error btn-sm flex items-center gap-2 hover:scale-105 transition-transform shadow-md"
+          onClick={logoutUser}
+          className="btn btn-error btn-sm flex items-center gap-2"
         >
-          <LogOut size={16} /> Logout
+          <LogOut size={14} /> Logout
         </button>
       </div>
 
-      {/* Heading */}
-      <h2 className="text-3xl font-bold text-primary mb-6 tracking-wide">
-        Admin Profile
-      </h2>
-
-      {/* Profile Card */}
-      <motion.div
-        className="card w-full max-w-md bg-base-100 shadow-2xl border border-base-300 rounded-2xl"
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 80 }}
-      >
-        <div className="card-body items-center text-center relative">
-          {/* Avatar */}
-          <motion.div
-            className="avatar mb-4 relative group"
-            whileHover={{ scale: 1.08 }}
-          >
-            <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden relative">
-              <img
-                src={`https://ui-avatars.com/api/?name=${user.name}&background=random`}
-                alt="avatar"
-                className="transition-transform duration-300 group-hover:scale-110"
-              />
+      <div className="w-full max-w-lg card bg-base-100 shadow-xl rounded-xl border">
+        <div className="card-body">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="avatar">
+              <div className="w-16 rounded-full ring ring-primary">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${
+                    formData.name || "U"
+                  }&background=random`}
+                  alt="avatar"
+                />
+              </div>
             </div>
-          </motion.div>
-
-          {/* Info */}
-          <h2 className="card-title text-lg font-bold text-primary">
-            {user.name}
-          </h2>
-          <p className="text-sm text-gray-500">{user.email}</p>
-
-          <div className="divider"></div>
-
-          {/* Form */}
-          <form
-            className="w-full space-y-4 text-left"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            {/* Name */}
-            <label className="form-control w-full">
-              <span className="label-text font-semibold text-left">Name</span>
-              <div className="input input-bordered flex items-center gap-2 hover:border-primary transition-all duration-200">
-                <User size={18} className="text-gray-500" />
+            <div>
+              <h3 className="text-lg font-semibold">
+                {formData.name || "User"}
+              </h3>
+              <p className="text-sm text-gray-500">{formData.email}</p>
+            </div>
+          </div>
+          <div className="divider my-1" />
+          <div className="space-y-4">
+            <div>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
+              <div className="input input-bordered flex items-center gap-2">
+                <User size={16} />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   readOnly={!isEditing}
-                  className={`grow focus:outline-none ${
+                  className={`grow ${
                     !isEditing ? "bg-base-200 cursor-not-allowed" : ""
                   }`}
+                  placeholder="Enter name"
                 />
               </div>
               {errors.name && (
-                <p className="text-error text-sm mt-1">{errors.name}</p>
+                <p className="text-sm text-error mt-1">{errors.name}</p>
               )}
-            </label>
-
-            {/* Email */}
-            <label className="form-control w-full">
-              <span className="label-text font-semibold text-left">Email</span>
+            </div>
+            <div>
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
               <div className="input input-bordered flex items-center gap-2 bg-base-200">
-                <Mail size={18} className="text-gray-500" />
+                <Mail size={16} />
                 <input
                   type="email"
                   value={formData.email}
                   readOnly
-                  className="grow focus:outline-none cursor-not-allowed"
+                  className="grow cursor-not-allowed"
                 />
               </div>
-            </label>
+            </div>
 
-            {/* Phone */}
-            <label className="form-control w-full">
-              <span className="label-text font-semibold text-left">
-                Phone Number
-              </span>
+            {/* Phone (read-only) */}
+            <div>
+              <label className="label">
+                <span className="label-text">Phone</span>
+              </label>
               <div className="input input-bordered flex items-center gap-2 bg-base-200">
-                <Phone size={18} className="text-gray-500" />
+                <Phone size={16} />
                 <input
                   type="text"
                   value={formData.phone}
                   readOnly
-                  className="grow focus:outline-none cursor-not-allowed"
+                  className="grow cursor-not-allowed"
                 />
               </div>
-            </label>
-
-            {/* Buttons */}
-            <div className="card-actions justify-center mt-6">
+            </div>
+            {errors.general && (
+              <p className="text-sm text-error">{errors.general}</p>
+            )}
+            <div className="flex justify-center mt-3">
               <button
                 onClick={handleEditToggle}
-                disabled={isPending}
-                className={`btn btn-primary w-1/2 flex items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 ${
-                  isPending ? "loading" : ""
+                disabled={updateProfileStatus.isLoading}
+                className={`btn btn-primary w-1/2 ${
+                  updateProfileStatus.isLoading ? "loading" : ""
                 }`}
               >
                 <Edit3 size={16} />
                 {isEditing ? "Save Changes" : "Edit Profile"}
               </button>
             </div>
-          </form>
-
-          {/* ✅ Success Message Animation */}
-          <AnimatePresence>
             {success && (
-              <motion.div
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white py-2 px-5 rounded-lg flex items-center gap-2 shadow-lg"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <CheckCircle size={18} /> {success}
-              </motion.div>
+              <div className="mt-3 text-center">
+                <div className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg">
+                  <CheckCircle size={16} />
+                  <span>{success}</span>
+                </div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
