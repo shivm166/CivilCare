@@ -1,6 +1,6 @@
 export const checkSuperUser = (req, res, next) =>{
     try {
-        if(req.checkSuperUser.globalRole !== "super_admin"){
+        if(req.user.globalRole !== "super_admin"){  
             return res.status(401).json({ 
                 message: "You are not authorise to access this route" 
             });
