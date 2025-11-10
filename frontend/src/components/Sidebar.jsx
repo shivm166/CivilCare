@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { useSocietyContext } from "../context/SocietyContext";
-import { useGetSocietyRequests } from "../hooks/useRequests"; // ⬅️ ADD THIS
+import { useGetSocietyRequests } from "../hooks/useRequests";
 
 // Define the menu configurations
 const adminMenu = [
@@ -18,9 +18,8 @@ const adminMenu = [
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
-  { name: "Notifications", path: "/admin/notifications", icon: Bell },
+  { name: "Notifications", path: "/admin/notifications", icon: Bell }, // ⬅️ Only ONE Notifications with badge
   { name: "Profile", path: "/admin/profile", icon: User },
-  { name: "Notifications", path: "/admin/notifications", icon: Bell }, // ⬅️ This will have badge
 ];
 
 const userMenu = [
@@ -35,7 +34,7 @@ const userMenu = [
 const Sidebar = () => {
   const { activeRole, activeSociety } = useSocietyContext();
 
-  // ⬅️ Fetch requests for notification badge (only for admin)
+  // Fetch requests for notification badge (only for admin)
   const { data: requestsData } = useGetSocietyRequests(
     activeRole === "admin" ? activeSociety?.societyId : null
   );
@@ -65,22 +64,18 @@ const Sidebar = () => {
                 <item.icon className="w-5 h-5" />
                 <span className="font-medium">{item.name}</span>
               </div>
+
+              {/* Notification Badge - Only on Notifications item for admin */}
+              {item.name === "Notifications" &&
+                activeRole === "admin" &&
+                unreadCount > 0 && (
+                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
             </NavLink>
           ))}
         </nav>
-      </div>
-
-      {/* User Profile Section */}
-      <div className="absolute bottom-0 w-full border-t border-gray-200 p-4 bg-white">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-indigo-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Admin User</p>
-            <p className="text-xs text-gray-500 capitalize">{activeRole}</p>
-          </div>
-        </div>
       </div>
     </aside>
   );
