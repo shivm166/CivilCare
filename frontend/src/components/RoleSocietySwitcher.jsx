@@ -6,7 +6,7 @@ const RoleSocietySwitcher = () => {
   const {
     societies,
     activeSociety,
-    activeSocietyId, // <--- CORRECTED: activeSocietyId is now correctly destructured
+    activeSocietyId,
     activeRole,
     switchSociety,
     switchRole,
@@ -59,7 +59,7 @@ const RoleSocietySwitcher = () => {
       {/* Dropdown Menu */}
       <ul
         tabIndex={0}
-        className="dropdown-content mt-2 z-[1] bg-white shadow-xl border border-gray-200 rounded-xl w-72 p-2"
+        className="dropdown-content mt-2  bg-white shadow-xl border border-gray-200 rounded-xl w-72 p-2"
       >
         {/* --- Role Switcher Section (if multiple roles available: admin to member view) --- */}
         {availableRoles.length > 1 && (

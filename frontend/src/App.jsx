@@ -15,12 +15,14 @@ const App = () => {
 
   return (
     <>
-      <Routes>
-        {PublicRoutes({ isAuthenticated })}
+      <div className="font-serif" data-theme="light">
+        <Routes>
+          {PublicRoutes({ isAuthenticated })}
 
-        {ProtectedRoutes({ isAuthenticated })}
-      </Routes>
-      <Toaster />
+          {ProtectedRoutes({ authUser })}
+        </Routes>
+        <Toaster />
+      </div>
     </>
   );
 };
