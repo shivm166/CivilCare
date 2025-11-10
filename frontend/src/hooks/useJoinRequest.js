@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { sendJoinRequest, searchSocietyById } from "../lib/api";
+import { sendJoinRequest, searchSocietyByCode } from "../lib/api"; // ⬅️ CHANGED
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 
-// Hook to search society by ID
-export const useSearchSociety = (societyId, enabled = false) => {
+// Hook to search society by JoiningCode ⬅️ CHANGED
+export const useSearchSociety = (joiningCode, enabled = false) => {
   return useQuery({
-    queryKey: ["searchSociety", societyId],
-    queryFn: () => searchSocietyById(societyId),
-    enabled: enabled && !!societyId,
+    queryKey: ["searchSociety", joiningCode], // ⬅️ CHANGED
+    queryFn: () => searchSocietyByCode(joiningCode), // ⬅️ CHANGED
+    enabled: enabled && !!joiningCode, // ⬅️ CHANGED
     retry: false,
     staleTime: 0,
   });
@@ -24,7 +24,7 @@ export const useSendJoinRequest = (onSuccessCallback) => {
     mutationFn: sendJoinRequest,
     onSuccess: (data) => {
       toast.success("Join request sent successfully! 🎉");
-      
+
       // Invalidate user societies to refresh
       queryClient.invalidateQueries({ queryKey: ["userSocieties"] });
       queryClient.invalidateQueries({ queryKey: ["myRequests"] });

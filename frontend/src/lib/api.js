@@ -83,10 +83,10 @@ export const logout = async () => {
 };
 // ==================== REQUEST APIs ====================
 
-// Search society by ID
-export const searchSocietyById = async (societyId) => {
+// Search society by JoiningCode ⬅️ CHANGED
+export const searchSocietyByCode = async (joiningCode) => {
   try {
-    const response = await axiosInstance.get(`/request/society/${societyId}`);
+    const response = await axiosInstance.get(`/request/society/search/${joiningCode}`);
     return response.data;
   } catch (error) {
     console.log("Error in searching society", error);

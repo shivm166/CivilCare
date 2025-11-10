@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  searchSocietyById,
+  searchSocietyByCode, // ⬅️ CHANGED from searchSocietyById
   sendJoinRequest,
   getMyRequests,
   getAllRequestsForSociety,
@@ -15,8 +15,8 @@ const router = Router();
 
 // ==================== PUBLIC ROUTES (Protected by Auth) ====================
 
-// Search society by ID (for users to find societies to join)
-router.get("/society/:id", protectRoute, searchSocietyById);
+// Search society by JoiningCode (for users to find societies to join)
+router.get("/society/search/:code", protectRoute, searchSocietyByCode); // ⬅️ CHANGED
 
 // Send join request to a society
 router.post(
@@ -45,6 +45,7 @@ router.patch("/:requestId/accept", protectRoute, acceptRequest);
 router.patch("/:requestId/reject", protectRoute, rejectRequest);
 
 export default router;
+
 
 
 // API Endpoints Created

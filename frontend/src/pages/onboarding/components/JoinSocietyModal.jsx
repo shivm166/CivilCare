@@ -7,12 +7,12 @@ import {
   Loader2,
   MapPin,
   CheckCircle,
-  Users, // ⬅️ ADD THIS IMPORT (was missing)
+  Users,
 } from "lucide-react";
 import { useSearchSociety, useSendJoinRequest } from "../../../hooks/useJoinRequest";
 
 const JoinSocietyModal = ({ onClose }) => {
-  const [societyId, setSocietyId] = useState("");
+  const [joiningCode, setJoiningCode] = useState(""); // ⬅️ CHANGED
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -20,13 +20,13 @@ const JoinSocietyModal = ({ onClose }) => {
     data: searchResult,
     isLoading: isSearching,
     error: searchError,
-  } = useSearchSociety(societyId, searchEnabled);
+  } = useSearchSociety(joiningCode, searchEnabled); // ⬅️ CHANGED
 
   const { sendRequest, isPending } = useSendJoinRequest(onClose);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (societyId.trim()) {
+    if (joiningCode.trim()) { // ⬅️ CHANGED
       setSearchEnabled(true);
     }
   };
@@ -40,7 +40,7 @@ const JoinSocietyModal = ({ onClose }) => {
     });
   };
 
-  // Animation Variants
+  // Animation Variants (keep all as is)
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.3 } },
@@ -104,27 +104,28 @@ const JoinSocietyModal = ({ onClose }) => {
             {/* Search Form */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Society ID <span className="text-red-500">*</span>
+                Joining Code <span className="text-red-500">*</span> {/* ⬅️ CHANGED */}
               </label>
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    value={societyId}
+                    value={joiningCode} // ⬅️ CHANGED
                     onChange={(e) => {
-                      setSocietyId(e.target.value);
+                      setJoiningCode(e.target.value.toUpperCase()); // ⬅️ AUTO UPPERCASE
                       setSearchEnabled(false);
                     }}
-                    placeholder="Enter Society ID"
+                    placeholder="Enter Joining Code (e.g., ABC1234)" // ⬅️ CHANGED
                     disabled={isPending}
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:bg-gray-100"
+                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:bg-gray-100 uppercase" // ⬅️ ADDED uppercase class
                     required
+                    maxLength="7" // ⬅️ ADDED (3 letters + 4 numbers)
                   />
                 </div>
                 <motion.button
                   type="submit"
-                  disabled={!societyId.trim() || isSearching || isPending}
+                  disabled={!joiningCode.trim() || isSearching || isPending} // ⬅️ CHANGED
                   className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -137,7 +138,7 @@ const JoinSocietyModal = ({ onClose }) => {
                 </motion.button>
               </form>
               <p className="text-xs text-gray-500 mt-1">
-                Enter the unique Society ID to search
+                Enter the unique 7-character joining code {/* ⬅️ CHANGED */}
               </p>
             </div>
 
@@ -151,7 +152,7 @@ const JoinSocietyModal = ({ onClose }) => {
                   className="bg-red-50 border border-red-200 rounded-lg p-4"
                 >
                   <p className="text-sm text-red-800">
-                    Society not found. Please check the ID and try again.
+                    Society not found. Please check the joining code and try again. {/* ⬅️ CHANGED */}
                   </p>
                 </motion.div>
               )}
@@ -173,6 +174,14 @@ const JoinSocietyModal = ({ onClose }) => {
                         </h3>
                         <CheckCircle className="w-5 h-5 text-green-500" />
                       </div>
+                      
+                      {/* ⬅️ ADDED: Display Joining Code */}
+                      <div className="mb-2">
+                        <span className="inline-block bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          Code: {searchResult.society.JoiningCode}
+                        </span>
+                      </div>
+                      
                       <div className="space-y-1 text-sm text-gray-600">
                         <div className="flex items-start space-x-2">
                           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -230,8 +239,8 @@ const JoinSocietyModal = ({ onClose }) => {
             {!searchResult?.society && !searchError && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> You need the Society ID to join. Contact your
-                  society admin to get the ID.
+                  <strong>Note:</strong> You need the Joining Code to join. Contact your
+                  society admin to get the code. {/* ⬅️ CHANGED */}
                 </p>
               </div>
             )}
