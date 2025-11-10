@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useLogin from "../../hooks/useLogin";
+import PageLoader from "../../components/common/PageLoader.jsx";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -100,7 +101,7 @@ const Login = () => {
               {isPending ? (
                 <>
                   <span className="loading loading-spinner loading-xs"></span>
-                  Signing in...
+                  {<PageLoader />}
                 </>
               ) : (
                 "Sign In"
