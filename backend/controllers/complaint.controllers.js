@@ -38,61 +38,34 @@ export const createComplaint = async (req, res) => {
 };
 
 // ---------------- USER: GET MY COMPLAINTS ----------------
-export const getMyComplaints = async (req, res) => {
+// ---------------- USER: GET MY COMPLAINTS ----------------
+export const get_complaints = async (req, res) => {
   try {
-    const {
-      userId,
-      societyId,
-      status,
-      priority,
-      q,
-      page = 1,
-      limit = 10,
-      sort = "-createdAt",
-    } = req.query;
+    const userId = req.user._id;
 
-    const filter = { createdBy: userId, society: societyId };
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-    if (q) {
-      filter.$or = [
-        { title: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-      ];
-    }
+    const complaints = await Complaint.find({ createdBy: userId })
+      .sort({ createdAt: -1 })
+      .select("-__v")
+      .populate("society", "name") // optional: show society name
+      .lean();
 
-    const skip = (page - 1) * limit;
-
-    const [complaints, total] = await Promise.all([
-      Complaint.find(filter)
-        .populate("createdBy", "_id name email phone") // who created
-        .populate("society", "_id name city address") // society info
-        .sort(sort)
-        .skip(skip)
-        .limit(Number(limit)),
-      Complaint.countDocuments(filter),
-    ]);
-
-    res.json({
-      message: "Complaints fetched successfully.",
+    return res.status(200).json({
+      success: true,
+      count: complaints.length,
       data: complaints,
-      pagination: {
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        pages: Math.ceil(total / limit),
-      },
     });
   } catch (error) {
-    console.error("Error fetching complaints:", error);
-    res.status(500).json({
-      message: "Failed to fetch complaints.",
-      error: error.message,
+    console.error("Error fetching user complaints:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching complaints",
     });
   }
 };
 
 // ---------------- ADMIN: LIST ALL COMPLAINTS ----------------
+
+// ---------------- ADMIN: LIST COMPLAINTS (with filters + pagination) ---------------
 export const adminListComplaints = async (req, res) => {
   try {
     const {
@@ -108,81 +81,121 @@ export const adminListComplaints = async (req, res) => {
       sort = "-createdAt",
     } = req.query;
 
+    // Base filter - societyId is REQUIRED for admin scoping
+    if (!societyId || !isValidObjectId(societyId)) {
+      return res.status(400).json({ message: "Valid societyId is required." });
+    }
+
     const filter = { society: societyId };
+
+    // Optional filters
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
     if (createdBy && isValidObjectId(createdBy)) filter.createdBy = createdBy;
+
+    // Date range
     if (from || to) {
       filter.createdAt = {};
       if (from) filter.createdAt.$gte = new Date(from);
-      if (to) filter.createdAt.$lte = new Date(to);
+      if (to) {
+        const end = new Date(to);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
     }
+
+    // Search in title/description
     if (q) {
-      filter.$or = [
-        { title: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-      ];
+      const searchRegex = { $regex: q.trim(), $options: "i" };
+      filter.$or = [{ title: searchRegex }, { description: searchRegex }];
     }
 
     const skip = (page - 1) * limit;
+    const limitNum = Math.min(Number(limit), 100); // cap limit
 
     const [complaints, total] = await Promise.all([
       Complaint.find(filter)
-        .populate("createdBy", "_id name email phone")
-        .populate("society", "_id name city address")
+        .populate("createdBy", "name email phone")
+        .populate("society", "name city")
         .sort(sort)
         .skip(skip)
-        .limit(Number(limit)),
+        .limit(limitNum)
+        .lean(),
+
       Complaint.countDocuments(filter),
     ]);
 
-    res.json({
-      message: "All complaints fetched successfully.",
+    return res.json({
+      success: true,
+      message: "Complaints fetched successfully.",
       data: complaints,
       pagination: {
         total,
         page: Number(page),
-        limit: Number(limit),
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limitNum),
+        limit: limitNum,
+        hasNext: Number(page) < Math.ceil(total / limitNum),
+        hasPrev: Number(page) > 1,
       },
     });
   } catch (error) {
-    console.error("Error fetching complaints:", error);
-    res.status(500).json({
+    console.error("Admin List Complaints Error:", error);
+    return res.status(500).json({
+      success: false,
       message: "Failed to fetch complaints.",
-      error: error.message,
     });
   }
 };
 
-// ---------------- ADMIN: UPDATE COMPLAINT ----------------
+// ---------------- ADMIN: UPDATE COMPLAINT (status/priority only) ---------------
 export const adminUpdateComplaint = async (req, res) => {
   try {
     const { id } = req.params;
     const { societyId } = req.query;
     const { status, priority } = req.body;
 
-    const updatedComplaint = await Complaint.findOneAndUpdate(
-      { _id: id, society: societyId },
-      { status, priority },
-      { new: true }
-    )
-      .populate("createdBy", "_id name email phone")
-      .populate("society", "_id name city address");
-
-    if (!updatedComplaint) {
-      return res.status(404).json({ message: "Complaint not found." });
+    // Validation
+    if (!id || !isValidObjectId(id)) {
+      return res
+        .status(400)
+        .json({ message: "Valid complaint ID is required." });
+    }
+    if (!societyId || !isValidObjectId(societyId)) {
+      return res.status(400).json({ message: "Valid societyId is required." });
     }
 
-    res.json({
+    const allowedUpdates = {};
+    if (status) allowedUpdates.status = status;
+    if (priority) allowedUpdates.priority = priority;
+    if (Object.keys(allowedUpdates).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update." });
+    }
+
+    const updatedComplaint = await Complaint.findOneAndUpdate(
+      { _id: id, society: societyId },
+      allowedUpdates,
+      { new: true, runValidators: true }
+    )
+      .populate("createdBy", "name email phone")
+      .populate("society", "name city")
+      .lean();
+
+    if (!updatedComplaint) {
+      return res
+        .status(404)
+        .json({ message: "Complaint not found or access denied." });
+    }
+
+    return res.json({
+      success: true,
       message: "Complaint updated successfully.",
       data: updatedComplaint,
     });
   } catch (error) {
-    console.error("Error updating complaint:", error);
-    res.status(500).json({
+    console.error("Admin Update Complaint Error:", error);
+    return res.status(500).json({
+      success: false,
       message: "Failed to update complaint.",
-      error: error.message,
     });
   }
 };

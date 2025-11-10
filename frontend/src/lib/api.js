@@ -86,7 +86,9 @@ export const logout = async () => {
 // Search society by JoiningCode ⬅️ CHANGED
 export const searchSocietyByCode = async (joiningCode) => {
   try {
-    const response = await axiosInstance.get(`/request/society/search/${joiningCode}`);
+    const response = await axiosInstance.get(
+      `/request/society/search/${joiningCode}`
+    );
     return response.data;
   } catch (error) {
     console.log("Error in searching society", error);
@@ -151,23 +153,20 @@ export const rejectRequest = async (requestId) => {
   }
 };
 
-export const getComplaints = async (societyId) => {
-  try {
-    const res = await axiosInstance.get(`/complaints?societyId=${societyId}`);
-    return res.data; // expect { complaints: [...] }
-  } catch (error) {
-    console.error("Error fetching complaints:", error);
-    throw error;
-  }
+// GET: User's own complaints (no societyId needed - backend uses req.user)
+export const getMyComplaints = async () => {
+  const res = await axiosInstance.get("/complaints/my_complaints");
+  return res.data; // { success: true, data: [...], count }
 };
 
-// ✅ Create a new complaint
+// GET: All complaints in society (for reference, if needed later)
+export const getSocietyComplaints = async (societyId) => {
+  const res = await axiosInstance.get(`/complaints?societyId=${societyId}`);
+  return res.data;
+};
+
+// POST: Create new complaint
 export const postComplaint = async (payload) => {
-  try {
-    const res = await axiosInstance.post("/complaints", payload);
-    return res.data;
-  } catch (error) {
-    console.error("Error creating complaint:", error);
-    throw error;
-  }
+  const res = await axiosInstance.post("/complaints/post_complaint", payload);
+  return res.data;
 };
