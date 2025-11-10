@@ -28,8 +28,10 @@ export const createSociety = async (req, res) => {
             })
         }
 
+        let JoiningCode;
+        
         try {
-            const JoiningCode = generateSocietyCode(name)
+            JoiningCode = generateSocietyCode(name)
         } catch (error) {
              return res.status(500).json({ message: error.message });
         }
