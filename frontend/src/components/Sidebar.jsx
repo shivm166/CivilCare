@@ -59,7 +59,7 @@ const Sidebar = () => {
 
         {/* Profile Option for all roles */}
         <NavLink
-          to={`/${activeRole}/profile`}
+          to={`/${activeRole === "member" ? "user" : activeRole}/profile`}
           className={({ isActive }) =>
             `flex items-center gap-3 p-3 rounded-xl transition-all font-medium text-gray-700 
                ${
