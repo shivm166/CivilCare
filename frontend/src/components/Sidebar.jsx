@@ -24,8 +24,8 @@ const adminMenu = [
 
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
-  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
+  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
@@ -77,7 +77,6 @@ const Sidebar = () => {
           ))}
         </nav>
       </div>
-
     </aside>
   );
 };

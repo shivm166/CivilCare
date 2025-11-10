@@ -3,7 +3,7 @@ import {
   adminListComplaints,
   adminUpdateComplaint,
   createComplaint,
-  getMyComplaints,
+  get_complaints,
 } from "../controllers/complaint.controllers.js";
 import protectRoute from "../middlelware/isProtected.js";
 
@@ -11,11 +11,11 @@ const router = Router();
 
 router.use(protectRoute);
 // USER
-router.post("/postComplaint", createComplaint);
-router.get("/me", getMyComplaints);
+router.post("/post_complaint", createComplaint);
+router.get("/my_complaints", get_complaints);
 
 // ADMIN
-router.get("/admin", adminListComplaints);
-router.patch("/admin/:id", adminUpdateComplaint);
+router.get("/admin_com_list", adminListComplaints);
+router.patch("/admin_com/:id", adminUpdateComplaint);
 
 export default router;
