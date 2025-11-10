@@ -23,7 +23,13 @@ const CreateSocietyModal = ({ onClose }) => {
     e.preventDefault();
 
     // Basic validation
-    if (!formData.name || !formData.address || !formData.city || !formData.state || !formData.pincode) {
+    if (
+      !formData.name ||
+      !formData.address ||
+      !formData.city ||
+      !formData.state ||
+      !formData.pincode
+    ) {
       alert("Please fill in all required fields");
       return;
     }
@@ -267,7 +273,9 @@ const CreateSocietyModal = ({ onClose }) => {
                   required
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Enter a valid 6-digit pincode</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Enter a valid 6-digit pincode
+              </p>
             </motion.div>
 
             {/* Info Box */}
@@ -279,8 +287,8 @@ const CreateSocietyModal = ({ onClose }) => {
               transition={{ delay: 0.5 }}
             >
               <p className="text-sm text-blue-800">
-                <strong>Note:</strong> You will be assigned as the admin of this society
-                and can manage all settings, members, and features.
+                <strong>Note:</strong> You will be assigned as the admin of this
+                society and can manage all settings, members, and features.
               </p>
             </motion.div>
 
