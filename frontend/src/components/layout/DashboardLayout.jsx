@@ -62,8 +62,6 @@ const DashboardLayout = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Society Switcher is now inside the Sidebar for better mobile access, but can be kept here for quick access */}
-            {/* Keeping it simple - SocietySwitcher logic is inside Sidebar now. */}
             <h1 className="text-sm font-medium text-gray-800 dark:text-gray-100 sm:hidden">
               {pageTitle.length > 20
                 ? `${pageTitle.substring(0, 17)}...`
