@@ -9,6 +9,7 @@ import societyRouter from "./routes/society.route.js";
 import complaintRoutes from "../backend/routes/complaint.routes.js";
 import requestRouter from "./routes/request.route.js"; // ⬅️ ADD THIS LINE
 import attachSocietyContext from "./middlelware/attachSocietyContext.js";
+import superAdminRouter from "./routes/superadmin.route.js"
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -31,6 +32,7 @@ app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/request", requestRouter); // ⬅️ ADD THIS LINE
+app.use("/api/superadmin", superAdminRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
