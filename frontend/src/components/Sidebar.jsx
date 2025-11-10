@@ -18,6 +18,7 @@ const adminMenu = [
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
+  { name: "Profile", path: "/admin/profile", icon: User },
 ];
 
 const userMenu = [
@@ -26,6 +27,7 @@ const userMenu = [
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
+  { name: "Profile", path: "/user/profile", icon: User },
 ];
 
 const Sidebar = () => {
@@ -56,22 +58,6 @@ const Sidebar = () => {
             <span>{item.name}</span>
           </NavLink>
         ))}
-
-        {/* Profile Option for all roles */}
-        <NavLink
-          to={`/${activeRole}/profile`}
-          className={({ isActive }) =>
-            `flex items-center gap-3 p-3 rounded-xl transition-all font-medium text-gray-700 
-               ${
-                 isActive
-                   ? "bg-emerald-100 text-emerald-700 font-semibold"
-                   : "hover:bg-gray-100"
-               }`
-          }
-        >
-          <User className="w-5 h-5" />
-          <span>Profile</span>
-        </NavLink>
       </nav>
     </div>
   );
