@@ -2,11 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, Users, Sparkles, ArrowRight } from "lucide-react";
 import CreateSocietyModal from "./components/CreateSocietyModal";
+import JoinSocietyModal from "./components/JoinSocietyModal"; // ⬅️ ADD THIS
 
 const SocietyOnboarding = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false); // ⬅️ ADD THIS
 
-  // Animation Variants
+  // ... (keep all your existing animation variants)
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -59,7 +62,8 @@ const SocietyOnboarding = () => {
     hover: {
       scale: 1.02,
       y: -4,
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      boxShadow:
+        "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
       transition: {
         type: "spring",
         stiffness: 400,
@@ -118,7 +122,8 @@ const SocietyOnboarding = () => {
             className="text-base text-gray-600 max-w-xl mx-auto"
             variants={itemVariants}
           >
-            Streamline communication, manage complaints, and build a stronger community
+            Streamline communication, manage complaints, and build a stronger
+            community
           </motion.p>
         </motion.div>
 
@@ -128,7 +133,9 @@ const SocietyOnboarding = () => {
           variants={itemVariants}
         >
           <motion.div className="text-center mb-6" variants={itemVariants}>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Started</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Get Started
+            </h2>
             <p className="text-sm text-gray-600">
               Choose how you'd like to join our community
             </p>
@@ -148,7 +155,6 @@ const SocietyOnboarding = () => {
               whileTap="tap"
               {...buttonVariants}
             >
-              {/* Animated Background Overlay */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-indigo-400/20"
                 initial={{ opacity: 0 }}
@@ -179,7 +185,6 @@ const SocietyOnboarding = () => {
                 </motion.div>
               </div>
 
-              {/* Decorative Circle */}
               <motion.div
                 className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full"
                 whileHover={{ scale: 1.5 }}
@@ -187,24 +192,51 @@ const SocietyOnboarding = () => {
               />
             </motion.button>
 
-            {/* Join Society Button - Disabled */}
-            <motion.div
-              className="relative bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400 rounded-2xl p-6 cursor-not-allowed opacity-70"
+            {/* Join Society Button - NOW FUNCTIONAL ⬅️ */}
+            <motion.button
+              onClick={() => setShowJoinModal(true)} // ⬅️ CHANGED FROM disabled
+              className="group relative bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-lg overflow-hidden"
               variants={itemVariants}
+              whileHover="hover"
+              whileTap="tap"
+              {...buttonVariants}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-gray-300/50 rounded-xl flex items-center justify-center mb-3">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-purple-400/20"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+
+              <div className="relative flex flex-col items-center text-center">
+                <motion.div
+                  className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-3"
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <Users className="w-7 h-7" />
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-bold mb-1">Join Society</h3>
-                <p className="text-gray-500 text-sm mb-3">
+                <p className="text-purple-100 text-sm mb-3">
                   Connect with existing community
                 </p>
-                <div className="inline-block bg-gray-300 text-gray-600 text-xs font-bold px-3 py-1 rounded-full">
-                  COMING SOON
-                </div>
+                <motion.div
+                  className="flex items-center text-sm font-semibold"
+                  initial={{ x: 0 }}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </motion.div>
               </div>
-            </motion.div>
+
+              <motion.div
+                className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full"
+                whileHover={{ scale: 1.5 }}
+                transition={{ duration: 0.5 }}
+              />
+            </motion.button>
           </motion.div>
 
           {/* Feature Pills */}
@@ -253,9 +285,14 @@ const SocietyOnboarding = () => {
         </motion.p>
       </motion.div>
 
-      {/* Create Society Modal */}
+      {/* Modals */}
       {showCreateModal && (
         <CreateSocietyModal onClose={() => setShowCreateModal(false)} />
+      )}
+      
+      {/* ⬅️ ADD JOIN MODAL */}
+      {showJoinModal && (
+        <JoinSocietyModal onClose={() => setShowJoinModal(false)} />
       )}
     </div>
   );

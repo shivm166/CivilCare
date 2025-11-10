@@ -34,6 +34,12 @@ const societySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    JoiningCode: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+    },
   },
   {
     timestamps: true,

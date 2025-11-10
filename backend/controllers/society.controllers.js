@@ -1,5 +1,6 @@
 import { Society } from "../models/society.model.js";
 import { UserSocietyRel } from "../models/user_society_rel.model.js";
+import { generateSocietyCode } from "../utils/generateSocietyCode.js";
 
 export const createSociety = async (req, res) => {
   try {
@@ -27,13 +28,22 @@ export const createSociety = async (req, res) => {
             })
         }
 
+        let JoiningCode;
+        
+        try {
+            JoiningCode = generateSocietyCode(name)
+        } catch (error) {
+             return res.status(500).json({ message: error.message });
+        }
+
         const society = await Society.create({
             name,
             address,
             city,
             state,
             pincode,
-            createdBy: req.user._id
+            createdBy: req.user._id,
+            JoiningCode,
         })
 
         await UserSocietyRel.create({
