@@ -1,4 +1,4 @@
-export const checkSuperUser = (req, res, next) =>{
+export const checkSuperAdmin = (req, res, next) =>{
     try {
         if(req.user.globalRole !== "super_admin"){  
             return res.status(401).json({ 

@@ -9,10 +9,10 @@ import societyRouter from "./routes/society.route.js";
 import complaintRoutes from "../backend/routes/complaint.routes.js";
 import requestRouter from "./routes/request.route.js"; // ⬅️ ADD THIS LINE
 import attachSocietyContext from "./middlelware/attachSocietyContext.js";
-import superAdminRouter from "./routes/superadmin.route.js"
 // ✅ ADD THESE IMPORTS
 import memberRoute from "./routes/member.route.js";
 import activationRoute from "./routes/activation.route.js";
+import routes from "./routes/index.js"
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -31,11 +31,11 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(attachSocietyContext);
 
+app.use("/api", routes)
 app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/request", requestRouter); // ⬅️ ADD THIS LINE
-app.use("/api/superadmin", superAdminRouter)
 
 // ✅ ADD THESE ROUTES (after your existing routes)
 app.use("/api/member", memberRoute);
