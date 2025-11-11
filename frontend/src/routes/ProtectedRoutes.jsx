@@ -13,10 +13,7 @@ import NotificationsPage from "../pages/features/NotificationsPage.jsx";
 import RaiseComplaintPage from "../pages/features/RaiseComplaintPage.jsx";
 import AdminDashboard from "../pages/features/AdminDashboard.jsx";
 import UserDashboard from "../pages/features/UserDashboard.jsx";
-import SuperAdminLayout from "../components/layout/SuperAdminLayout.jsx";
-import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard.jsx";
-import SuperAdminSocieties from "../pages/superadmin/SuperAdminSocieties.jsx";
-import SuperAdminUsers from "../pages/superadmin/SuperAdminUsers.jsx";
+import SuperAdminRoutes from "./SuperAdminRoutes.jsx";
 
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
@@ -104,14 +101,7 @@ const ProtectedRoutes = ({ authUser }) => {
           <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
         </Route>
       ) : (
-        <Route>
-          <Route path="/home" element={<Navigate to="/superadmin/dashboard" replace />} />
-          <Route path="/superadmin" element={<SuperAdminLayout />}>
-            <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
-            <Route path="/superadmin/societies" element={<SuperAdminSocieties />} />
-            <Route path="/superadmin/users" element={<SuperAdminUsers />} />
-          </Route>
-        </Route>
+        SuperAdminRoutes()
       )}
     </>
   );
