@@ -18,7 +18,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        return !this.isInvited; // Password not required for invited users initially
+      },
     },
     phone: {
       type: String,
@@ -26,31 +28,49 @@ const userSchema = new mongoose.Schema(
     },
     globalRole: {
       type: String,
-      ennum: ["super_admin", "user"],
+      enum: ["super_admin", "user"],
       default: "user",
-    }
+    },
+    
+    // ✅ NEW FIELDS FOR INVITATION SYSTEM
+    isInvited: {
+      type: Boolean,
+      default: false,
+    },
+    isActivated: {
+      type: Boolean,
+      default: true, // true for normal signup, false for invited users
+    },
+    invitationToken: {
+      type: String,
+      default: null,
+    },
+    invitationExpiry: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-userSchema.pre("save",async function (next){
-  if(!this.isModified("password")){
-    return next()
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
   }
-
+  
   try {
-    const salt = await bcrypt.genSalt(7)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
+    const salt = await bcrypt.genSalt(7);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 userSchema.methods.comparePassword = async function (userPassword) {
-  return await bcrypt.compare(userPassword, this.password)
-}
+  return await bcrypt.compare(userPassword, this.password);
+};
 
 export const User = mongoose.model("User", userSchema, "user");
