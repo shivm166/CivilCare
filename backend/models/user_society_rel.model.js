@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 const userSocietyRelSchema = new mongoose.Schema(
   {
@@ -11,6 +11,10 @@ const userSocietyRelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Society",
       required: true,
+    },
+    building: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Building"
     },
     unit: {
       type: mongoose.Schema.Types.ObjectId,

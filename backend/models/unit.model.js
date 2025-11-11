@@ -1,18 +1,28 @@
+import { ref, required } from "joi";
 import mongoose from "mongoose";
 
 const unitSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    floor: {
+      type: Number,
+      required: true,
+    },
+    building: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Building",
+      required: true,
+    },
     society: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Society",
       required: true,
       index: true,
     },
-    unitNumber: {
-      type: String,
-      required: true,
-      trim: true,
-    }, // e.g., A-101, B-502
     type: {
       type: String,
       enum: ["owner_occupied", "tenant_occupied", "vacant"],
