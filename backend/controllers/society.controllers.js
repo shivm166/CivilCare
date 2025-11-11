@@ -75,7 +75,6 @@ export const getMySocieties = async (req, res) => {
       "name address city state pincode createdBy"
     );
 
-    console.log(rels);
     const societies = rels.map((r) => ({
       society: r.society,
       role: r.roleInSociety,
