@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,6 +8,8 @@ import {
   Bell,
   Mail,
   User,
+  Menu, // Hamburger icon for open
+  X, // Close icon for cancel
 } from "lucide-react";
 import { useSocietyContext } from "../context/SocietyContext";
 import { useGetSocietyRequests } from "../hooks/useRequests";
@@ -33,6 +35,7 @@ const userMenu = [
 
 const Sidebar = () => {
   const { activeRole, activeSociety } = useSocietyContext();
+  const [isOpen, setIsOpen] = useState(false); // State to toggle sidebar open/closed
 
   // Fetch requests for notification badge (only for admin)
   const { data: requestsData } = useGetSocietyRequests(
@@ -44,38 +47,64 @@ const Sidebar = () => {
   const menu = activeRole === "admin" ? adminMenu : userMenu;
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-y-auto">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-indigo-600 mb-8">CivilCare</h2>
-        <nav className="space-y-2">
-          {menu.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`
-              }
-            >
-              <div className="flex items-center space-x-3">
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.name}</span>
-              </div>
+    <aside
+      className={`bg-white border-r border-gray-200 h-screen sticky top-0 overflow-hidden transition-all duration-300 ${
+        isOpen ? "w-64" : "w-12"
+      }`}
+    >
+      <div className="flex flex-col h-full">
+        {/* Toggle Icon - Only one visible at a time, bigger when closed */}
+        {!isOpen && (
+          <div className="flex justify-center items-center p-4">
+            <Menu
+              onClick={() => setIsOpen(true)}
+              className="w-8 h-8 cursor-pointer text-gray-600 hover:text-indigo-600 transition-colors"
+            />
+          </div>
+        )}
 
-              {/* Notification Badge - Only on Notifications item for admin */}
-              {item.name === "Notifications" &&
-                activeRole === "admin" &&
-                unreadCount > 0 && (
-                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-            </NavLink>
-          ))}
-        </nav>
+        {/* Menu content only shown when open */}
+        {isOpen && (
+          <div className="flex-1 p-6 pt-0">
+            {/* Header with CivilCare and Cancel Icon on the same line, moved slightly lower */}
+            <div className="flex items-center justify-between mb-8 mt-4">
+              <h2 className="text-2xl font-bold text-indigo-600">CivilCare</h2>
+              <X
+                onClick={() => setIsOpen(false)}
+                className="w-6 h-6 cursor-pointer text-gray-600 hover:text-indigo-600 transition-colors"
+              />
+            </div>
+            <nav className="space-y-2">
+              {menu.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-indigo-50 text-indigo-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`
+                  }
+                >
+                  <div className="flex items-center space-x-3">
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </div>
+
+                  {/* Notification Badge - Only on Notifications item for admin */}
+                  {item.name === "Notifications" &&
+                    activeRole === "admin" &&
+                    unreadCount > 0 && (
+                      <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                        {unreadCount}
+                      </span>
+                    )}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </aside>
   );

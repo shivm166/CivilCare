@@ -1,9 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useActivation, useVerifyToken } from "../../hooks/useActivation";
 import toast from "react-hot-toast";
 import { FiLock, FiMail, FiCheckCircle } from "react-icons/fi";
 
+// --- Mock Hooks (replace with your real ones) ---
+const useVerifyToken = (token) => {
+  // Dummy simulation (replace with your API logic)
+  if (!token) return { data: null, isLoading: false, isError: true };
+  return {
+    data: {
+      success: true,
+      user: { name: "Dhaval Solanki", email: "dhaval@example.com" },
+    },
+    isLoading: false,
+    isError: false,
+  };
+};
+
+const useActivation = () => {
+  const [isActivating, setIsActivating] = useState(false);
+
+  const activateAccount = async ({ token, password }) => {
+    try {
+      setIsActivating(true);
+      // Simulated API call
+      await new Promise((r) => setTimeout(r, 1000));
+      toast.success("Account activated successfully!");
+    } catch (err) {
+      toast.error("Activation failed");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  return { activateAccount, isActivating };
+};
+
+// --- Main Component ---
 const ActivateAccountPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

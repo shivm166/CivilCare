@@ -1,8 +1,9 @@
+// utils/sendEmail.js
 import nodemailer from "nodemailer";
 
-// Create reusable transporter
+// ✅ Create transporter (Gmail or custom SMTP)
 const createTransporter = () => {
-  // For Gmail (Recommended for development/testing)
+  // Default: Gmail setup (for dev/testing)
   return nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -11,20 +12,27 @@ const createTransporter = () => {
     },
   });
 
-  // Alternative: For other email services (Outlook, Yahoo, etc.)
-  // return nodemailer.createTransport({
-  //   host: process.env.EMAIL_HOST, // e.g., smtp.gmail.com
-  //   port: process.env.EMAIL_PORT, // 587 for TLS, 465 for SSL
-  //   secure: false, // true for 465, false for other ports
-  //   auth: {
-  //     user: process.env.EMAIL_USER,
-  //     pass: process.env.EMAIL_PASSWORD,
-  //   },
-  // });
+  /*
+  // 🟢 Optional: Use this for custom SMTP (production servers)
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST, // e.g., smtp.gmail.com or smtp.yourdomain.com
+    port: process.env.EMAIL_PORT || 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+  */
 };
 
-// Send invitation email
-export const sendInvitationEmail = async ({ to, name, invitationLink, societyName }) => {
+// ✅ Send Society Invitation Email
+export const sendInvitationEmail = async ({
+  to,
+  name,
+  invitationLink,
+  societyName,
+}) => {
   try {
     const transporter = createTransporter();
 
@@ -33,128 +41,90 @@ export const sendInvitationEmail = async ({ to, name, invitationLink, societyNam
         name: "CivilCare Society Management",
         address: process.env.EMAIL_USER,
       },
-      to: to,
+      to,
       subject: `You're invited to join ${societyName}!`,
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .container {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              padding: 40px 20px;
-              border-radius: 10px;
-              text-align: center;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 8px;
-              margin-top: 20px;
-            }
-            .button {
-              display: inline-block;
-              padding: 15px 30px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 20px 0;
-              font-weight: bold;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              font-size: 12px;
-              color: #666;
-            }
-            h1 {
-              color: white;
-              margin: 0;
-            }
-            .icon {
-              font-size: 48px;
-              margin-bottom: 10px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="icon">🏘️</div>
-            <h1>Welcome to ${societyName}!</h1>
-          </div>
-          
-          <div class="content">
-            <h2>Hi ${name}! 👋</h2>
-            
-            <p>Great news! You've been invited to join <strong>${societyName}</strong> on CivilCare.</p>
-            
-            <p>CivilCare is a modern society management platform that helps you:</p>
-            <ul style="text-align: left; display: inline-block;">
-              <li>Stay connected with your community</li>
-              <li>Receive important announcements</li>
-              <li>Raise and track complaints</li>
-              <li>Manage society activities</li>
-            </ul>
-            
-            <p><strong>To get started, please activate your account:</strong></p>
-            
-            <a href="${invitationLink}" class="button">Activate Your Account</a>
-            
-            <p style="font-size: 12px; color: #666; margin-top: 20px;">
-              Or copy and paste this link in your browser:<br>
-              <span style="word-break: break-all;">${invitationLink}</span>
-            </p>
-            
-            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666;">
-              This invitation link will expire in <strong>7 days</strong>.
-            </p>
-          </div>
-          
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            color: #333;
+          }
+          .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 600px;
+            margin: 20px auto;
+          }
+          .button {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 15px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>Welcome to ${societyName}, ${name}!</h2>
+          <p>You have been invited to join <b>${societyName}</b> on the CivilCare platform.</p>
+          <p>Click the button below to activate your account:</p>
+          <a href="${invitationLink}" class="button">Activate Account</a>
+          <p style="margin-top:20px; font-size:13px;">
+            Or copy and paste this link into your browser:<br>
+            <a href="${invitationLink}">${invitationLink}</a>
+          </p>
+          <p style="font-size:13px; color:#555;">This invitation link will expire in 7 days.</p>
           <div class="footer">
             <p>This email was sent by CivilCare Society Management System</p>
-            <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+            <p>If you didn’t expect this invitation, you can safely ignore it.</p>
           </div>
-        </body>
-        </html>
+        </div>
+      </body>
+      </html>
       `,
-      // Plain text fallback
       text: `
-Hi ${name}!
+Hi ${name},
 
 You've been invited to join ${societyName} on CivilCare.
 
-To activate your account, please visit:
+To activate your account, visit:
 ${invitationLink}
 
-This link will expire in 7 days.
+This link expires in 7 days.
 
-If you didn't expect this invitation, you can safely ignore this email.
+If you didn’t request this, ignore this email.
 
----
-CivilCare Society Management System
+— CivilCare Team
       `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    
-    console.log("✅ Email sent successfully:", info.messageId);
+    console.log("✅ Invitation Email Sent:", info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("❌ Error sending email:", error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    console.error("❌ Error sending invitation email:", error.message);
+    throw new Error("Failed to send invitation email");
   }
 };
 
-// Send password reset email (optional - for future use)
+// ✅ Send Password Reset Email
 export const sendPasswordResetEmail = async ({ to, name, resetLink }) => {
   try {
     const transporter = createTransporter();
@@ -164,120 +134,54 @@ export const sendPasswordResetEmail = async ({ to, name, resetLink }) => {
         name: "CivilCare Society Management",
         address: process.env.EMAIL_USER,
       },
-      to: to,
+      to,
       subject: "Reset Your Password - CivilCare",
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .container {
-              background: #f44336;
-              padding: 40px 20px;
-              border-radius: 10px;
-              text-align: center;
-            }
-            .content {
-              background: white;
-              padding: 30px;
-              border-radius: 8px;
-              margin-top: 20px;
-            }
-            .button {
-              display: inline-block;
-              padding: 15px 30px;
-              background: #f44336;
-              color: white;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 20px 0;
-              font-weight: bold;
-            }
-            h1 {
-              color: white;
-              margin: 0;
-            }
-            .icon {
-              font-size: 48px;
-              margin-bottom: 10px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="icon">🔒</div>
-            <h1>Password Reset Request</h1>
-          </div>
-          
-          <div class="content">
-            <h2>Hi ${name},</h2>
-            
-            <p>We received a request to reset your password.</p>
-            
-            <p>Click the button below to create a new password:</p>
-            
-            <a href="${resetLink}" class="button">Reset Password</a>
-            
-            <p style="font-size: 12px; color: #666; margin-top: 20px;">
-              Or copy and paste this link in your browser:<br>
-              <span style="word-break: break-all;">${resetLink}</span>
-            </p>
-            
-            <p style="margin-top: 30px; color: #f44336; font-weight: bold;">
-              ⚠️ This link will expire in 1 hour.
-            </p>
-            
-            <p style="margin-top: 20px; font-size: 14px; color: #666;">
-              If you didn't request a password reset, please ignore this email or contact support if you have concerns.
-            </p>
-          </div>
+      <html>
+        <body style="font-family: Arial, sans-serif; max-width:600px; margin:auto;">
+          <h2>Password Reset Request</h2>
+          <p>Hi ${name},</p>
+          <p>We received a request to reset your password. Click below to set a new password:</p>
+          <a href="${resetLink}" 
+             style="background-color:#e11d48;color:#fff;padding:10px 20px;
+             border-radius:5px;text-decoration:none;">Reset Password</a>
+          <p>If you did not request a password reset, please ignore this email.</p>
+          <p>This link expires in 1 hour.</p>
         </body>
-        </html>
+      </html>
       `,
       text: `
 Hi ${name},
 
-We received a request to reset your password.
+We received a password reset request.
 
-To reset your password, please visit:
+To reset your password, click:
 ${resetLink}
 
-This link will expire in 1 hour.
+If you didn't request this, ignore this email.
 
-If you didn't request a password reset, please ignore this email.
-
----
-CivilCare Society Management System
+— CivilCare Team
       `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    
     console.log("✅ Password reset email sent:", info.messageId);
-    return { success: true, messageId: info.messageId };
+    return { success: true };
   } catch (error) {
-    console.error("❌ Error sending password reset email:", error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    console.error("❌ Error sending reset email:", error.message);
+    throw new Error("Failed to send password reset email");
   }
 };
 
-// Test email configuration
+// ✅ Test Email Configuration
 export const testEmailConfig = async () => {
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    console.log("✅ Email configuration is correct!");
+    console.log("✅ Email configuration verified successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Email configuration error:", error);
+    console.error("❌ Email configuration failed:", error.message);
     return false;
   }
 };
