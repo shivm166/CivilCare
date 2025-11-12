@@ -1,17 +1,12 @@
 // pages/RaiseComplaintPage.jsx
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useMyComplaints, useCreateComplaint } from "../../hooks/useComplaints";
 import toast from "react-hot-toast";
 import { Loader2, AlertCircle, Send } from "lucide-react";
+import { useComplaints, useCreateComplaint } from "../../hooks/useComplaints";
 
 const RaiseComplaintPage = () => {
-  const {
-    data: complaints = [],
-    isLoading,
-    isError,
-    error,
-  } = useMyComplaints();
+  const { data: complaints = [], isLoading, isError, error } = useComplaints();
   const createMutation = useCreateComplaint();
 
   const {
