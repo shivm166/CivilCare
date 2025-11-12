@@ -1,7 +1,7 @@
 import React from "react";
 import { FiTrash2, FiMail } from "react-icons/fi";
 
-const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
+const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => { // ✅ Added isAdmin prop
   return (
     <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition-all border border-gray-100">
       <div className="flex justify-between items-start mb-4">
@@ -10,7 +10,9 @@ const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
             {member.user?.name?.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">{member.user?.name}</h3>
+            <h3 className="font-semibold text-gray-900">
+              {member.user?.name}
+            </h3>
             <span
               className={`text-xs px-2 py-1 rounded-full ${
                 member.roleInSociety === "admin"
@@ -23,6 +25,7 @@ const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
           </div>
         </div>
 
+        {/* ✅ Show delete button ONLY for admins */}
         {isAdmin && (
           <button
             onClick={() => onRemove(member._id)}

@@ -17,16 +17,22 @@ import {
   useAcceptRequest,
   useRejectRequest,
 } from "../../hooks/useRequests";
+import {
+  useMyInvitations,
+  useAcceptInvitation,
+  useRejectInvitation,
+} from "../../hooks/useInvitations";
+import InvitationCard from "../../components/invitations/InvitationCard";
 
 const NotificationsPage = () => {
   const { activeSociety, activeRole } = useSocietyContext();
   const [processingId, setProcessingId] = useState(null);
 
-  // Fetch requests for admin
+  // ========== ADMIN: Fetch join requests ==========
   const {
     data: requestsData,
-    isLoading,
-    error,
+    isLoading: isLoadingRequests,
+    error: requestsError,
   } = useGetSocietyRequests(
     activeRole === "admin" ? activeSociety?.societyId : null
   );
@@ -34,224 +40,284 @@ const NotificationsPage = () => {
   const { acceptRequestMutation, isAccepting } = useAcceptRequest();
   const { rejectRequestMutation, isRejecting } = useRejectRequest();
 
+  // ========== USER: Fetch invitations ==========
+  const {
+    data: invitationsData,
+    isLoading: isLoadingInvitations,
+    error: invitationsError,
+  } = useMyInvitations();
+
+  const { mutate: acceptInvitation, isPending: isAcceptingInvitation } =
+    useAcceptInvitation();
+  const { mutate: rejectInvitation, isPending: isRejectingInvitation } =
+    useRejectInvitation();
+
+  // Handle join request accept (for admin)
   const handleAccept = (requestId) => {
     setProcessingId(requestId);
-    acceptRequestMutation(requestId);
+    acceptRequestMutation(requestId, {
+      onSettled: () => setProcessingId(null),
+    });
   };
 
+  // Handle join request reject (for admin)
   const handleReject = (requestId) => {
     setProcessingId(requestId);
-    rejectRequestMutation(requestId);
+    rejectRequestMutation(requestId, {
+      onSettled: () => setProcessingId(null),
+    });
+  };
+
+  // Handle invitation accept (for user)
+  const handleAcceptInvitation = (invitationId) => {
+    setProcessingId(invitationId);
+    acceptInvitation(invitationId, {
+      onSettled: () => setProcessingId(null),
+    });
+  };
+
+  // Handle invitation reject (for user)
+  const handleRejectInvitation = (invitationId) => {
+    setProcessingId(invitationId);
+    rejectInvitation(invitationId, {
+      onSettled: () => setProcessingId(null),
+    });
   };
 
   const requests = requestsData?.requests || [];
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-      },
-    },
-  };
-
-  if (activeRole !== "admin") {
-    return (
-      <Container>
-        <div className="flex flex-col items-center justify-center h-96">
-          <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Access Restricted
-          </h2>
-          <p className="text-gray-600">
-            Only admins can view join requests.
-          </p>
-        </div>
-      </Container>
-    );
-  }
+  const invitations = invitationsData?.invitations || [];
+  const hasRequests = requests.length > 0;
+  const hasInvitations = invitations.length > 0;
+  const isLoading = isLoadingRequests || isLoadingInvitations;
 
   return (
     <Container>
-      <div className="max-w-4xl mx-auto py-8">
-        {/* Header */}
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-            <Bell className="w-6 h-6 text-indigo-600" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Join Requests
-            </h1>
-            <p className="text-gray-600">
-              Manage requests to join {activeSociety?.societyName}
-            </p>
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
-            <p className="text-gray-600">Loading requests...</p>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-            <p className="text-red-800">Failed to load requests</p>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && !error && requests.length === 0 && (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
           <motion.div
-            className="bg-gray-50 rounded-xl p-12 text-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
           >
-            <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Pending Requests
-            </h3>
-            <p className="text-gray-600">
-              You're all caught up! No join requests at the moment.
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+                <Bell className="text-white" size={24} />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Notifications
+              </h1>
+            </div>
+            <p className="text-gray-600 ml-16">
+              {activeRole === "admin"
+                ? "Manage join requests from users"
+                : "View your society invitations"}
             </p>
           </motion.div>
-        )}
 
-        {/* Requests List */}
-        {!isLoading && !error && requests.length > 0 && (
-          <motion.div
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <AnimatePresence>
-              {requests.map((request) => (
-                <motion.div
-                  key={request._id}
-                  className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
-                  variants={itemVariants}
-                  layout
-                  exit={{ opacity: 0, x: -100 }}
-                >
-                  <div className="flex items-start justify-between">
-                    {/* User Info */}
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-6 h-6 text-indigo-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {request.user.name}
-                        </h3>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center space-x-2">
-                            <Mail className="w-4 h-4" />
-                            <span>{request.user.email}</span>
-                          </div>
-                          {request.user.phone && (
-                            <div className="flex items-center space-x-2">
-                              <span>📱</span>
-                              <span>{request.user.phone}</span>
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
+              <p className="text-gray-600">Loading notifications...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {(requestsError || invitationsError) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-start gap-4"
+            >
+              <AlertCircle className="text-red-600 flex-shrink-0" size={24} />
+              <div>
+                <h3 className="text-red-900 font-semibold mb-1">
+                  Error Loading Notifications
+                </h3>
+                <p className="text-red-700 text-sm">
+                  {requestsError?.message || invitationsError?.message ||
+                    "Something went wrong. Please try again."}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Content */}
+          {!isLoading && !requestsError && !invitationsError && (
+            <>
+              {/* ========== ADMIN: Join Requests ========== */}
+              {activeRole === "admin" && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <User className="text-blue-600" size={20} />
+                    Join Requests
+                    {hasRequests && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                        {requests.length}
+                      </span>
+                    )}
+                  </h2>
+
+                  {!hasRequests ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12 bg-white rounded-xl shadow-sm"
+                    >
+                      <Mail className="mx-auto text-gray-300 mb-4" size={64} />
+                      <p className="text-gray-600 text-lg font-medium">
+                        No pending join requests
+                      </p>
+                      <p className="text-gray-500 text-sm mt-2">
+                        When users request to join your society, they'll appear
+                        here
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AnimatePresence>
+                        {requests.map((request) => (
+                          <motion.div
+                            key={request._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: -100 }}
+                            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-6 border-l-4 border-green-500"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  {request.user?.name
+                                    ?.charAt(0)
+                                    .toUpperCase()}
+                                </div>
+                                <div>
+                                  <h3 className="text-lg font-bold text-gray-900">
+                                    {request.user?.name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">
+                                    {request.user?.email}
+                                  </p>
+                                  {request.message && (
+                                    <p className="text-sm text-gray-700 mt-2 italic bg-gray-50 p-3 rounded-lg">
+                                      "{request.message}"
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                    <Clock size={12} />
+                                    {new Date(
+                                      request.createdAt
+                                    ).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleAccept(request._id)}
+                                  disabled={
+                                    isAccepting ||
+                                    isRejecting ||
+                                    processingId === request._id
+                                  }
+                                  className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all"
+                                  title="Accept"
+                                >
+                                  {processingId === request._id &&
+                                  isAccepting ? (
+                                    <Loader2
+                                      className="animate-spin"
+                                      size={20}
+                                    />
+                                  ) : (
+                                    <CheckCircle size={20} />
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleReject(request._id)}
+                                  disabled={
+                                    isAccepting ||
+                                    isRejecting ||
+                                    processingId === request._id
+                                  }
+                                  className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-all"
+                                  title="Reject"
+                                >
+                                  {processingId === request._id &&
+                                  isRejecting ? (
+                                    <Loader2
+                                      className="animate-spin"
+                                      size={20}
+                                    />
+                                  ) : (
+                                    <XCircle size={20} />
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                          )}
-                          <div className="flex items-center space-x-2 text-gray-500">
-                            <Clock className="w-4 h-4" />
-                            <span>
-                              {new Date(request.createdAt).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Message */}
-                        {request.message && (
-                          <div className="mt-3 bg-gray-50 rounded-lg p-3">
-                            <p className="text-sm text-gray-700">
-                              "{request.message}"
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
+                  )}
+                </div>
+              )}
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-2 ml-4">
-                      <motion.button
-                        onClick={() => handleAccept(request._id)}
-                        disabled={
-                          isAccepting ||
-                          isRejecting ||
-                          processingId === request._id
-                        }
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {isAccepting && processingId === request._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4" />
-                            <span>Accept</span>
-                          </>
-                        )}
-                      </motion.button>
+              {/* ========== USER: Invitations ========== */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Mail className="text-purple-600" size={20} />
+                  Society Invitations
+                  {hasInvitations && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
+                      {invitations.length}
+                    </span>
+                  )}
+                </h2>
 
-                      <motion.button
-                        onClick={() => handleReject(request._id)}
-                        disabled={
-                          isAccepting ||
-                          isRejecting ||
-                          processingId === request._id
-                        }
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {isRejecting && processingId === request._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <XCircle className="w-4 h-4" />
-                            <span>Reject</span>
-                          </>
-                        )}
-                      </motion.button>
-                    </div>
+                {!hasInvitations ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-12 bg-white rounded-xl shadow-sm"
+                  >
+                    <Bell className="mx-auto text-gray-300 mb-4" size={64} />
+                    <p className="text-gray-600 text-lg font-medium">
+                      No pending invitations
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      When admins invite you to join societies, they'll appear
+                      here
+                    </p>
+                  </motion.div>
+                ) : (
+                  <div className="space-y-4">
+                    <AnimatePresence>
+                      {invitations.map((invitation) => (
+                        <motion.div
+                          key={invitation._id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                        >
+                          <InvitationCard
+                            invitation={invitation}
+                            onAccept={handleAcceptInvitation}
+                            onReject={handleRejectInvitation}
+                            isProcessing={
+                              processingId === invitation._id &&
+                              (isAcceptingInvitation || isRejectingInvitation)
+                            }
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </Container>
   );

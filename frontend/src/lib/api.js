@@ -218,3 +218,9 @@ export const postComplaint = async (payload) => {
 // ✅ ADD THESE EXPORTS AT THE END
 export * from "./memberApi";
 export * from "./activationApi";
+export {
+  getMyInvitations,
+  acceptInvitation,
+  rejectInvitation,
+  getSentInvitations,
+} from "./invitationApi";

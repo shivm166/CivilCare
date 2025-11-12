@@ -3,6 +3,7 @@ import { Society } from "../models/society.model.js";
 import { UserSocietyRel } from "../models/user_society_rel.model.js";
 import { Unit } from "../models/unit.model.js";
 import { sendInvitationEmail } from "../utils/sendEmail.js"; // ✅ ADD THIS IMPORT
+import { MemberInvitation } from "../models/member_invitation.model.js";
 
 // ==================== MEMBER MANAGEMENT CONTROLLERS ====================
 
@@ -63,6 +64,7 @@ export const searchUserByEmail = async (req, res) => {
 };
 
 // ✅ Add existing (registered) user to society
+// ✅ UPDATED: Send invitation instead of direct add
 export const addExistingMember = async (req, res) => {
   try {
     const { societyId } = req.params;
@@ -86,8 +88,8 @@ export const addExistingMember = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({ 
-        message: "Only admin can add members" 
+      return res.status(403).json({
+        message: "Only admin can send invitations",
       });
     }
 
@@ -104,28 +106,42 @@ export const addExistingMember = async (req, res) => {
     });
 
     if (existingRel) {
-      return res.status(409).json({ 
-        message: "User is already a member of this society" 
+      return res.status(409).json({
+        message: "User is already a member of this society",
       });
     }
 
-    // Create relationship
-    const newRel = await UserSocietyRel.create({
-      user: userId,
+    // Check if invitation already exists
+    const existingInvitation = await MemberInvitation.findOne({
+      invitedUser: userId,
       society: societyId,
-      roleInSociety,
-      unit: unitId || null,
-      isActive: true,
+      status: "pending",
     });
 
-    const populatedRel = await UserSocietyRel.findById(newRel._id)
-      .populate("user", "name email phone isActivated isInvited")
-      .populate("unit", "unitNumber");
+    if (existingInvitation) {
+      return res.status(409).json({
+        message: "Invitation already sent to this user",
+      });
+    }
+
+    // Create invitation instead of direct add
+    const invitation = await MemberInvitation.create({
+      invitedUser: userId,
+      society: societyId,
+      invitedBy: req.user._id,
+      roleInSociety,
+      unit: unitId || null,
+      message: `You've been invited to join ${society.name}`,
+    });
+
+    const populatedInvitation = await MemberInvitation.findById(invitation._id)
+      .populate("invitedUser", "name email phone")
+      .populate("society", "name");
 
     return res.status(201).json({
       success: true,
-      message: "Member added successfully",
-      member: populatedRel,
+      message: "Invitation sent to user",
+      invitation: populatedInvitation,
     });
   } catch (error) {
     console.error("Error in addExistingMember controller", error);

@@ -80,12 +80,11 @@ export const SocietyProvider = ({ children }) => {
         navigate(defaultPath, { replace: true });
       }
     } else if (!isSocietiesLoading && societies.length === 0) {
-      // Redirect to onboarding if no societies are found
+      // ✅ Clear storage but don't redirect - let ProtectedRoutes handle it
       localStorage.removeItem("activeSocietyId");
       localStorage.removeItem("activeRole");
-      if (window.location.pathname !== "/onboarding") {
-        navigate("/onboarding", { replace: true });
-      }
+      setActiveSocietyId(null);
+      setActiveRole(null);
     }
   }, [societies, activeSocietyId, isSocietiesLoading, activeRole, navigate]);
 
