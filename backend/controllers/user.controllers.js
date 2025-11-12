@@ -90,28 +90,39 @@ export const getprofile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user?._id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const { name } = req.body;
     if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, message: "Name is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Name is required" });
     }
 
     const updated = await User.findByIdAndUpdate(
       userId,
-      { name }, 
+      { name },
       { new: true, runValidators: true }
     ).select("-password");
 
-    if (!updated) return res.status(404).json({ success: false, message: "User not found" });
+    if (!updated)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
-    return res.status(200).json({ success: true, message: "Profile updated successfully!", user: updated });
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully!",
+      user: updated,
+    });
   } catch (err) {
     console.error("updateProfile error:", err);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
-
 
 export const logout = async (req, res) => {
   try {

@@ -62,20 +62,12 @@ export const createSociety = async (req, res) => {
 
 export const getMySocieties = async (req, res) => {
   try {
-    if (req.user.globalRole === "super_admin") {
-      const societies = await Society.find({});
-      return res.json({
-        success: true,
-        societies,
-      });
-    }
 
     const rels = await UserSocietyRel.find({ user: req.user._id }).populate(
       "society",
       "name address city state pincode createdBy"
     );
 
-    console.log(rels);
     const societies = rels.map((r) => ({
       society: r.society,
       role: r.roleInSociety,
@@ -94,17 +86,14 @@ export const getSocietyById = async (req, res) => {
     const society = await Society.findById(id);
     if (!society) return res.status(404).json({ message: "Society not found" });
 
-    // permission: super_admin or member of that society
-    if (req.user.globalRole !== "super_admin") {
-      const rel = await UserSocietyRel.findOne({
-        user: req.user._id,
-        society: id,
-      });
-      if (!rel) {
-        return res
-          .status(403)
-          .json({ message: "You can't see others society" });
-      }
+    const rel = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: id,
+    });
+    if (!rel) {
+      return res
+        .status(403)
+        .json({ message: "You can't see others society" });
     }
 
     return res.json(society);
@@ -131,10 +120,7 @@ export const updateSociety = async (req, res) => {
       society: society._id,
     });
 
-    if (
-      req.user.globalRole !== "super_admin" &&
-      userSocRel.roleInSociety !== "admin"
-    ) {
+    if (userSocRel.roleInSociety !== "admin") {
       return res
         .status(401)
         .json({ message: "You are not authorise to update this society" });
@@ -170,10 +156,7 @@ export const deleteSociety = async (req, res) => {
       society: society._id,
     });
 
-    if (
-      req.user.globalRole !== "super_admin" &&
-      userSocRel.roleInSociety !== "admin"
-    ) {
+    if (userSocRel.roleInSociety !== "admin") {
       return res
         .status(401)
         .json({ message: "You are not authorise to delete this society" });

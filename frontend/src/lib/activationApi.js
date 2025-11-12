@@ -5,7 +5,10 @@ import { axiosInstance } from "./axios";
 // Activate invited user account
 export const activateAccount = async (activationData) => {
   try {
-    const response = await axiosInstance.post("/activation/activate", activationData);
+    const response = await axiosInstance.post(
+      "/activation/activate",
+      activationData
+    );
     return response.data;
   } catch (error) {
     console.log("Error activating account", error);

@@ -196,50 +196,57 @@ export const getAllUsers = async () => {
     throw error;
   }
 };
-// GET: User's own complaints (no societyId needed - backend uses req.user)
-// lib/api.js (or wherever)
-export const getMyComplaints = async () => {
-  const res = await axiosInstance.get("/complaints/my_complaints");
-  // If backend returns { success: true, data: [...], count }
-  return res.data.data ?? []; // return array
+
+export const createComplaint = async (formdata) => {
+  try {
+    const res = await axiosInstance.post(
+      "/complaint/createComplaint",
+      formdata
+    );
+    console.log(res.data);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching users", error);
+    throw error;
+  }
 };
 
-// GET: All complaints in society (for reference, if needed later)
-export const getSocietyComplaints = async (societyId) => {
-  const res = await axiosInstance.get(`/complaints?societyId=${societyId}`);
-  return res.data;
+export const getMyComplaint = async () => {
+  try {
+    const res = await axiosInstance.get("complaint/getMyComplaints");
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching users", error);
+    throw error;
+  }
 };
 
-// POST: Create new complaint
-export const postComplaint = async (payload) => {
-  const res = await axiosInstance.post("/complaints/post_complaint", payload);
-  return res.data;
+export const getAllComplaints = async () => {
+  try {
+    const res = await axiosInstance.get("/complaint/getAllComplaints");
+    console.log(res.data);
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Error fetching all complaints:",
+      error.response?.data || error
+    );
+    throw error.response?.data || error;
+  }
 };
 
-// GET: Admin list complaints with query filters
-export const adminListComplaints = async ({ societyId, params = {} }) => {
-  // Use a query string builder for dynamic params if needed, or pass directly
-  const res = await axiosInstance.get(
-    `/complaints/admin_com_list?societyId=${societyId}`,
-    { params }
-  );
-  return res.data; // { success: true, data: [...], pagination }
+// 4. UPDATE COMPLAINT STATUS (Admin)
+export const updateComplaintStatus = async (id, status) => {
+  try {
+    const res = await axiosInstance.patch(
+      `/complaint/updateComplaint/${id}/status`,
+      { status }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Error updating status:", error.response?.data || error);
+    throw error.response?.data || error;
+  }
 };
-
-// PATCH: Update complaint status or priority (Admin)
-export const adminUpdateComplaint = async ({
-  complaintId,
-  societyId,
-  payload,
-}) => {
-  // API endpoint is: /api/complaints/admin_com/:id?societyId=...
-  const res = await axiosInstance.patch(
-    `/complaints/admin_com/${complaintId}?societyId=${societyId}`,
-    payload
-  );
-  return res.data;
-};
-
-// ✅ ADD THESE EXPORTS AT THE END
 export * from "./memberApi";
 export * from "./activationApi";

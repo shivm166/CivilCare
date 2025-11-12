@@ -1,232 +1,232 @@
-import mongoose from "mongoose";
+// ES6 import (ensure .js extension in Node.js with ESM)
 import { Complaint } from "../models/complaint.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+import { User } from "../models/user.model.js";
 
-// ---------------- USER: CREATE COMPLAINT ----------------
+// controllers/complaintsController.js
 export const createComplaint = async (req, res) => {
   try {
-    const { title, description, priority, society } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("society");
 
-    // create new complaint
-    const complaint = await Complaint.create({
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    const { title, description, priority } = req.body;
+
+    if (!title || !description || !priority) {
+      return res.status(400).json({
+        success: false,
+        message: "Title, description, and priority required",
+      });
+    }
+
+    const normalizedPriority = priority.toLowerCase();
+    if (!["low", "medium", "high"].includes(normalizedPriority)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid priority" });
+    }
+
+    const complaint = new Complaint({
       title,
       description,
-      priority: priority || "medium",
-      createdBy: req.user._id,
-      society,
+      priority: normalizedPriority,
+      createdBy: userId,
+      society: user.society, // Auto-set from user's society
     });
 
-    // populate user (creator) and society info in response
-    await complaint.populate([
-      { path: "createdBy", select: "_id name email phone" },
-      { path: "society", select: "_id name city address" },
-    ]);
+    await complaint.save();
+
+    // Populate createdBy name for response
+    await complaint.populate("createdBy", "name email");
 
     res.status(201).json({
-      message: "Complaint created successfully.",
+      success: true,
+      message: "Complaint created",
       data: complaint,
     });
   } catch (error) {
-    console.error("Error creating complaint:", error);
-    res.status(500).json({
-      message: "Failed to create complaint.",
-      error: error.message,
-    });
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };
 
-// ---------------- USER: GET MY COMPLAINTS ----------------
-// ---------------- USER: GET MY COMPLAINTS ----------------
-export const get_complaints = async (req, res) => {
+export const getComplaints = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?.id; // From auth middleware
 
-    const complaints = await Complaint.find({ createdBy: userId })
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated.",
+      });
+    }
+
+    const { status, priority, page = 1, limit = 10 } = req.query;
+
+    // Always filter by createdBy = current user
+    const filter = { createdBy: userId };
+
+    // Add optional filters
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority.toLowerCase();
+
+    const complaints = await Complaint.find(filter)
       .sort({ createdAt: -1 })
-      .select("-__v")
-      .populate("society", "name") // optional: show society name
-      .lean();
+      .limit(+limit)
+      .skip((+page - 1) * +limit)
+      .select("-__v") // Optional: hide version field
+      .exec();
+
+    const total = await Complaint.countDocuments(filter);
 
     return res.status(200).json({
       success: true,
-      count: complaints.length,
       data: complaints,
+      pagination: {
+        total,
+        page: +page,
+        pages: Math.ceil(total / +limit),
+        limit: +limit,
+      },
     });
   } catch (error) {
     console.error("Error fetching user complaints:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching complaints",
+      message: "Server error.",
+      error: error.message,
     });
   }
 };
 
-// ---------------- ADMIN: LIST ALL COMPLAINTS ----------------
+//admin
 
-// ---------------- ADMIN: LIST COMPLAINTS (with filters + pagination) ---------------
-export const adminListComplaints = async (req, res) => {
+// controllers/complaint.controllers.js
+export const getAllComplaints = async (req, res) => {
   try {
-    const {
-      societyId,
-      status,
-      priority,
-      createdBy,
-      from,
-      to,
-      q,
-      page = 1,
-      limit = 10,
-      sort = "-createdAt",
-    } = req.query;
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("role society");
 
-    // Base filter check
-    if (!societyId || !isValidObjectId(societyId)) {
-      return res.status(400).json({ message: "Valid societyId is required." });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    // START: ADMIN PERMISSION CHECK <--- ADDED LOGIC
-    const isAdmin = await UserSocietyRel.findOne({
-      user: req.user._id,
-      society: societyId,
-      roleInSociety: "admin",
-      isActive: true,
-    });
+    const { status, priority, page = 1, limit = 10 } = req.query;
 
-    if (!isAdmin && req.user.globalRole !== "super_admin") {
+    // બધી કમ્પ્લેઇન્ટ એક જ સોસાયટીની હોવી જોઈએ
+    const filter = { society: user.society };
+
+    // ફિલ્ટર્સ
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority.toLowerCase();
+
+    // ADMIN જ બધી જોઈ શકે
+    if (user.role !== "admin") {
       return res.status(403).json({
-        message:
-          "You are not authorized to view admin complaints for this society.",
+        success: false,
+        message: "Access denied. Admin only.",
       });
     }
-    // END: ADMIN PERMISSION CHECK
 
-    const filter = { society: societyId };
+    const complaints = await Complaint.find(filter)
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 })
+      .limit(+limit)
+      .skip((+page - 1) * +limit)
+      .exec();
 
-    // Optional filters
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-    if (createdBy && isValidObjectId(createdBy)) filter.createdBy = createdBy;
+    const total = await Complaint.countDocuments(filter);
 
-    // Date range
-    if (from || to) {
-      filter.createdAt = {};
-      if (from) filter.createdAt.$gte = new Date(from);
-      if (to) {
-        const end = new Date(to);
-        end.setHours(23, 59, 59, 999);
-        filter.createdAt.$lte = end;
-      }
-    }
-
-    // Search in title/description
-    if (q) {
-      const searchRegex = { $regex: q.trim(), $options: "i" };
-      filter.$or = [{ title: searchRegex }, { description: searchRegex }];
-    }
-
-    const skip = (page - 1) * limit;
-    const limitNum = Math.min(Number(limit), 100); // cap limit
-
-    const [complaints, total] = await Promise.all([
-      Complaint.find(filter)
-        .populate("createdBy", "name email phone")
-        .populate("society", "name city")
-        .sort(sort)
-        .skip(skip)
-        .limit(limitNum)
-        .lean(),
-
-      Complaint.countDocuments(filter),
-    ]);
-
-    return res.json({
+    res.status(200).json({
       success: true,
-      message: "Complaints fetched successfully.",
       data: complaints,
       pagination: {
         total,
-        page: Number(page),
-        pages: Math.ceil(total / limitNum),
-        limit: limitNum,
-        hasNext: Number(page) < Math.ceil(total / limitNum),
-        hasPrev: Number(page) > 1,
+        page: +page,
+        pages: Math.ceil(total / +limit),
+        limit: +limit,
       },
     });
   } catch (error) {
-    console.error("Admin List Complaints Error:", error);
-    return res.status(500).json({
+    console.error("Error in getAllComplaints:", error);
+    res.status(500).json({
       success: false,
-      message: "Failed to fetch complaints.",
+      message: "Server error",
+      error: error.message,
     });
   }
 };
 
-// ---------------- ADMIN: UPDATE COMPLAINT (status/priority only) ---------------
-export const adminUpdateComplaint = async (req, res) => {
+// controllers/complaintsController.js
+
+// controllers/complaint.controllers.js
+
+export const updateComplaintStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { societyId } = req.query;
-    const { status, priority } = req.body;
+    const { status } = req.body;
+    const adminId = req.user.id;
 
-    // Validation
-    if (!id || !isValidObjectId(id)) {
-      return res
-        .status(400)
-        .json({ message: "Valid complaint ID is required." });
-    }
-    if (!societyId || !isValidObjectId(societyId)) {
-      return res.status(400).json({ message: "Valid societyId is required." });
-    }
-
-    // START: ADMIN PERMISSION CHECK <--- ADDED LOGIC
-    const isAdmin = await UserSocietyRel.findOne({
-      user: req.user._id,
-      society: societyId,
-      roleInSociety: "admin",
-      isActive: true,
-    });
-
-    if (!isAdmin && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message:
-          "You are not authorized to update complaints for this society.",
+    // 1. Validate status
+    const validStatuses = ["pending", "in-progress", "resolved", "closed"];
+    if (!status || !validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Status must be one of: ${validStatuses.join(", ")}`,
       });
     }
-    // END: ADMIN PERMISSION CHECK
 
-    const allowedUpdates = {};
-    if (status) allowedUpdates.status = status;
-    if (priority) allowedUpdates.priority = priority;
-    if (Object.keys(allowedUpdates).length === 0) {
-      return res.status(400).json({ message: "No valid fields to update." });
+    // 2. Get admin
+    const admin = await User.findById(adminId).select("role society");
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin role required.",
+      });
     }
 
-    const updatedComplaint = await Complaint.findOneAndUpdate(
-      { _id: id, society: societyId },
-      allowedUpdates,
-      { new: true, runValidators: true }
-    )
-      .populate("createdBy", "name email phone")
-      .populate("society", "name city")
-      .lean();
-
-    if (!updatedComplaint) {
-      return res
-        .status(404)
-        .json({ message: "Complaint not found or access denied." });
+    // 3. Find complaint
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
     }
 
-    return res.json({
+    // 4. Check same society
+    if (complaint.society.toString() !== admin.society.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update complaints in your society.",
+      });
+    }
+
+    // 5. Update status
+    complaint.status = status.toLowerCase();
+    await complaint.save();
+
+    // 6. Populate & return
+    await complaint.populate("createdBy", "name email");
+
+    res.status(200).json({
       success: true,
-      message: "Complaint updated successfully.",
-      data: updatedComplaint,
+      message: "Status updated successfully",
+      data: complaint,
     });
   } catch (error) {
-    console.error("Admin Update Complaint Error:", error);
-    return res.status(500).json({
+    console.error("Update status error:", error);
+    res.status(500).json({
       success: false,
-      message: "Failed to update complaint.",
+      message: "Server error",
+      error: error.message,
     });
   }
 };

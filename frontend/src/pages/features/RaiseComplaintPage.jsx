@@ -1,236 +1,193 @@
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { Loader2, AlertCircle, Send } from "lucide-react";
-import { useComplaints, useCreateComplaint } from "../../hooks/useComplaints";
+// src/pages/MyComplaintsPage.jsx
+import { useState } from "react";
+import {
+  useCreateComplaint,
+  useGetMyComplaints,
+} from "../../hooks/useComplaints";
 
-// Responsive + scalable RaiseComplaintPage (attachments removed)
+export default function RaiseComplaintPage() {
+  // Form state
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+  });
 
-const RaiseComplaintPage = () => {
-  const {
-    data: complaints = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useComplaints();
-  const createMutation = useCreateComplaint();
+  // React Query hooks
+  const { createComplaint, isCreating } = useCreateComplaint();
+  const { data: complaints, isLoading, error } = useGetMyComplaints();
 
-  const [localComplaints, setLocalComplaints] = useState(complaints);
+  // Handle form submit
+  const handleSubmit = (e) => {
+    console.log("Submitting complaint with data:", form);
+    e.preventDefault();
+    if (!form.title || !form.description) return;
 
-  useEffect(() => {
-    setLocalComplaints(complaints);
-  }, [complaints]);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm({ mode: "onBlur", defaultValues: { priority: "medium" } });
-
-  const onSubmit = async (data) => {
-    try {
-      const payload = {
-        title: data.title.trim(),
-        description: data.description?.trim() || "",
-        priority: data.priority || "medium",
-      };
-
-      const result = await createMutation.mutateAsync(payload);
-
-      if (result && result._id) {
-        setLocalComplaints((prev) => [result, ...(prev || [])]);
-      } else {
-        refetch?.();
-      }
-
-      toast.success("Complaint submitted successfully");
-      reset();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to submit complaint");
-    }
+    createComplaint(form, {
+      onSuccess: () => {
+        setForm({ title: "", description: "", priority: "medium" });
+      },
+    });
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Form column */}
-        <section className="md:col-span-5 bg-white rounded-xl shadow p-6 flex flex-col">
-          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          My Complaints
+        </h1>
+
+        {/* Create Complaint Form */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">
             Raise a New Complaint
           </h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-1">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Title
               </label>
               <input
-                {...register("title", {
-                  required: "Title is required",
-                  minLength: { value: 3, message: "Minimum 3 characters" },
-                })}
-                aria-invalid={errors.title ? "true" : "false"}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Water leakage in corridor"
+                type="text"
+                placeholder="e.g., Water leakage in kitchen"
+                value={form.title}
+                name="title"
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.title.message}
-                </p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Description
               </label>
               <textarea
-                {...register("description")}
-                rows={4}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Provide details..."
+                rows="3"
+                placeholder="Describe the issue in detail..."
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Priority
               </label>
               <select
-                {...register("priority")}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
-                <option value="high">High (Urgent)</option>
+                <option value="high">High</option>
               </select>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting ||
-                  createMutation.isLoading ||
-                  createMutation.isPending
-                }
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-70 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ||
-                createMutation.isLoading ||
-                createMutation.isPending ? (
-                  <>
-                    <Loader2 className="animate-spin" size={18} />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send size={18} />
-                    Submit Complaint
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        {/* List column */}
-        <section className="md:col-span-7 bg-white rounded-xl shadow p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
-              My Complaints ({localComplaints?.length || 0})
-            </h2>
             <button
-              onClick={() => refetch?.()}
-              className="text-sm px-3 py-1 border rounded hover:bg-gray-50"
-              aria-label="Refresh complaints"
+              type="submit"
+              disabled={isCreating}
+              className={`w-full py-2 px-4 rounded-md font-medium text-white transition ${
+                isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              Refresh
+              {isCreating ? "Submitting..." : "Submit Complaint"}
             </button>
-          </div>
+          </form>
+        </div>
 
+        {/* Complaints List */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            Your Complaints ({complaints?.length || 0})
+          </h2>
+
+          {/* Loading */}
           {isLoading && (
-            <div className="text-center py-10">
-              <Loader2 className="animate-spin mx-auto" size={40} />
-              <p className="mt-3 text-sm text-gray-600">
-                Loading complaints...
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600">Loading complaints...</p>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+              Error loading complaints. Please try again.
+            </div>
+          )}
+
+          {/* No Complaints */}
+          {!isLoading && !error && complaints?.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg shadow">
+              <p className="text-gray-500">
+                No complaints yet. Create your first one!
               </p>
             </div>
           )}
 
-          {isError && (
-            <div className="text-red-600 text-center py-10 flex items-center gap-2">
-              <AlertCircle />
-              <span>
-                {error?.response?.data?.message ||
-                  "Failed to load complaints. Please try again."}
-              </span>
-            </div>
-          )}
-
-          {!isLoading && !isError && localComplaints?.length === 0 && (
-            <p className="text-gray-500 text-center py-10">
-              No complaints raised yet.
-            </p>
-          )}
-
-          <div
-            className="space-y-4 overflow-auto"
-            style={{ maxHeight: "60vh" }}
-          >
-            {localComplaints?.map((complaint) => (
-              <article
+          {/* Complaints List */}
+          {!isLoading &&
+            complaints?.map((complaint) => (
+              <div
                 key={complaint._id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                aria-labelledby={`complaint-${complaint._id}-title`}
+                className="bg-white p-5 rounded-lg shadow hover:shadow-md transition"
               >
-                <div className="flex justify-between items-start gap-4">
+                <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3
-                      id={`complaint-${complaint._id}-title`}
-                      className="font-semibold text-lg"
-                    >
+                    <h3 className="text-lg font-semibold text-gray-800">
                       {complaint.title}
                     </h3>
-                    <p className="text-gray-600 mt-1 text-sm">
-                      {complaint.description || "No description"}
+                    <p className="text-gray-600 mt-1">
+                      {complaint.description}
                     </p>
-
-                    <div className="flex gap-3 mt-3 text-sm flex-wrap items-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          complaint.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : complaint.status === "in_progress"
-                            ? "bg-blue-100 text-blue-800"
-                            : complaint.status === "resolved"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {String(complaint.status || "pending")
-                          .replace("_", " ")
-                          .toUpperCase()}
-                      </span>
-
-                      <span className="text-gray-500">
-                        Priority: <strong>{complaint.priority}</strong>
-                      </span>
-                      <span className="text-gray-500">
-                        {new Date(complaint.createdAt).toLocaleString()}
-                      </span>
-                    </div>
+                  </div>
+                  <div className="ml-4 text-right">
+                    <span
+                      className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                        complaint.priority === "high"
+                          ? "bg-red-100 text-red-700"
+                          : complaint.priority === "medium"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {complaint.priority.toUpperCase()}
+                    </span>
                   </div>
                 </div>
-              </article>
+
+                <div className="mt-3 flex justify-between items-center">
+                  <span
+                    className={`text-xs font-medium px-3 py-1 rounded-full ${
+                      complaint.status === "pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : complaint.status === "in-progress"
+                        ? "bg-blue-100 text-blue-700"
+                        : complaint.status === "resolved"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {complaint.status.replace("-", " ").toUpperCase()}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(complaint.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
             ))}
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );
-};
-
-export default RaiseComplaintPage;
+}
