@@ -2,6 +2,8 @@ import { Announcement } from "../models/announcement.model.js"
 import { Complaint } from "../models/complaint.model.js"
 import { Society } from "../models/society.model.js"
 import { User } from "../models/user.model.js"
+import { UserSocietyRel } from "../models/user_society_rel.model.js"
+import { generateSocietyCode } from "../utils/generateSocietyCode.js"
 
 export const getAllUsers = async (req, res) =>{
     try {
