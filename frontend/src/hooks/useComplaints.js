@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUserComplaints, postComplaint } from "../lib/api";
+import { getMyComplaints, postComplaint } from "../lib/api";
 
 // 🔹 Fetch all complaints for a society
 export const useComplaints = (arg1, arg2) => {
@@ -8,7 +8,7 @@ export const useComplaints = (arg1, arg2) => {
 
   return useQuery({
     queryKey: ["complaints", { societyId, ...params }],
-    queryFn: () => getUserComplaints(societyId, params),
+    queryFn: () => getMyComplaints(societyId, params),
     enabled: !!societyId,
   });
 };
