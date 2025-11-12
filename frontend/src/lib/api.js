@@ -197,9 +197,11 @@ export const getAllUsers = async () => {
   }
 };
 // GET: User's own complaints (no societyId needed - backend uses req.user)
+// lib/api.js (or wherever)
 export const getMyComplaints = async () => {
   const res = await axiosInstance.get("/complaints/my_complaints");
-  return res.data; // { success: true, data: [...], count }
+  // If backend returns { success: true, data: [...], count }
+  return res.data.data ?? []; // return array
 };
 
 // GET: All complaints in society (for reference, if needed later)
@@ -213,7 +215,6 @@ export const postComplaint = async (payload) => {
   const res = await axiosInstance.post("/complaints/post_complaint", payload);
   return res.data;
 };
-
 
 // ✅ ADD THESE EXPORTS AT THE END
 export * from "./memberApi";
