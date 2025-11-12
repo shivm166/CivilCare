@@ -14,6 +14,7 @@ import RaiseComplaintPage from "../pages/features/RaiseComplaintPage.jsx";
 import AdminDashboard from "../pages/features/AdminDashboard.jsx";
 import UserDashboard from "../pages/features/UserDashboard.jsx";
 import SuperAdminRoutes from "./SuperAdminRoutes.jsx";
+import BuildingManagement from "../pages/admin/BuildingManagement.jsx";
 
 const SocietyChecker = ({ children }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
@@ -70,6 +71,7 @@ const ProtectedRoutes = ({ authUser }) => {
             <Route path="announcements" element={<AnnouncementsPage />} />
             <Route path="complaints" element={<ComplaintsPage />} />
             <Route path="residents" element={<ResidentsPage />} />
+            <Route path="buildings" element={<BuildingManagement />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route

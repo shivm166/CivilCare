@@ -9,7 +9,8 @@ import {
   Mail,
   User,
   Menu, // Hamburger icon for open
-  X, // Close icon for cancel
+  X,
+  Building2, // Close icon for cancel
 } from "lucide-react";
 import { useSocietyContext } from "../context/SocietyContext";
 import { useGetSocietyRequests } from "../hooks/useRequests";
@@ -17,6 +18,7 @@ import { useGetSocietyRequests } from "../hooks/useRequests";
 // Define the menu configurations
 const adminMenu = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Buildings", path: "/admin/buildings", icon: Building2 },
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
