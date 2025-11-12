@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { Complaint } from "../models/complaint.model.js";
-import { request } from "express";
-
+import { UserSocietyRel } from "../models/user_society_rel.model.js";
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // ---------------- USER: CREATE COMPLAINT ----------------
@@ -81,10 +80,26 @@ export const adminListComplaints = async (req, res) => {
       sort = "-createdAt",
     } = req.query;
 
-    // Base filter - societyId is REQUIRED for admin scoping
+    // Base filter check
     if (!societyId || !isValidObjectId(societyId)) {
       return res.status(400).json({ message: "Valid societyId is required." });
     }
+
+    // START: ADMIN PERMISSION CHECK <--- ADDED LOGIC
+    const isAdmin = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: societyId,
+      roleInSociety: "admin",
+      isActive: true,
+    });
+
+    if (!isAdmin && req.user.globalRole !== "super_admin") {
+      return res.status(403).json({
+        message:
+          "You are not authorized to view admin complaints for this society.",
+      });
+    }
+    // END: ADMIN PERMISSION CHECK
 
     const filter = { society: societyId };
 
@@ -163,6 +178,22 @@ export const adminUpdateComplaint = async (req, res) => {
     if (!societyId || !isValidObjectId(societyId)) {
       return res.status(400).json({ message: "Valid societyId is required." });
     }
+
+    // START: ADMIN PERMISSION CHECK <--- ADDED LOGIC
+    const isAdmin = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: societyId,
+      roleInSociety: "admin",
+      isActive: true,
+    });
+
+    if (!isAdmin && req.user.globalRole !== "super_admin") {
+      return res.status(403).json({
+        message:
+          "You are not authorized to update complaints for this society.",
+      });
+    }
+    // END: ADMIN PERMISSION CHECK
 
     const allowedUpdates = {};
     if (status) allowedUpdates.status = status;

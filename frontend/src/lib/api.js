@@ -216,6 +216,30 @@ export const postComplaint = async (payload) => {
   return res.data;
 };
 
+// GET: Admin list complaints with query filters
+export const adminListComplaints = async ({ societyId, params = {} }) => {
+  // Use a query string builder for dynamic params if needed, or pass directly
+  const res = await axiosInstance.get(
+    `/complaints/admin_com_list?societyId=${societyId}`,
+    { params }
+  );
+  return res.data; // { success: true, data: [...], pagination }
+};
+
+// PATCH: Update complaint status or priority (Admin)
+export const adminUpdateComplaint = async ({
+  complaintId,
+  societyId,
+  payload,
+}) => {
+  // API endpoint is: /api/complaints/admin_com/:id?societyId=...
+  const res = await axiosInstance.patch(
+    `/complaints/admin_com/${complaintId}?societyId=${societyId}`,
+    payload
+  );
+  return res.data;
+};
+
 // ✅ ADD THESE EXPORTS AT THE END
 export * from "./memberApi";
 export * from "./activationApi";
