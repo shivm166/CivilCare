@@ -62,7 +62,7 @@ export const createComplaint = async (req, res) => {
 
 export const getComplaints = async (req, res) => {
   try {
-    const userId = req.user?.id; // From auth middleware
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({
@@ -71,15 +71,13 @@ export const getComplaints = async (req, res) => {
       });
     }
 
-    // ✅ FIX: Get the active society ID from context
     const societyId = req.society?._id;
 
-    // ✅ FIX: If no society is active, return an empty array.
-    // A user can only see complaints for the society they are currently viewing.
     if (!societyId) {
       return res.status(200).json({
         success: true,
         data: [],
+
         pagination: { total: 0, page: 1, pages: 1, limit: 10 },
       });
     }
@@ -108,6 +106,7 @@ export const getComplaints = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: complaints,
+
       pagination: {
         total,
         page: +page,

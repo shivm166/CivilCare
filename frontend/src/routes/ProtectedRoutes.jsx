@@ -13,6 +13,7 @@ import NotificationsPage from "../pages/dashboard/Admin/Notification/Notificatio
 import ProfilePage from "../pages/dashboard/User/Profile/ProfilePage";
 import AnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 import RaiseComplaintPage from "../pages/dashboard/User/Complaints/RaiseComplaintPage";
+import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDashboard";
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
@@ -63,7 +64,7 @@ const DashboardWrapper = () => {
     return <AdminDashboard />;
   }
 
-  return <UserDashboard />;
+  return <ResidentDashboard />;
 };
 
 const ProtectedRoutes = ({ authUser }) => {
