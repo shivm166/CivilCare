@@ -34,9 +34,6 @@ export const useGetMyComplaints = (societyId) => {
     queryKey: ["myComplaints", societyId],
     queryFn: getMyComplaint,
     select: (data) => data.data, // Extract `data.data` from response
-    // ✅ FIX: Only enable this query if we HAVE a societyId
-    enabled: !!societyId,
-    staleTime: 1000 * 60, // 1 minute
   });
 };
 
