@@ -6,7 +6,7 @@ import {
   getComplaints,
   updateComplaintStatus,
 } from "../controllers/complaint.controllers.js";
-import protectRoute from "../middlelware/isProtected.js";
+import protectRoute, { requireAdmin } from "../middlelware/isProtected.js";
 
 const router = express.Router();
 
@@ -17,7 +17,12 @@ router.post("/createComplaint", createComplaint);
 router.get("/getMyComplaints", getComplaints);
 
 // routes/complaints.js
-router.get("/getAllComplaints", getAllComplaints);
-router.patch("/updateComplaint/:id/status", updateComplaintStatus);
+router.get("/getAllComplaints", protectRoute, requireAdmin, getAllComplaints);
+router.patch(
+  "/updateComplaint/:id/status",
+  protectRoute,
+  requireAdmin,
+  updateComplaintStatus
+);
 
 export default router;
