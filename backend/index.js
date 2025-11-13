@@ -6,11 +6,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import societyRouter from "./routes/society.route.js";
-import requestRouter from "./routes/request.route.js"; // ⬅️ ADD THIS LINE
+import requestRouter from "./routes/admin/request.route.js";
 import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 import complaintRouter from "./routes/complaint.routes.js";
-import memberRoute from "./routes/member.route.js";
-import activationRoute from "./routes/activation.route.js";
+import memberRoute from "./routes/admin/member.route.js";
+import activationRoute from "./routes/admin/activation.route.js";
 import routes from "./routes/index.js";
 
 const app = express();

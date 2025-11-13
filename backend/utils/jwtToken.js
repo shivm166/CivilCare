@@ -5,7 +5,7 @@ export const generateTokenAndSetCookie = (res, userId, role, society) => {
     { _id: userId, role: role, society: society },
     process.env.JWT_SECRET,
     {
-      expiresIn: "1d",
+      expiresIn: "1h",
     }
   );
 
@@ -13,7 +13,7 @@ export const generateTokenAndSetCookie = (res, userId, role, society) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 60 * 60 * 1000,
   });
 
   return token;
