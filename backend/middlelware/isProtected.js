@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { UserSocietyRel } from "../models/user_society_rel.model.js";
 
 const protectRoute = async (req, res, next) => {
   try {
@@ -45,7 +46,8 @@ export const requireAdmin = (req, res, next) => {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  if (req.user.role !== "admin") {
+  // ✅ FIX: Check req.role (from society context) not req.user.role (global role)
+  if (req.role !== "admin") {
     return res.status(403).json({
       success: false,
       message: "Access denied. Admin role required.",

@@ -6,13 +6,16 @@ import { User } from "../models/user.model.js";
 export const createComplaint = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).select("society");
+    // ✅ FIX: Get society from middleware context, not User model
+    const societyId = req.society?._id;
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    if (!societyId) {
+      return res.status(400).json({
+        success: false,
+        message: "You must be part of an active society to create a complaint.",
+      });
     }
+
     const { title, description, priority } = req.body;
 
     if (!title || !description || !priority) {
@@ -34,7 +37,7 @@ export const createComplaint = async (req, res) => {
       description,
       priority: normalizedPriority,
       createdBy: userId,
-      society: user.society, // Auto-set from user's society
+      society: societyId, // ✅ FIX: Use the societyId from context
     });
 
     await complaint.save();
@@ -55,6 +58,8 @@ export const createComplaint = async (req, res) => {
   }
 };
 
+// ... (keep createComplaint, getAllComplaints, and updateComplaintStatus as they are) ...
+
 export const getComplaints = async (req, res) => {
   try {
     const userId = req.user?.id; // From auth middleware
@@ -66,10 +71,26 @@ export const getComplaints = async (req, res) => {
       });
     }
 
+    // ✅ FIX: Get the active society ID from context
+    const societyId = req.society?._id;
+
+    // ✅ FIX: If no society is active, return an empty array.
+    // A user can only see complaints for the society they are currently viewing.
+    if (!societyId) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: { total: 0, page: 1, pages: 1, limit: 10 },
+      });
+    }
+
     const { status, priority, page = 1, limit = 10 } = req.query;
 
-    // Always filter by createdBy = current user
-    const filter = { createdBy: userId };
+    // ✅ FIX: Filter by BOTH createdBy and the active society
+    const filter = {
+      createdBy: userId,
+      society: societyId,
+    };
 
     // Add optional filters
     if (status) filter.status = status;
@@ -104,36 +125,34 @@ export const getComplaints = async (req, res) => {
   }
 };
 
+// ... (keep getAllComplaints and updateComplaintStatus as they are) ...
+
 //admin
 
 // controllers/complaint.controllers.js
 export const getAllComplaints = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId).select("role society");
+    // ✅ FIX: Get society from middleware context
+    const societyId = req.society?._id;
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    if (!societyId) {
+      return res.status(400).json({
+        success: false,
+        message: "No active society context found.",
+      });
     }
 
     const { status, priority, page = 1, limit = 10 } = req.query;
 
     // બધી કમ્પ્લેઇન્ટ એક જ સોસાયટીની હોવી જોઈએ
-    const filter = { society: user.society };
+    const filter = { society: societyId }; // ✅ FIX: Use societyId from context
 
     // ફિલ્ટર્સ
     if (status) filter.status = status;
     if (priority) filter.priority = priority.toLowerCase();
 
-    // ADMIN જ બધી જોઈ શકે
-    if (user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin only.",
-      });
-    }
+    // ⛔ REMOVE: Admin check is already done by requireAdmin middleware
+    // if (user.role !== "admin") { ... }
 
     const complaints = await Complaint.find(filter)
       .populate("createdBy", "name email")
@@ -164,18 +183,24 @@ export const getAllComplaints = async (req, res) => {
   }
 };
 
-// controllers/complaintsController.js
-
 // controllers/complaint.controllers.js
-
 export const updateComplaintStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const adminId = req.user.id;
+
+    // ✅ FIX: Get society from middleware context
+    const adminSocietyId = req.society?._id;
+
+    if (!adminSocietyId) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. No active society context.",
+      });
+    }
 
     // 1. Validate status
-    const validStatuses = ["pending", "in-progress", "resolved", "closed"];
+    const validStatuses = ["pending", "in_progress", "resolved", "closed"]; // ✅ ADDED "closed"
     if (!status || !validStatuses.includes(status.toLowerCase())) {
       return res.status(400).json({
         success: false,
@@ -183,14 +208,9 @@ export const updateComplaintStatus = async (req, res) => {
       });
     }
 
-    // 2. Get admin
-    const admin = await User.findById(adminId).select("role society");
-    if (!admin || admin.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Admin role required.",
-      });
-    }
+    // ⛔ REMOVE: Admin check is already done by requireAdmin middleware
+    // const admin = await User.findById(adminId).select("role society");
+    // if (!admin || admin.role !== "admin") { ... }
 
     // 3. Find complaint
     const complaint = await Complaint.findById(id);
@@ -202,7 +222,8 @@ export const updateComplaintStatus = async (req, res) => {
     }
 
     // 4. Check same society
-    if (complaint.society.toString() !== admin.society.toString()) {
+    // ✅ FIX: Compare complaint's society with the admin's active society context
+    if (complaint.society.toString() !== adminSocietyId.toString()) {
       return res.status(403).json({
         success: false,
         message: "You can only update complaints in your society.",
@@ -227,6 +248,30 @@ export const updateComplaintStatus = async (req, res) => {
       success: false,
       message: "Server error",
       error: error.message,
+    });
+  }
+};
+
+export const getTotalComplaints = async (req, res) => {
+  try {
+    const total = await Complaint.countDocuments();
+    const resolved = await Complaint.countDocuments({ status: "resolved" });
+    const pending = await Complaint.countDocuments({ status: "pending" });
+    const inProgress = await Complaint.countDocuments({
+      status: "in_progress",
+    });
+
+    return res.json({
+      success: true,
+      totalComplaints: total,
+      resolved,
+      pending,
+      inProgress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch complaint stats",
     });
   }
 };

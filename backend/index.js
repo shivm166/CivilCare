@@ -7,7 +7,7 @@ import cors from "cors";
 import "dotenv/config";
 import societyRouter from "./routes/society.route.js";
 import requestRouter from "./routes/admin/request.route.js";
-import attachSocietyContext from "./middlelware/attachSocietyContext.js";
+// ⛔ REMOVE THIS LINE: import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 import complaintRouter from "./routes/complaint.routes.js";
 import memberRoute from "./routes/admin/member.route.js";
 import activationRoute from "./routes/admin/activation.route.js";
@@ -30,7 +30,7 @@ app.use(
 app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
-app.use(attachSocietyContext);
+// ⛔ REMOVE THIS LINE: app.use(attachSocietyContext);
 
 app.use("/api", routes);
 app.use("/api/user", userRouter);

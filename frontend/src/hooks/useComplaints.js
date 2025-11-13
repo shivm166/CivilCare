@@ -1,4 +1,3 @@
-// src/hooks/useComplaints.js
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createComplaint,
@@ -14,7 +13,9 @@ export const useCreateComplaint = () => {
   const mutation = useMutation({
     mutationFn: createComplaint,
     onSuccess: () => {
+      // ✅ FIX: Invalidate both myComplaints and allComplaints
       queryClient.invalidateQueries({ queryKey: ["myComplaints"] });
+      queryClient.invalidateQueries({ queryKey: ["allComplaints"] });
     },
   });
 
@@ -26,22 +27,29 @@ export const useCreateComplaint = () => {
 };
 
 // 2. GET MY COMPLAINTS
-export const useGetMyComplaints = () => {
+// ✅ FIX: Accept societyId to control 'enabled' status
+export const useGetMyComplaints = (societyId) => {
   return useQuery({
-    queryKey: ["myComplaints"],
+    // ✅ FIX: Add societyId to queryKey so it refetches if society changes
+    queryKey: ["myComplaints", societyId],
     queryFn: getMyComplaint,
     select: (data) => data.data, // Extract `data.data` from response
+    // ✅ FIX: Only enable this query if we HAVE a societyId
+    enabled: !!societyId,
     staleTime: 1000 * 60, // 1 minute
   });
 };
 
 // hooks/useComplaints.js
-export const useGetAllComplaints = () => {
+// ✅ FIX: Accept societyId to control 'enabled' status
+export const useGetAllComplaints = (societyId) => {
   return useQuery({
-    queryKey: ["allComplaints"],
+    // ✅ FIX: Add societyId to queryKey
+    queryKey: ["allComplaints", societyId],
     queryFn: getAllComplaints,
     select: (data) => data.data,
-    enabled: false, // ફક્ત admin page પર જ ચાલે
+    // ✅ FIX: Only enable this query if we HAVE a societyId
+    enabled: !!societyId,
     staleTime: 1000 * 30,
   });
 };
