@@ -11,6 +11,7 @@ import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 import complaintRouter from "./routes/complaint.routes.js";
 import memberRoute from "./routes/admin/member.route.js";
 import activationRoute from "./routes/admin/activation.route.js";
+import adminStatsRoutes from "./routes/adminStats.route.js";
 import routes from "./routes/index.js";
 
 const app = express();
@@ -39,6 +40,8 @@ app.use("/api/complaint", complaintRouter);
 
 app.use("/api/member", memberRoute);
 app.use("/api/activation", activationRoute);
+
+app.use("/api/admin/stats", adminStatsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -16,7 +16,9 @@ export const useActivation = () => {
       }, 1500);
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Failed to activate account");
+      toast.error(
+        error.response?.data?.message || "Failed to activate account"
+      );
     },
   });
 

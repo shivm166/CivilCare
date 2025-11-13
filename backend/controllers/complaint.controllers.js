@@ -1,5 +1,5 @@
 // ES6 import (ensure .js extension in Node.js with ESM)
-import { Complaint } from "../models/complaint.model.js";
+import Complaint from "../models/complaint.model.js";
 import { User } from "../models/user.model.js";
 
 // controllers/complaintsController.js
