@@ -1,9 +1,8 @@
 import { Route, Navigate } from "react-router-dom";
-import PublicLayout from "../components/layout/PublicLayout.jsx";
-import LandingPage from "../pages/landing/LandingPage.jsx";
-import Login from "../pages/login/Login.jsx";
-import Signup from "../pages/signup/Signup.jsx";
-
+import LandingPage from "../pages/public/Landing/LandingPage";
+import Login from "../pages/auth/Login/Login";
+import Signup from "../pages/auth/SIgnup/Signup";
+import PublicLayout from "../components/layout/PublicLayout/PublicLayout";
 const PublicRoutes = ({ isAuthenticated }) => {
   return (
     <Route path="/" element={<PublicLayout />}>

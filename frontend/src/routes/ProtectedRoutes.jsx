@@ -1,21 +1,18 @@
 import { Route, Navigate, Outlet } from "react-router-dom";
-import {
-  SocietyProvider,
-  useSocietyContext,
-} from "../context/SocietyContext.jsx";
-import Layout from "../components/layout/Layout.jsx";
-import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding.jsx";
-import ProfilePage from "../pages/features/ProfilePage.jsx";
-import AnnouncementsPage from "../pages/features/AnnouncementsPage.jsx";
-import ComplaintsPage from "../pages/features/ComplaintsPage.jsx";
-import ResidentsPage from "../pages/features/ResidentsPage.jsx";
-import NotificationsPage from "../pages/features/NotificationsPage.jsx";
-import RaiseComplaintPage from "../pages/features/RaiseComplaintPage.jsx";
-import AdminDashboard from "../pages/features/AdminDashboard.jsx";
-import UserDashboard from "../pages/features/UserDashboard.jsx";
-import SuperAdminRoutes from "./SuperAdminRoutes.jsx";
-
-// ✅ UPDATED: Component to check if user has society (with proper auth check)
+import { useSocietyContext } from "../contexts/SocietyContext";
+import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding/SocietyOnboarding";
+import AdminDashboard from "../pages/dashboard/Admin/AdminDashboard/AdminDashboard";
+import RaiseComplaintPage from "../pages/complaints/RaiseComplaintPage";
+import Layout from "../components/layout/Layout";
+import ComplaintsPage from "../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage";
+import { SocietyProvider } from "../contexts/SocietyContext";
+import SuperAdminRoutes from "./SuperAdminRoutes";
+import UserDashboard from "../pages/dashboard/User/UserDashboard/UserDashboard";
+import Announcements from "../components/features/announcement/Announcements";
+import ResidentsPage from "../pages/dashboard/Admin/ResidentManagement/ResidentsPage";
+import NotificationsPage from "../pages/dashboard/Admin/Notification/NotificationsPage";
+import ProfilePage from "../pages/dashboard/User/Profile/ProfilePage";
+import AnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
@@ -36,7 +33,11 @@ const SocietyChecker = ({ children, authUser }) => {
 
   // If no society, only allow dashboard (onboarding), notifications, and profile
   if (!hasSociety) {
-    const allowedPaths = ["/user/dashboard", "/user/notifications", "/user/profile"];
+    const allowedPaths = [
+      "/user/dashboard",
+      "/user/notifications",
+      "/user/profile",
+    ];
     const currentPath = window.location.pathname;
 
     if (!allowedPaths.includes(currentPath)) {
@@ -96,7 +97,7 @@ const ProtectedRoutes = ({ authUser }) => {
           }
         >
           <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<AnnouncementsPage />} />
+          <Route path="announcements" element={<Announcements />} />
           <Route path="complaints" element={<ComplaintsPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
@@ -113,7 +114,7 @@ const ProtectedRoutes = ({ authUser }) => {
           }
         >
           <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<AnnouncementsPage />} />
+          <Route path="announcements" element={<AnnouncementPage />} />
           <Route path="raise-complaint" element={<RaiseComplaintPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
