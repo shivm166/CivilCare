@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar";
-import RoleSocietySwitcher from "../RoleSocietySwitcher";
+import RoleSocietySwitcher from "../role-based/RoleSocietySwitcher/RoleSocietySwitcher";
 import { User } from "lucide-react";
-import { useSocietyContext } from "../../context/SocietyContext";
+import Sidebar from "./Sidebar/Sidebar";
+import { useSocietyContext } from "../../contexts/SocietyContext";
 
 const Layout = () => {
   const { activeRole } = useSocietyContext();
