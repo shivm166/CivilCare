@@ -250,3 +250,9 @@ export const updateComplaintStatus = async (id, status) => {
 };
 export * from "./memberApi";
 export * from "./activationApi";
+export {
+  getMyInvitations,
+  acceptInvitation,
+  rejectInvitation,
+  getSentInvitations,
+} from "./invitationApi";

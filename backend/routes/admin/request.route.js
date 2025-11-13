@@ -6,10 +6,10 @@ import {
   getAllRequestsForSociety,
   acceptRequest,
   rejectRequest,
-} from "../controllers/request.controllers.js";
-import { validateSendRequest } from "../middlelware/validation.request.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
-import protectRoute from "../middlelware/isProtected.js";
+} from "../../controllers/request.controllers.js";
+import { validateSendRequest } from "../../middlelware/validation.request.js";
+import { validateRequest } from "../../middlelware/validateMiddleware.js";
+import protectRoute from "../../middlelware/isProtected.js";
 
 const router = Router();
 
@@ -45,8 +45,6 @@ router.patch("/:requestId/accept", protectRoute, acceptRequest);
 router.patch("/:requestId/reject", protectRoute, rejectRequest);
 
 export default router;
-
-
 
 // API Endpoints Created
 

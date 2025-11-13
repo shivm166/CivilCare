@@ -6,8 +6,8 @@ import {
   getSocietyMembers,
   removeMember,
   updateMemberRole,
-} from "../controllers/member.controllers.js";
-import protectRoute from "../middlelware/isProtected.js";
+} from "../../controllers/member.controllers.js";
+import protectRoute from "../../middlelware/isProtected.js";
 
 const router = Router();
 
@@ -27,6 +27,10 @@ router.post("/:societyId/members/invite", protectRoute, inviteNewMember);
 router.delete("/:societyId/members/:memberId", protectRoute, removeMember);
 
 // 📝 Update member role
-router.patch("/:societyId/members/:memberId/role", protectRoute, updateMemberRole);
+router.patch(
+  "/:societyId/members/:memberId/role",
+  protectRoute,
+  updateMemberRole
+);
 
 export default router;
