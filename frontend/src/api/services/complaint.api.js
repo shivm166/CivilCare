@@ -17,6 +17,7 @@ export const createComplaint = async (formdata) => {
 export const getMyComplaint = async () => {
   try {
     const res = await axiosInstance.get("complaint/getMyComplaints");
+    console.log(res.data);
     return res.data;
   } catch (error) {
     console.error("Error fetching users", error);

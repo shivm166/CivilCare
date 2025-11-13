@@ -1,6 +1,4 @@
-// frontend/src/pages/dashboard/ResidentDashboard.jsx
-import React from "react";
-import Container from "../../components/layout/Container";
+import { Container } from "lucide-react";
 
 const ResidentDashboard = () => {
   return (
