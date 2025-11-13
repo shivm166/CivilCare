@@ -1,6 +1,6 @@
 import React from "react";
 import { Building2, ChevronDown, Check, Loader, User, Zap } from "lucide-react";
-import { useSocietyContext } from "../context/SocietyContext";
+import { useSocietyContext } from "../../../contexts/SocietyContext";
 
 const RoleSocietySwitcher = () => {
   const {

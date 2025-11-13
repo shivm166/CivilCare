@@ -10,8 +10,8 @@ import {
   User,
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
-import { useGetSocietyRequests } from "../hooks/useRequests";
-import { useMyInvitations } from "../hooks/useInvitations";
+import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
+import { useMyInvitations } from "../../../hooks/api/useInvitations";
 
 // Define the menu configurations
 const adminMenu = [

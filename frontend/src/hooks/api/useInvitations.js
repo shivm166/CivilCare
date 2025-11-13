@@ -4,7 +4,7 @@ import {
   acceptInvitation,
   rejectInvitation,
   getSentInvitations,
-} from "../lib/api";
+} from "../../api/services/invitation.api";
 import toast from "react-hot-toast";
 
 // Hook for user to get their invitations

@@ -12,14 +12,13 @@ import {
   Container,
 } from "lucide-react";
 import {
-  useMyInvitations,
-  useAcceptInvitation,
-  useRejectInvitation,
+  useAcceptRequest,
 } from "../../../../hooks/api/useRequests";
 // import InvitationCard from "../../components/invitations/InvitationCard";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
 import InvitationCard from "../invitations/InvitationCard";
+import { useMyInvitations, useRejectInvitation } from "../../../../hooks/api/useInvitations";
 
 const NotificationsPage = () => {
   const { activeSociety, activeRole } = useSocietyContext();
