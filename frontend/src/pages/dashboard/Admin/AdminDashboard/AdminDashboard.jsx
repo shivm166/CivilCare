@@ -1,6 +1,6 @@
 // frontend/src/pages/dashboard/AdminDashboard.jsx
 import React from "react";
-import Container from "../../components/layout/Container";
+import Container from "../../../../components/layout/Container/Container";
 
 const AdminDashboard = () => {
   return (

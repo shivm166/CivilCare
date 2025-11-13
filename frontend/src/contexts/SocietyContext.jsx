@@ -6,9 +6,9 @@ import React, {
   useMemo,
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSocieties } from "../lib/api";
+import { getSocieties } from "../api/services/society.api";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-import PageLoader from "../components/common/PageLoader";
+import PageLoader from "../pages/error/PageLoader";
 
 const SocietyContext = createContext(null);
 

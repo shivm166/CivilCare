@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { sendJoinRequest, searchSocietyByCode } from "../lib/api"; // ⬅️ CHANGED
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
+import { sendJoinRequest, searchSocietyByCode } from "../../api/services/request.api";
 
 // Hook to search society by JoiningCode ⬅️ CHANGED
 export const useSearchSociety = (joiningCode, enabled = false) => {

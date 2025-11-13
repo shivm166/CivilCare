@@ -4,7 +4,7 @@ import {
   getAllComplaints,
   getMyComplaint,
   updateComplaintStatus,
-} from "../lib/api";
+} from "../../api/services/complaint.api";
 
 // 1. CREATE COMPLAINT
 export const useCreateComplaint = () => {

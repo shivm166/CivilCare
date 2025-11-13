@@ -9,7 +9,7 @@ import {
   Mail,
   User,
 } from "lucide-react";
-import { useSocietyContext } from "../context/SocietyContext";
+import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../hooks/useRequests";
 import { useMyInvitations } from "../hooks/useInvitations";
 

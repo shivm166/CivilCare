@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createSociety } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { createSociety } from "../../api/services/society.api";
 
 const useCreateSociety = () => {
   const queryClient = useQueryClient();
