@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Building2, MapPin, Mail, Loader2 } from "lucide-react";
-import useCreateSociety from "../../../hooks/useCreateSociety";
+import useCreateSociety from "../../../../hooks/api/useCreateSociety";
 
 const CreateSocietyModal = ({ onClose }) => {
   const [formData, setFormData] = useState({

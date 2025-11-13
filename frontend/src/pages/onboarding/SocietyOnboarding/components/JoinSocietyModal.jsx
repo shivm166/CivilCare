@@ -9,7 +9,7 @@ import {
   CheckCircle,
   Users,
 } from "lucide-react";
-import { useSearchSociety, useSendJoinRequest } from "../../../hooks/useJoinRequest";
+import { useSearchSociety, useSendJoinRequest } from "../../../../hooks/api/useJoinRequest";
 
 const JoinSocietyModal = ({ onClose }) => {
   const [joiningCode, setJoiningCode] = useState(""); // ⬅️ CHANGED

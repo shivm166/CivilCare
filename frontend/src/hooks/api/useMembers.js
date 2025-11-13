@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getSocietyMembers,
+  // getSocietyMembers,
   addExistingMember,
   inviteNewMember,
   removeMember,
   searchUserByEmail, // ✅ UPDATED
-} from "../lib/api";
+} from "../../api/services/member.api";
 import toast from "react-hot-toast";
 
 // Main hook for member management

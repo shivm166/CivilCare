@@ -1,10 +1,10 @@
 // pages/MyComplaintsPage.jsx (અથવા જ્યાં પણ complaints list છે)
-import { useSocietyContext } from "../../context/SocietyContext";
+import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import {
   useGetMyComplaints,
   useUpdateComplaintStatus,
   useGetAllComplaints, // ✅ ADD THIS IMPORT
-} from "../../hooks/useComplaints";
+} from "../../../../hooks/api/useComplaints";
 
 export default function MyComplaintsPage() {
   const { activeRole } = useSocietyContext(); // <-- આ જ ચેક કરે છે

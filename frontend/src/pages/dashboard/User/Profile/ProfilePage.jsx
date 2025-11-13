@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { LogOut, User, Mail, Phone, Edit3, CheckCircle, X } from "lucide-react";
-import useProfile from "../../hooks/useProfile.js";
-import useLogout from "../../hooks/useLogout.js";
+import useProfile from "../../../../hooks/api/auth/useProfile";
+import useLogout from "../../../../hooks/api/auth/useLogout";
 
 const ProfilePage = () => {
   const { user, loading, error, updateProfileMutation, updateProfileStatus } =

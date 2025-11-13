@@ -1,9 +1,6 @@
 // src/pages/MyComplaintsPage.jsx
 import { useState } from "react";
-import {
-  useCreateComplaint,
-  useGetMyComplaints,
-} from "../../hooks/useComplaints";
+import { useCreateComplaint, useGetMyComplaints } from "../../../../hooks/api/useComplaints";
 
 export default function RaiseComplaintPage() {
   // Form state

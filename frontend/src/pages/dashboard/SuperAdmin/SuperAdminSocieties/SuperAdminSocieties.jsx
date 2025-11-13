@@ -1,8 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllSocieties } from "../../lib/api";
 // import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
+import { getAllSocieties } from "../../../../api/services/superadmin.api";
 
 function SocietyCard({ society, onDelete, onEdit }) {
   return (

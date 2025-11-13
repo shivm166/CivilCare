@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   getAllRequestsForSociety,
   acceptRequest,
   rejectRequest,
   getMyRequests,
-} from "../lib/api";
-import toast from "react-hot-toast";
-import { useSocietyContext } from "../context/SocietyContext";
+} from "../../api/services/request.api";
+import { useSocietyContext } from "../../contexts/SocietyContext";
 
 // Get all requests for society (Admin)
 export const useGetSocietyRequests = (societyId) => {

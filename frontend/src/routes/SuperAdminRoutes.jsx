@@ -1,8 +1,8 @@
 import { Navigate, Route } from "react-router-dom"
-import SuperAdminLayout from "../components/layout/SuperAdminLayout"
-import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard"
-import SuperAdminSocieties from "../pages/superadmin/SuperAdminSocieties"
-import SuperAdminUsers from "../pages/superadmin/SuperAdminUsers"
+import SuperAdminLayout from "../components/layout/SuperAdminLayout/SuperAdminLayout"
+import SuperAdminDashboard from "../pages/dashboard/SuperAdmin/SuperAdminDashboard/SuperAdminDashboard"
+import SuperAdminSocieties from "../pages/dashboard/SuperAdmin/SuperAdminSocieties/SuperAdminSocieties"
+import SuperAdminUsers from "../pages/dashboard/SuperAdmin/SuperAdminUsers/SuperAdminUsers"
 
 function SuperAdminRoutes() {
   return (

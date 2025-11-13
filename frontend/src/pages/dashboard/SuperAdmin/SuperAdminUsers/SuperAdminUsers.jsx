@@ -1,8 +1,9 @@
 import React from "react";
 import { useQuery,} from "@tanstack/react-query";
-import { getAllUsers,} from "../../lib/api";
+// import { getAllUsers,} from "../../lib/api";
 // import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
+import { getAllUsers } from "../../../../api/services/superadmin.api";
 
 function UserCard({ user, onEdit, onDelete }) {
   return (

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { useMembers } from "../../hooks/useMembers";
-import { useSocietyContext } from "../../context/SocietyContext";
 import { FiPlus } from "react-icons/fi";
-import AddMemberModal from "../../components/members/AddMemberModal";
-import MemberCard from "../../components/members/MemberCard";
+// import AddMemberModal from "../../components/members/AddMemberModal";
+// import MemberCard from "../../components/members/MemberCard";
+import { useSocietyContext } from "../../../../contexts/SocietyContext";
+import { useMembers } from "../../../../hooks/api/useMembers";
+import AddMemberModal from "../../../../components/features/member/AddMemberModal/AddMemberModal";
+import MemberCard from "../../../../components/features/member/MemberCard/MemberCard";
 
 const ResidentsPage = () => {
   const { activeSocietyId, activeRole } = useSocietyContext(); // ✅ Get activeRole

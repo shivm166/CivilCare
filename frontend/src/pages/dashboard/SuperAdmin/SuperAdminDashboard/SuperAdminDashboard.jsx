@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getSuperAdminStats } from "../../lib/api";
 import { LayoutDashboard, Users, Building2, FileText } from "lucide-react";
+import { getSuperAdminStats } from "../../../../api/services/superadmin.api";
 
 const StatCard = ({ title, value, icon: Icon, color = "bg-white" }) => {
   return (

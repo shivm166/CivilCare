@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar";
+// import Sidebar from "../Sidebar";
 import RoleSocietySwitcher from "../RoleSocietySwitcher";
 import { User } from "lucide-react";
 import { useSocietyContext } from "../../context/SocietyContext";

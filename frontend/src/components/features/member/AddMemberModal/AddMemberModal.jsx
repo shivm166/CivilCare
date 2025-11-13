@@ -6,8 +6,9 @@ import {
   FiX,
   FiAlertCircle,
 } from "react-icons/fi";
-import { useSearchUserByEmail } from "../../hooks/useMembers";
+// import { useSearchUserByEmail } from "../../hooks/useMembers";
 import toast from "react-hot-toast";
+import { useSearchUserByEmail } from "../../../../hooks/api/useMembers";
 
 const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
   const [modalType, setModalType] = useState("existing");
