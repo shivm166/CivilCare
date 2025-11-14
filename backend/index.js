@@ -7,12 +7,11 @@ import cors from "cors";
 import "dotenv/config";
 import societyRouter from "./routes/society.route.js";
 import requestRouter from "./routes/admin/request.route.js";
-// ⛔ REMOVE THIS LINE: import attachSocietyContext from "./middlelware/attachSocietyContext.js";
 import complaintRouter from "./routes/complaint.routes.js";
 import memberRoute from "./routes/admin/member.route.js";
 import activationRoute from "./routes/admin/activation.route.js";
-import adminStatsRoutes from "./routes/adminStats.route.js";
 import routes from "./routes/index.js";
+import dashboardRoutes from "./routes/dashboard.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -37,11 +36,10 @@ app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
 app.use("/api/request", requestRouter);
 app.use("/api/complaint", complaintRouter);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use("/api/member", memberRoute);
 app.use("/api/activation", activationRoute);
-
-app.use("/api/admin/stats", adminStatsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

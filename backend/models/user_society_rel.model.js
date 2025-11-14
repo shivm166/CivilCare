@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const userSocietyRelSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const userSocietyRelSchema = new mongoose.Schema(
     },
     building: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Building"
+      ref: "Building",
     },
     unit: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,7 +22,7 @@ const userSocietyRelSchema = new mongoose.Schema(
     },
     roleInSociety: {
       type: String,
-      enum: ["admin", "member", "tenant", "owner"], // Added tenant and owner for clarity
+      enum: ["admin", "member", "tenant", "owner"],
       default: "member",
     },
     joinedAt: {
@@ -39,7 +39,7 @@ const userSocietyRelSchema = new mongoose.Schema(
   }
 );
 
-// Still ensures a user has only one relationship per society
+// Unique user + society relation
 userSocietyRelSchema.index({ user: 1, society: 1 }, { unique: true });
 
 export const UserSocietyRel = mongoose.model(

@@ -23,4 +23,6 @@ router.get("/:id", protectRoute, getSocietyById);
 router.patch("/:id", protectRoute, updateSociety);
 router.delete("/:id", protectRoute, deleteSociety);
 
+router.post("/create", protectRoute, createSociety);
+
 export default router;
