@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
 import { useMyInvitations } from "../../../hooks/api/useInvitations";
+import { useGetUserAnnouncements } from "../../../hooks/api/useAnnouncements";
 
 // Define the menu configurations
 const adminMenu = [
@@ -40,7 +41,7 @@ const noSocietyMenu = [
 ];
 
 const Sidebar = () => {
-  const { activeRole, activeSociety, societies } = useSocietyContext();
+  const { activeRole, activeSociety, societies, activeSocietyId } = useSocietyContext();
 
   // Fetch requests for notification badge (only for admin)
   const { data: requestsData } = useGetSocietyRequests(
@@ -50,21 +51,64 @@ const Sidebar = () => {
   // Fetch invitations for notification badge (for users)
   const { data: invitationsData } = useMyInvitations();
 
+  // ✅ NEW: Fetch announcements for user badge count (only for members)
+  const { data: announcements } = useGetUserAnnouncements(
+    activeRole === "member" ? activeSocietyId : null
+  );
+
   const unreadCount = requestsData?.requests?.length || 0;
   const invitationCount = invitationsData?.count || 0;
+
+  // ✅ NEW: Calculate unread announcements count
+  const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // ✅ Force re-calculation
+
+  // ✅ Function to calculate unread count
+  const calculateUnreadCount = () => {
+    if (announcements && activeSocietyId && activeRole === "member") {
+      const storageKey = `lastSeenAnnouncements_${activeSocietyId}`;
+      const lastSeenTime = localStorage.getItem(storageKey);
+
+      if (!lastSeenTime) {
+        setUnreadAnnouncementsCount(announcements.length);
+      } else {
+        const newCount = announcements.filter(
+          (announcement) => new Date(announcement.createdAt) > new Date(lastSeenTime)
+        ).length;
+        setUnreadAnnouncementsCount(newCount);
+      }
+    }
+  };
+
+  // ✅ Calculate on mount and when data changes
+  useEffect(() => {
+    calculateUnreadCount();
+  }, [announcements, activeSocietyId, activeRole, refreshTrigger]);
+
+  // ✅ NEW: Listen for custom event from AnnouncementPage
+  useEffect(() => {
+    const handleAnnouncementsRead = () => {
+      // Trigger re-calculation by updating state
+      setRefreshTrigger(prev => prev + 1);
+    };
+
+    window.addEventListener('announcementsRead', handleAnnouncementsRead);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('announcementsRead', handleAnnouncementsRead);
+    };
+  }, []);
 
   // ✅ Determine which menu to show
   const hasSociety = societies && societies.length > 0;
   let menu = userMenu; // Default
 
   if (!hasSociety) {
-    // No society: show limited menu
     menu = noSocietyMenu;
   } else if (activeRole === "admin") {
-    // Has society + admin role
     menu = adminMenu;
   } else {
-    // Has society + member role
     menu = userMenu;
   }
 
@@ -90,7 +134,7 @@ const Sidebar = () => {
                 <span className="font-medium">{item.name}</span>
               </div>
 
-              {/* Notification Badge */}
+              {/* ✅ Notification Badge for Notifications */}
               {item.name === "Notifications" && (
                 <>
                   {/* Admin: Show join request count */}
@@ -107,6 +151,15 @@ const Sidebar = () => {
                     </span>
                   )}
                 </>
+              )}
+
+              {/* ✅ NEW: Notification Badge for Announcements (Users Only) */}
+              {item.name === "Announcements" && 
+                activeRole === "member" && 
+                unreadAnnouncementsCount > 0 && (
+                <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                  {unreadAnnouncementsCount}
+                </span>
               )}
             </NavLink>
           ))}

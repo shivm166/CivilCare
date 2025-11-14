@@ -6,14 +6,16 @@ import Layout from "../components/layout/Layout";
 import ComplaintsPage from "../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage";
 import { SocietyProvider } from "../contexts/SocietyContext";
 import SuperAdminRoutes from "./SuperAdminRoutes";
-// import UserDashboard from "../pages/dashboard/User/UserDashboard/UserDashboard";
-import Announcements from "../components/features/announcement/Announcements";
 import ResidentsPage from "../pages/dashboard/Admin/ResidentManagement/ResidentsPage";
 import NotificationsPage from "../pages/dashboard/Admin/Notification/NotificationsPage";
 import ProfilePage from "../pages/dashboard/User/Profile/ProfilePage";
-import AnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 import RaiseComplaintPage from "../pages/dashboard/User/Complaints/RaiseComplaintPage";
 import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDashboard";
+
+// ✅ CORRECT IMPORTS - Two separate announcement pages
+import AdminAnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
+import UserAnnouncementPage from "../pages/dashboard/User/Announcements/AnnouncementPage";
+
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
@@ -98,7 +100,8 @@ const ProtectedRoutes = ({ authUser }) => {
           }
         >
           <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<Announcements />} />
+          {/* ✅ FIXED: Use AdminAnnouncementPage for admin */}
+          <Route path="announcements" element={<AdminAnnouncementPage />} />
           <Route path="complaints" element={<ComplaintsPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
@@ -115,7 +118,7 @@ const ProtectedRoutes = ({ authUser }) => {
           }
         >
           <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<AnnouncementPage />} />
+          <Route path="announcements" element={<UserAnnouncementPage />} />
           <Route path="raise-complaint" element={<RaiseComplaintPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
