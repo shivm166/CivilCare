@@ -3,6 +3,8 @@ import activationRoute from "./activation.route.js";
 import invitationRoute from "./invitation.route.js";
 import memberRoute from "./member.route.js";
 import requestRoute from "./request.route.js";
+import announcementRoutes from "./announcement.routes.js"; 
+
 
 const router = Router();
 
@@ -11,5 +13,6 @@ router.use("/activation", activationRoute);
 router.use("/invitation", invitationRoute);
 router.use("/member", memberRoute);
 router.use("/request", requestRoute);
+router.use("/announcement", announcementRoutes);
 
 export default router;

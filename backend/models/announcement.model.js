@@ -1,5 +1,32 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    adminReply: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    repliedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const announcementSchema = new mongoose.Schema(
   {
     title: {
@@ -7,19 +34,25 @@ const announcementSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    message: {
+    description: {
       type: String,
+      required: true,
       trim: true,
     },
-    attachments: [String],
     society: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Society",
+      required: true,
     },
-    visibleToRoles: {
-      type: [String],
-      enum: ["all", "admin", "member"],
-      default: ["all"],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    comments: [commentSchema],
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
