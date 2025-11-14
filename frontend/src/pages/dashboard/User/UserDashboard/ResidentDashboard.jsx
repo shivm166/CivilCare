@@ -1,4 +1,4 @@
-import { Container } from "lucide-react";
+import Container from "../../../../components/layout/Container/Container";
 
 const ResidentDashboard = () => {
   return (

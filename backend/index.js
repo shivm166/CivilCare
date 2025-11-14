@@ -6,10 +6,12 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import societyRouter from "./routes/society.route.js";
+<<<<<<< HEAD
 import requestRouter from "./routes/admin/request.route.js";
+=======
+>>>>>>> b65e3c967d6390fbdcbeb78380acd1817cee23f3
 import complaintRouter from "./routes/complaint.routes.js";
-import memberRoute from "./routes/admin/member.route.js";
-import activationRoute from "./routes/admin/activation.route.js";
+
 import routes from "./routes/index.js";
 import dashboardRoutes from "./routes/dashboard.route.js";
 
@@ -29,17 +31,14 @@ app.use(
 app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
-// ⛔ REMOVE THIS LINE: app.use(attachSocietyContext);
+
 
 app.use("/api", routes);
 app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
-app.use("/api/request", requestRouter);
 app.use("/api/complaint", complaintRouter);
 app.use("/api/dashboard", dashboardRoutes);
 
-app.use("/api/member", memberRoute);
-app.use("/api/activation", activationRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

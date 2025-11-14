@@ -9,16 +9,16 @@ import {
   XCircle,
   Loader2,
   AlertCircle,
-  Container,
 } from "lucide-react";
 import {
   useAcceptRequest,
+  useRejectRequest,
 } from "../../../../hooks/api/useRequests";
-// import InvitationCard from "../../components/invitations/InvitationCard";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
 import InvitationCard from "../invitations/InvitationCard";
-import { useMyInvitations, useRejectInvitation } from "../../../../hooks/api/useInvitations";
+import { useAcceptInvitation, useMyInvitations, useRejectInvitation } from "../../../../hooks/api/useInvitations";
+import Container from "../../../../components/layout/Container/Container";
 
 const NotificationsPage = () => {
   const { activeSociety, activeRole } = useSocietyContext();

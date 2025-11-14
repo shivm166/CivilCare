@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  // getSocietyMembers,
   addExistingMember,
+  getSocietyMembers,
   inviteNewMember,
   removeMember,
   searchUserByEmail, // ✅ UPDATED
