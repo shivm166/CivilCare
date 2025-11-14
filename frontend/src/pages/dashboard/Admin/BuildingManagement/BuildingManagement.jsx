@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Building2, Plus, Search, Edit2, Trash2, Users } from "lucide-react";
-import { useBuildings, useDeleteBuilding } from "../../hooks/useBuildings";
-import BuildingCard from "../../components/building/BuildingCard";
-import CreateBuildingModal from "../../components/building/CreateBuildingModal";
-import BuildingDetailModal from "../../components/building/BuildingDetailModal";
-import PageLoader from "../../components/common/PageLoader";
+import { useBuildings, useDeleteBuilding } from "../../../../hooks/api/useBuildings";
+import BuildingCard from "../../../../components/features/building/BuildingCard";
+import CreateBuildingModal from "../../../../components/features/building/CreateBuildingModal";
+import BuildingDetailModal from "../../../../components/features/building/BuildingDetailModal";
+import PageLoader from "../../../error/PageLoader";
 
 function BuildingManagement() {
     const [searchQuery, setSearchQuery] = useState("");
