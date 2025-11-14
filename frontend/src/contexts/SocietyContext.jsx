@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSocieties } from "../api/services/society.api";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation
 import PageLoader from "../pages/error/PageLoader";
 
 const SocietyContext = createContext(null);
@@ -22,13 +22,13 @@ const getAvailableRoles = (roleInSociety) => {
 
 export const SocietyProvider = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // 🔥 Added this
   const queryClient = useQueryClient();
-
+  
   const [activeSocietyId, setActiveSocietyId] = useState(
     () => localStorage.getItem("activeSocietyId") || null
   );
 
-  // Store the currently active role for the active society (e.g., 'admin' or 'member')
   const [activeRole, setActiveRole] = useState(
     () => localStorage.getItem("activeRole") || null
   );
@@ -44,12 +44,9 @@ export const SocietyProvider = ({ children }) => {
   const activeSociety = useMemo(() => {
     const society =
       societies.find((s) => s.societyId === activeSocietyId) || null;
-
     if (society) {
-      // Attach available roles to the active society object
       society.availableRoles = getAvailableRoles(society.role);
     }
-
     return society;
   }, [societies, activeSocietyId]);
 
@@ -60,27 +57,22 @@ export const SocietyProvider = ({ children }) => {
       const currentSociety = societies.find((s) => s.societyId === defaultId);
       const highestRole = currentSociety ? currentSociety.role : null;
 
-      // Update local storage and states if a society is active but context is not initialized
       if (!activeSocietyId) {
         setActiveSocietyId(defaultId);
         localStorage.setItem("activeSocietyId", defaultId);
       }
 
-      // Set default role to the highest role (admin > member) if not set or invalid
       if (
         highestRole &&
         (!activeRole || !getAvailableRoles(highestRole).includes(activeRole))
       ) {
         setActiveRole(highestRole);
         localStorage.setItem("activeRole", highestRole);
-
-        // Redirect to new dashboard based on highest role
         const defaultPath =
           highestRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
         navigate(defaultPath, { replace: true });
       }
     } else if (!isSocietiesLoading && societies.length === 0) {
-      // ✅ Clear storage but don't redirect - let ProtectedRoutes handle it
       localStorage.removeItem("activeSocietyId");
       localStorage.removeItem("activeRole");
       setActiveSocietyId(null);
@@ -88,19 +80,46 @@ export const SocietyProvider = ({ children }) => {
     }
   }, [societies, activeSocietyId, isSocietiesLoading, activeRole, navigate]);
 
+  // 🔥 NEW: Sync activeRole with URL changes (when user manually types URL)
+  useEffect(() => {
+    if (!isSocietiesLoading && activeSociety && societies.length > 0) {
+      const currentPath = location.pathname;
+      const availableRoles = getAvailableRoles(activeSociety.role);
+      
+      // Determine what role the URL implies
+      let urlImpliedRole = null;
+      if (currentPath.startsWith('/admin/')) {
+        urlImpliedRole = 'admin';
+      } else if (currentPath.startsWith('/user/')) {
+        urlImpliedRole = 'member';
+      }
+      
+      // Only act if URL implies a role different from current activeRole
+      if (urlImpliedRole && urlImpliedRole !== activeRole) {
+        // Check if user has permission for this role
+        if (availableRoles.includes(urlImpliedRole)) {
+          // ✅ User has permission - update the role state
+          setActiveRole(urlImpliedRole);
+          localStorage.setItem('activeRole', urlImpliedRole);
+        } else {
+          // ❌ User doesn't have permission - redirect to correct dashboard
+          const correctPath = activeRole === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+          navigate(correctPath, { replace: true });
+        }
+      }
+    }
+  }, [location.pathname, activeSociety, activeRole, isSocietiesLoading, societies.length, navigate]);
+
   const switchSociety = (societyId) => {
     const newSociety = societies.find((s) => s.societyId === societyId);
     if (newSociety) {
       const newHighestRole = newSociety.role;
-
       setActiveSocietyId(societyId);
       localStorage.setItem("activeSocietyId", societyId);
-
-      // Reset role to the highest available role in the new society
+      
       setActiveRole(newHighestRole);
       localStorage.setItem("activeRole", newHighestRole);
-
-      // Navigate to the new role's dashboard
+      
       const newPath =
         newHighestRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
       navigate(newPath);
@@ -111,8 +130,7 @@ export const SocietyProvider = ({ children }) => {
     if (activeSociety?.availableRoles?.includes(role) && role !== activeRole) {
       setActiveRole(role);
       localStorage.setItem("activeRole", role);
-
-      // Navigate to the dashboard for the new role
+      
       const newPath = role === "admin" ? "/admin/dashboard" : "/user/dashboard";
       navigate(newPath);
     }
@@ -137,12 +155,7 @@ export const SocietyProvider = ({ children }) => {
   return (
     <SocietyContext.Provider value={contextValue}>
       {isSocietiesLoading ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">{<PageLoader />}</p>
-          </div>
-        </div>
+        <PageLoader />
       ) : (
         children
       )}
