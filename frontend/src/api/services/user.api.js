@@ -11,6 +11,6 @@ export const updateProfile = async (profileData) => {
 };
 
 export const getAllUsers = async () => {
-  const res = await axiosInstance.get("/users");
+  const res = await axiosInstance.get("/user");
   return res.data;
 };

@@ -32,9 +32,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useDashboard } from "../../../../hooks/api/useDashboard";
 
 const AdminDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
+
+  const { data, isLoading } = useDashboard()
+  console.log(data);
 
   // Static data for charts
   const monthlyData = [
@@ -87,9 +91,10 @@ const AdminDashboard = () => {
     },
   ];
 
-  const StatCard = ({ icon: Icon, title, value, change, color, bgColor }) => (
+  const StatCard = ({ icon: Icon, title, value, change, color, bgColor, onClick }) => (
     <div
       className={`${bgColor} rounded-lg p-6 shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer border border-opacity-20`}
+      onClick={onClick}
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -147,32 +152,35 @@ const AdminDashboard = () => {
           <StatCard
             icon={Users}
             title="Total Users"
-            value="185"
+            value={data?.data?.totalUsers || 0}
             change={12}
             color="text-blue-600"
             bgColor="bg-blue-50"
-            onclick={() => Navigate("/dashboard/admin/residents")}
+            onClick={() => Navigate("/admin/residents")}
           />
+
           <StatCard
             icon={FileText}
-            title="Total Complaints"
-            value="47"
+            title="Total Society Members"
+            value={data?.data?.totalSocietyMembers || 0}
             change={-8}
             color="text-red-600"
             bgColor="bg-red-50"
           />
+
           <StatCard
             icon={CheckCircle}
             title="Resolved Issues"
-            value="132"
+            value={data?.data?.resolvedIssues || 0}
             change={15}
             color="text-green-600"
             bgColor="bg-green-50"
           />
+
           <StatCard
             icon={DollarSign}
             title="Monthly Collection"
-            value="₹5.2L"
+            value={`₹${data?.data?.monthlyCollection || 0}`}
             change={5}
             color="text-purple-600"
             bgColor="bg-purple-50"

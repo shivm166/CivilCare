@@ -7,6 +7,7 @@ import {
   getMySocieties,
   getSocietyById,
   updateSociety,
+  getSocietyWiseUserCount,
 } from "../controllers/society.controllers.js";
 import protectRoute from "../middlelware/isProtected.js";
 
@@ -23,6 +24,6 @@ router.get("/:id", protectRoute, getSocietyById);
 router.patch("/:id", protectRoute, updateSociety);
 router.delete("/:id", protectRoute, deleteSociety);
 
-router.post("/create", protectRoute, createSociety);
+router.get("/society-wise-user-count", getSocietyWiseUserCount);
 
 export default router;

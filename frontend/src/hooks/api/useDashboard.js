@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { getDashboardCounts } from "../api/dashboard.api";
+// src/hooks/api/useSocietyWiseUserCount.js
 
-export const useDashboard = () => {
+import { useQuery } from "@tanstack/react-query";
+import { getSocietyWiseUserCountApi } from "../../services/api/society.api";
+
+export const useSocietyWiseUserCount = () => {
   return useQuery({
-    queryKey: ["dashboard-counts"],
-    queryFn: getDashboardCounts,
+    queryKey: ["societyWiseUserCount"],
+    queryFn: getSocietyWiseUserCountApi,
   });
 };

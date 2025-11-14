@@ -60,6 +60,41 @@ export const createSociety = async (req, res) => {
   }
 };
 
+// Get society-wise user count
+
+export const getSocietyWiseUserCount = async (req, res) => {
+  try {
+    const result = await User.aggregate([
+      {
+        $group: {
+          _id: "$societyId",      // <-- society field
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          societyId: "$_id",
+          count: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.log("Error in getSocietyWiseUserCount:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
 export const getMySocieties = async (req, res) => {
   try {
 
