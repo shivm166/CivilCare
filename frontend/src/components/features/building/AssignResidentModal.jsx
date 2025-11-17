@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { X, Search, UserPlus } from "lucide-react";
-import { useAssignResident } from "../../hooks/useBuildings";
-import { useMembers } from "../../hooks/useMembers";
-import { useSocietyContext } from "../../context/SocietyContext";
+import { useAssignResident } from "../../../hooks/api/useBuildings";
+import { useMembers } from "../../../hooks/api/useMembers";
+import { useSocietyContext } from "../../../contexts/SocietyContext";
 
 function AssignResidentModal({ isOpen, onClose, unit }) {
   const [searchQuery, setSearchQuery] = useState("");

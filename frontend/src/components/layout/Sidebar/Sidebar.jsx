@@ -8,6 +8,7 @@ import {
   Bell,
   Mail,
   User,
+  Building2,
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
@@ -17,6 +18,7 @@ import { useGetUserAnnouncements } from "../../../hooks/api/useAnnouncements";
 // Define the menu configurations
 const adminMenu = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Buildings", path: "/admin/buildings", icon: Building2 },
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },

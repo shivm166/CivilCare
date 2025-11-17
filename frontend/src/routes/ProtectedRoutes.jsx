@@ -15,6 +15,7 @@ import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDas
 // ✅ CORRECT IMPORTS - Two separate announcement pages
 import AdminAnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 import UserAnnouncementPage from "../pages/dashboard/User/Announcements/AnnouncementPage";
+import BuildingManagement from "../pages/dashboard/Admin/BuildingManagement/BuildingManagement";
 
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
@@ -102,6 +103,7 @@ const ProtectedRoutes = ({ authUser }) => {
           <Route path="dashboard" element={<DashboardWrapper />} />
           {/* ✅ FIXED: Use AdminAnnouncementPage for admin */}
           <Route path="announcements" element={<AdminAnnouncementPage />} />
+          <Route path="buildings" element={<BuildingManagement />} />
           <Route path="complaints" element={<ComplaintsPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />

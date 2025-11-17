@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import { useCreateBuilding } from "../../hooks/useBuildings";
+import { useCreateBuilding } from "../../../hooks/api/useBuildings";
 
 function CreateBuildingModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({

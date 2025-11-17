@@ -4,8 +4,7 @@ import {
   useBuildingById,
   useUpdateBuilding,
   useDeleteUnit,
-} from "../../hooks/useBuildings";
-// import CreateUnitModal from "./CreateUnitModal";
+} from "../../../hooks/api/useBuildings";
 import AssignResidentModal from "./AssignResidentModal";
 
 function BuildingDetailModal({ isOpen, onClose, buildingId }) {
