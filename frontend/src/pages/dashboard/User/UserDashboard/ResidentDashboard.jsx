@@ -5,7 +5,6 @@ import {
   Megaphone,
   Users,
   Wrench,
-  ArrowRight,
   Loader2,
   CheckCircle,
   Clock,
@@ -13,6 +12,8 @@ import {
   Home,
   Phone,
   User,
+  Bell,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Container from "../../../../components/layout/Container/Container";
@@ -23,100 +24,34 @@ import { useMyInvitations } from "../../../../hooks/api/useInvitations";
 import { useMembers } from "../../../../hooks/api/useMembers";
 import useProfile from "../../../../hooks/api/auth/useProfile";
 
-// --- Reusable Components ---
-
-const StatCard = ({ title, value, icon: Icon, color, linkTo, linkText }) => {
-  const colorClasses = {
-    amber: "border-amber-500 text-amber-600",
-    red: "border-red-500 text-red-600",
-    blue: "border-blue-500 text-blue-600",
-    green: "border-green-500 text-green-600",
+// Helper component for complaint status badges
+const StatusBadge = ({ status }) => {
+  const statusMap = {
+    pending: { badge: "badge-warning", icon: <Clock className="w-4 h-4" /> },
+    in_progress: {
+      badge: "badge-info",
+      icon: <Loader2 className="w-4 h-4 animate-spin" />,
+    },
+    resolved: {
+      badge: "badge-success",
+      icon: <CheckCircle className="w-4 h-4" />,
+    },
   };
-  const aColor = colorClasses[color] || colorClasses.blue;
-
+  const { badge, icon } = statusMap[status] || {
+    badge: "badge-ghost",
+    icon: <HelpCircle className="w-4 h-4" />,
+  };
   return (
-    <div
-      className={`bg-white p-6 rounded-xl shadow-lg border-l-4 transition-all hover:shadow-xl hover:scale-[1.02] ${aColor}`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-full bg-gray-100 ${aColor}`}>
-          <Icon className="w-6 h-6" />
-        </div>
-        <Link
-          to={linkTo}
-          className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"
-        >
-          {linkText} <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-      <div>
-        <h3 className="text-3xl font-bold text-slate-900">{value}</h3>
-        <p className="text-sm text-slate-600">{title}</p>
-      </div>
+    <div className={`badge ${badge} badge-outline gap-2 p-3 text-xs`}>
+      {icon}
+      {status.replace("_", " ").toUpperCase()}
     </div>
   );
 };
 
-// --- Status Helpers ---
-
-const getStatusBadge = (status) => {
-  switch (status) {
-    case "pending":
-      return "bg-yellow-100 text-yellow-700";
-    case "in_progress":
-      return "bg-blue-100 text-blue-700";
-    case "resolved":
-      return "bg-green-100 text-green-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case "pending":
-      return <Clock className="w-4 h-4 text-yellow-700" />;
-    case "in_progress":
-      return <Loader2 className="w-4 h-4 text-blue-700 animate-spin" />;
-    case "resolved":
-      return <CheckCircle className="w-4 h-4 text-green-700" />;
-    default:
-      return <HelpCircle className="w-4 h-4 text-gray-700" />;
-  }
-};
-
-// --- Animation Variants ---
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 12,
-    },
-  },
-};
-
-// --- Main Dashboard Component ---
-
 const ResidentDashboard = () => {
   const { activeSocietyId, activeSociety } = useSocietyContext();
   const { user, loading: userLoading } = useProfile();
-
-  // --- Data Fetching ---
   const { data: myComplaints, isLoading: complaintsLoading } =
     useGetMyComplaints(activeSocietyId);
   const { data: announcements, isLoading: announcementsLoading } =
@@ -136,41 +71,26 @@ const ResidentDashboard = () => {
     invitationsLoading ||
     membersLoading;
 
-  // --- Data Processing (Memoized) ---
   const { myUnit, admins, stats, recentAnnouncements, recentComplaints } =
     useMemo(() => {
-      // Find user's unit info from the members list
       const myMemberInfo = members?.find((m) => m.user?._id === user?._id);
-      const myUnit = myMemberInfo?.unit || null;
-
-      // Find society admins for helpdesk
-      const admins =
-        members?.filter((m) => m.roleInSociety === "admin").slice(0, 2) || [];
-
-      // Calculate stats
       const pendingComplaints =
         myComplaints?.filter(
           (c) => c.status === "pending" || c.status === "in_progress"
         ).length || 0;
-      const pendingInvitations = invitationsData?.count || 0;
-
-      const stats = {
-        pendingComplaints,
-        pendingInvitations,
-        totalMembers: membersCount || 0,
-        totalAnnouncements: announcements?.length || 0,
-      };
-
-      // Get recent items
-      const recentAnnouncements = announcements?.slice(0, 3) || [];
-      const recentComplaints = myComplaints?.slice(0, 3) || [];
 
       return {
-        myUnit,
-        admins,
-        stats,
-        recentAnnouncements,
-        recentComplaints,
+        myUnit: myMemberInfo?.unit || null,
+        admins:
+          members?.filter((m) => m.roleInSociety === "admin").slice(0, 3) || [],
+        stats: {
+          pendingComplaints,
+          pendingInvitations: invitationsData?.count || 0,
+          totalMembers: membersCount || 0,
+          totalAnnouncements: announcements?.length || 0,
+        },
+        recentAnnouncements: announcements?.slice(0, 4) || [],
+        recentComplaints: myComplaints?.slice(0, 4) || [],
       };
     }, [
       members,
@@ -183,202 +103,311 @@ const ResidentDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-16 h-16 text-indigo-600 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
   }
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <Container className="py-4">
+    <Container className="py-6 lg:py-9">
       <motion.div
-        variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-8"
+        variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        className="space-y-7 lg:space-y-10"
       >
-        {/* --- Welcome Header --- */}
-        <motion.div variants={sectionVariants}>
-          <h2 className="text-3xl font-bold text-slate-800">
-            Welcome, {user?.name || "Resident"}!
-          </h2>
-          <p className="text-lg text-slate-600 mt-1">
-            You are viewing the dashboard for{" "}
-            <span className="font-semibold text-indigo-600">
-              {activeSociety?.societyName || "your society"}
-            </span>
-            .
-          </p>
+        {/* Header */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-bold text-base-content tracking-tight">
+              Hello,{" "}
+              <span className="text-primary">
+                {user?.name?.split(" ")[0] || "Resident"}
+              </span>{" "}
+              👋
+            </h1>
+            <p className="mt-2 text-sm lg:text-base text-base-content/70">
+              Welcome back to{" "}
+              <span className="font-semibold text-primary">
+                {activeSociety?.societyName || "your society"}
+              </span>
+              .
+            </p>
+          </div>
+          <div className="flex items-center gap-3 self-start lg:self-auto bg-base-100 border border-base-200 rounded-2xl px-4 py-3 shadow-sm">
+            <User className="w-5 h-5 text-primary" />
+            <div className="text-xs">
+              <p className="font-semibold text-base-content">
+                {user?.name || "Resident User"}
+              </p>
+              <p className="text-base-content/70">
+                {myUnit ? `Unit ${myUnit.unitNumber}` : "No unit linked yet"}
+              </p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* --- My Home Card --- */}
+        {/* My Home card */}
         {myUnit && (
           <motion.div
-            variants={sectionVariants}
-            className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-8 rounded-2xl shadow-2xl"
+            variants={itemVariants}
+            className="card bg-primary text-primary-content shadow-lg"
           >
-            <div className="flex items-center gap-4 mb-4">
-              <Home className="w-10 h-10" />
-              <div>
-                <p className="text-indigo-200">My Home</p>
-                <h3 className="text-4xl font-bold">Unit {myUnit.unitNumber}</h3>
+            <div className="card-body flex-col sm:flex-row sm:items-center sm:justify-between p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <Home className="w-10 h-10" />
+                </div>
+                <div>
+                  <h2 className="card-title text-3xl font-extrabold">
+                    Unit {myUnit.unitNumber}
+                  </h2>
+                  <p className="opacity-80">{activeSociety?.societyName}</p>
+                </div>
+              </div>
+              <div className="sm:text-right mt-2 sm:mt-0">
+                <div className="badge badge-outline">
+                  {(myUnit.type || "apartment").replace("_", " ")}
+                </div>
+                {activeSociety?.city && (
+                  <p className="text-sm opacity-80 mt-1">
+                    {activeSociety.city}
+                  </p>
+                )}
               </div>
             </div>
-            <span className="inline-block bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full capitalize">
-              {myUnit.type.replace("_", " ")}
-            </span>
           </motion.div>
         )}
 
-        {/* --- Society Overview (Stats) --- */}
-        <motion.div variants={sectionVariants}>
-          <h3 className="text-xl font-semibold text-slate-900 mb-4">
-            Society Overview
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="My Open Complaints"
-              value={stats.pendingComplaints}
-              icon={Wrench}
-              color="amber"
-              linkTo="/user/raise-complaint"
-              linkText="Manage"
-            />
-            <StatCard
-              title=" Notfications"
-              value={stats.pendingInvitations}
-              icon={Mail}
-              color="red"
-              linkTo="/user/notifications"
-              linkText="View"
-            />
-            <StatCard
-              title="Total Residents"
-              value={stats.totalMembers}
-              icon={Users}
-              color="blue"
-              linkTo="/user/residents"
-              linkText="Directory"
-            />
-            <StatCard
-              title="Announcements"
-              value={stats.totalAnnouncements}
-              icon={Megaphone}
-              color="green"
-              linkTo="/user/announcements"
-              linkText="Read"
-            />
-          </div>
-        </motion.div>
-
-        {/* --- Recent Activity Section --- */}
-        <motion.div
-          variants={sectionVariants}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        {/* Stats grid */}
+        <motion.section
+          variants={itemVariants}
+          className="stats stats-vertical lg:stats-horizontal shadow w-full"
         >
-          {/* Recent Announcements */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">
-              Recent Announcements
-            </h3>
-            {recentAnnouncements.length > 0 ? (
-              <div className="space-y-4">
-                {recentAnnouncements.map((item) => (
-                  <div key={item._id} className="p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold text-slate-800 truncate">
-                      {item.title}
-                    </h4>
-                    <p className="text-sm text-slate-600 truncate">
-                      {item.description}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-500 text-center py-8">
-                No recent announcements.
-              </p>
-            )}
+          <div className="stat">
+            <div className="stat-figure text-warning">
+              <Wrench className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Open Complaints</div>
+            <div className="stat-value text-warning">
+              {stats.pendingComplaints}
+            </div>
+            <div className="stat-actions">
+              <Link
+                to="/user/raise-complaint"
+                className="btn btn-xs btn-outline"
+              >
+                View
+              </Link>
+            </div>
           </div>
 
-          {/* My Complaint Status */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">
-              My Complaint Status
-            </h3>
-            {recentComplaints.length > 0 ? (
-              <div className="space-y-4">
-                {recentComplaints.map((item) => (
-                  <div
-                    key={item._id}
-                    className="p-4 bg-gray-50 rounded-lg flex items-center justify-between"
-                  >
-                    <div>
-                      <h4 className="font-semibold text-slate-800 truncate">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm text-slate-500">
-                        {new Date(item.createdAt).toLocaleDateString()}
+          <div className="stat">
+            <div
+              className={`stat-figure ${
+                stats.pendingInvitations > 0 ? "text-error" : "text-info"
+              }`}
+            >
+              {stats.pendingInvitations > 0 ? (
+                <Bell className="w-8 h-8" />
+              ) : (
+                <Mail className="w-8 h-8" />
+              )}
+            </div>
+            <div className="stat-title">Notifications</div>
+            <div
+              className={`stat-value ${
+                stats.pendingInvitations > 0 ? "text-error" : "text-info"
+              }`}
+            >
+              {stats.pendingInvitations}
+            </div>
+            <div className="stat-actions">
+              <Link to="/user/notifications" className="btn btn-xs btn-outline">
+                Open
+              </Link>
+            </div>
+          </div>
+
+          <div className="stat">
+            <div className="stat-figure text-info">
+              <Users className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Total Residents</div>
+            <div className="stat-value text-info">{stats.totalMembers}</div>
+            <div className="stat-actions">
+              <Link to="/user/residents" className="btn btn-xs btn-outline">
+                Directory
+              </Link>
+            </div>
+          </div>
+
+          <div className="stat">
+            <div className="stat-figure text-success">
+              <Megaphone className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Announcements</div>
+            <div className="stat-value text-success">
+              {stats.totalAnnouncements}
+            </div>
+            <div className="stat-actions">
+              <Link to="/user/announcements" className="btn btn-xs btn-outline">
+                Read all
+              </Link>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Recent activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7">
+          {/* Announcements */}
+          <motion.div
+            variants={itemVariants}
+            className="card bg-base-100 shadow-md border border-base-200"
+          >
+            <div className="card-body">
+              <div className="card-title flex items-center justify-between">
+                <h3 className="flex items-center gap-2">
+                  <Megaphone className="w-5 h-5 text-primary" /> Latest
+                  Announcements
+                </h3>
+                <Link
+                  to="/user/announcements"
+                  className="link link-primary text-xs"
+                >
+                  View all
+                </Link>
+              </div>
+              {recentAnnouncements.length > 0 ? (
+                <div className="space-y-3 mt-4">
+                  {recentAnnouncements.map((item) => (
+                    <div
+                      key={item._id}
+                      className="p-4 bg-base-200 rounded-lg hover:bg-base-300 transition"
+                    >
+                      <h4 className="font-semibold text-sm">{item.title}</h4>
+                      <p className="text-xs text-base-content/70 mt-1 line-clamp-2">
+                        {item.description}
+                      </p>
+                      <p className="text-[11px] text-base-content/50 mt-2">
+                        {new Date(item.createdAt).toLocaleDateString("en-IN")}
                       </p>
                     </div>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full ${getStatusBadge(
-                        item.status
-                      )}`}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-base-content/60">
+                  <Megaphone className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No announcements yet.</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Complaints */}
+          <motion.div
+            variants={itemVariants}
+            className="card bg-base-100 shadow-md border border-base-200"
+          >
+            <div className="card-body">
+              <div className="card-title flex items-center justify-between">
+                <h3 className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-warning" /> My Complaints
+                </h3>
+                <Link
+                  to="/user/raise-complaint"
+                  className="link link-warning text-xs"
+                >
+                  Raise new
+                </Link>
+              </div>
+              {recentComplaints.length > 0 ? (
+                <div className="space-y-3 mt-4">
+                  {recentComplaints.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-center justify-between p-4 bg-base-200 rounded-lg"
                     >
-                      {getStatusIcon(item.status)}
-                      {item.status.replace("_", " ").toUpperCase()}
-                    </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-base-content/50 mt-1">
+                          {new Date(item.createdAt).toLocaleDateString("en-IN")}
+                        </p>
+                      </div>
+                      <StatusBadge status={item.status} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-base-content/60">
+                  <Wrench className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No complaints raised yet.</p>
+                  <Link
+                    to="/user/raise-complaint"
+                    className="link link-primary text-xs mt-2 inline-block"
+                  >
+                    Raise your first complaint &rarr;
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Helpdesk */}
+        <motion.div
+          variants={itemVariants}
+          className="card bg-base-100 shadow-md border border-base-200"
+        >
+          <div className="card-body">
+            <h3 className="card-title flex items-center gap-2">
+              <User className="w-5 h-5 text-accent" /> Society Helpdesk
+            </h3>
+            <p className="text-sm text-base-content/70 mb-5">
+              Reach out to your society admins for any assistance.
+            </p>
+            {admins.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {admins.map((admin) => (
+                  <div
+                    key={admin._id}
+                    className="flex items-center gap-4 p-4 bg-base-200 rounded-lg"
+                  >
+                    <div className="avatar placeholder">
+                      <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
+                        <span className="text-lg">
+                          {admin.user?.name?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-sm">
+                      <h4 className="font-semibold">{admin.user?.name}</h4>
+                      <div className="badge badge-accent badge-outline text-xs">
+                        Admin
+                      </div>
+                      <p className="text-xs text-base-content/70 mt-2 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5" />
+                        {admin.user?.phone || "Not available"}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 text-center py-8">
-                You haven't raised any complaints.
+              <p className="text-center text-base-content/60 py-7 text-sm">
+                No admin contacts available.
               </p>
-            )}
-          </div>
-        </motion.div>
-
-        {/* --- Helpdesk --- */}
-        <motion.div
-          variants={sectionVariants}
-          className="bg-white p-6 rounded-xl shadow-lg"
-        >
-          <h3 className="text-xl font-semibold text-slate-900 mb-4">
-            Society Helpdesk
-          </h3>
-          <p className="text-slate-600 mb-4">
-            Need help? Contact your society administrators.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {admins.length > 0 ? (
-              admins.map((admin) => (
-                <div
-                  key={admin._id}
-                  className="p-4 bg-gray-50 rounded-lg flex items-center gap-4"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {admin.user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800">
-                      {admin.user?.name}
-                    </h4>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                      Admin
-                    </span>
-                    <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-1">
-                      <Phone className="w-3 h-3" /> {admin.user?.phone}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-slate-500">No administrator contacts found.</p>
             )}
           </div>
         </motion.div>
