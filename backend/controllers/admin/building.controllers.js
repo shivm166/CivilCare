@@ -1,6 +1,6 @@
 import { isValidObjectId } from "mongoose";
-import { Building } from "../../models/building.model";
-import { Unit } from "../../models/unit.model";
+import { Building } from "../../models/building.model.js";
+import { Unit } from "../../models/unit.model.js";
 
 export const createBuilding = async (req, res) => {
     try {
@@ -26,7 +26,7 @@ export const createBuilding = async (req, res) => {
             });
         }
 
-        const building = Building.create({
+        const building = await Building.create({
             name: name.trim(),
             numberOfFloors,
             description: description?.trim() || "",
@@ -45,7 +45,7 @@ export const createBuilding = async (req, res) => {
     }
 }
 
-export const getAllbuildings = async (req, res) => {
+export const getAllBuildings = async (req, res) => {
     try {
         const societyId = req.society?._id
 
@@ -90,7 +90,7 @@ export const getBuildingById = async (req, res) => {
             })
         }
 
-        const building = Building.findOne({
+        const building = await Building.findOne({
             _id: id,
             society: societyId,
         })
