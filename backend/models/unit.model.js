@@ -41,6 +41,6 @@ const unitSchema = new mongoose.Schema(
   }
 );
 
-unitSchema.index({ society: 1, unitNumber: 1 }, { unique: true });
+unitSchema.index({ society: 1, name: 1 }, { unique: true });
 
 export const Unit = mongoose.model("Unit", unitSchema, "unit");
