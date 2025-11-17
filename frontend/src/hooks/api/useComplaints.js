@@ -57,14 +57,14 @@ export const useUpdateComplaintStatus = () => {
 
   const mutation = useMutation({
     mutationFn: ({ id, status }) => updateComplaintStatus(id, status),
+
     onSuccess: (data) => {
-      // Update both lists
-      queryClient.setQueryData(["allComplaints"], (old) =>
-        old?.map((c) => (c._id === data.data._id ? data.data : c))
-      );
-      queryClient.setQueryData(["myComplaints"], (old) =>
-        old?.map((c) => (c._id === data.data._id ? data.data : c))
-      );
+      // The updated complaint
+      const updated = data.data;
+
+      // 🔥 Update ALL versions of cached complaints
+      queryClient.invalidateQueries({ queryKey: ["allComplaints"] });
+      queryClient.invalidateQueries({ queryKey: ["myComplaints"] });
     },
   });
 
