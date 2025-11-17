@@ -3,9 +3,10 @@ import { X, Plus, Edit2, Trash2, Users, Home, Layers } from "lucide-react";
 import {
   useBuildingById,
   useUpdateBuilding,
-  useDeleteUnit,
 } from "../../../hooks/api/useBuildings";
 import AssignResidentModal from "./AssignResidentModal";
+import CreateUnitModal from "./CreateUnitModal";
+import { useDeleteUnit } from "../../../hooks/api/useUnit";
 
 function BuildingDetailModal({ isOpen, onClose, buildingId }) {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -305,12 +306,12 @@ function BuildingDetailModal({ isOpen, onClose, buildingId }) {
       </div>
 
       {/* Create Unit Modal */}
-      {/* <CreateUnitModal
+      <CreateUnitModal
         isOpen={isCreateUnitModalOpen}
         onClose={() => setIsCreateUnitModalOpen(false)}
         buildingId={buildingId}
         maxFloors={building?.numberOfFloors}
-      /> */}
+      /> 
 
       {/* Assign Resident Modal */}
       {selectedUnit && (
