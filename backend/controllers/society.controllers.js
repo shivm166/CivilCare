@@ -1,6 +1,7 @@
 import { Society } from "../models/society.model.js";
 import { UserSocietyRel } from "../models/user_society_rel.model.js";
 import { generateSocietyCode } from "../utils/generateSocietyCode.js";
+import { User } from "../models/user.model.js";
 
 export const createSociety = async (req, res) => {
   try {
@@ -60,44 +61,38 @@ export const createSociety = async (req, res) => {
   }
 };
 
-// Get society-wise user count
-
 export const getSocietyWiseUserCount = async (req, res) => {
   try {
-    const result = await User.aggregate([
-      {
-        $group: {
-          _id: "$societyId",      // <-- society field
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $project: {
-          societyId: "$_id",
-          count: 1,
-          _id: 0
-        }
-      }
-    ]);
+    const societyId = req.society?._id;
 
+    if (!societyId) {
+      return res.status(400).json({
+        success: false,
+        message: "Society context required. Header 'Society-ID' missing",
+      });
+    }
+    const userCount = await UserSocietyRel.countDocuments({
+      society: societyId,
+      isActive: true, // Sirf active members
+    });
     return res.status(200).json({
       success: true,
-      data: result
+      data: {
+        totalUsers: userCount,
+        totalSocietyMembers: userCount,
+      },
     });
-
   } catch (error) {
-    console.log("Error in getSocietyWiseUserCount:", error);
+    console.log("Error in getSocietyWiseUserCount", error);
     return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server error while counting society users",
     });
   }
 };
 
-
 export const getMySocieties = async (req, res) => {
   try {
-
     const rels = await UserSocietyRel.find({ user: req.user._id }).populate(
       "society",
       "name address city state pincode createdBy"
@@ -126,9 +121,7 @@ export const getSocietyById = async (req, res) => {
       society: id,
     });
     if (!rel) {
-      return res
-        .status(403)
-        .json({ message: "You can't see others society" });
+      return res.status(403).json({ message: "You can't see others society" });
     }
 
     return res.json(society);

@@ -9,7 +9,8 @@ import societyRouter from "./routes/society.route.js";
 import complaintRouter from "./routes/complaint.routes.js";
 
 import routes from "./routes/index.js";
-import dashboardRoutes from "./routes/dashboard.route.js";
+import societyRoutes from "./routes/society.route.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -33,7 +34,9 @@ app.use("/api/user", userRouter);
 app.use("/api/society", societyRouter);
 app.use("/api/complaint", complaintRouter);
 
-app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/society", societyRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

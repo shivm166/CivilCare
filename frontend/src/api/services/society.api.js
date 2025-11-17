@@ -31,16 +31,3 @@ export const searchSocietyByCode = async (joiningCode) => {
     throw error;
   }
 };
-
-export const getSocietyWiseUserCount = async (req, res) => {
-  try {
-    const users = await User.find(); // check if model works
-    return res.status(200).json({
-      success: true,
-      data: users.length,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Error" });
-  }
-};
