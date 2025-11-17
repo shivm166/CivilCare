@@ -27,12 +27,10 @@ app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 
-
-app.use("/api", routes);
 app.use("/api/user", userRouter);
+app.use("/api", routes);
 app.use("/api/society", societyRouter);
 app.use("/api/complaint", complaintRouter);
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
