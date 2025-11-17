@@ -28,12 +28,10 @@ app.use(
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// Sahi tareeke se routes ko use karein
-app.use("/api", routes); // Yeh 'index.js' routes ko handle karega (jaise auth routes)
 app.use("/api/user", userRouter);
-app.use("/api/society", societyRouter); // Sirf ek baar use karein
+app.use("/api", routes);
+app.use("/api/society", societyRouter);
 app.use("/api/complaint", complaintRouter);
-app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
