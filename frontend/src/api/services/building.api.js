@@ -97,7 +97,7 @@ export const getUnitsInBuilding = async (buildingId) => {
 export const updateUnit = async (unitId, unitData) => {
   try {
     const response = await axiosInstance.patch(
-      `/admin/v1/building/unit/${unitId}`,
+      `/admin/v1/unit/${unitId}`,
       unitData
     );
     return response.data;
@@ -111,7 +111,7 @@ export const updateUnit = async (unitId, unitData) => {
 export const deleteUnit = async (unitId) => {
   try {
     const response = await axiosInstance.delete(
-      `/admin/v1/building/unit/${unitId}`
+      `/admin/v1/unit/${unitId}`
     );
     return response.data;
   } catch (error) {
@@ -124,7 +124,7 @@ export const deleteUnit = async (unitId) => {
 export const assignResidentToUnit = async (unitId, assignmentData) => {
   try {
     const response = await axiosInstance.post(
-      `/admin/v1/building/unit/${unitId}/assign-resident`,
+      `/admin/v1/unit/${unitId}/assign-resident`,
       assignmentData
     );
     return response.data;

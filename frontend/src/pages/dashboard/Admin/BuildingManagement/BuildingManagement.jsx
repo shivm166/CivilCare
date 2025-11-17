@@ -11,14 +11,14 @@ function BuildingManagement() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const data = []
-    const isLoading= false
-    const error = false
+    // const data = []
+    // const isLoading= false
+    // const error = false
     
-    // const { data, isLoading, error } = useBuildings();
-    // const { mutate: deleteBuilding, isPending: isDeleting } = useDeleteBuilding();
+    const { data, isLoading, error } = useBuildings();
+    const { mutate: deleteBuilding, isPending: isDeleting } = useDeleteBuilding();
 
-    const buildings = data?.buildings || [];
+    const buildings = data?.buildingWithUnitCount || [];
 
     // Filter buildings based on search
     const filteredBuildings = buildings.filter((building) =>
@@ -32,7 +32,7 @@ function BuildingManagement() {
 
     const handleDeleteBuilding = (buildingId) => {
         if (window.confirm("Are you sure you want to delete this building?")) {
-        deleteBuilding(buildingId);
+            deleteBuilding(buildingId);
         }
     };
 
