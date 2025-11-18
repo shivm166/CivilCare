@@ -260,3 +260,35 @@ export const assignResidentToUnit = async (req, res) => {
         return res.status(500).json({message: "Internal Server Error"})
     }
 }
+
+export const getUnitById = async (req, res) => {
+    try {
+        const { unitId } = req.params;
+        const societyId = req.society?._id;
+
+        if (!isValidObjectId(unitId)) {
+            return res.status(400).json({ message: "Invalid unit ID" });
+        }
+
+        const unit = await Unit.findOne({
+            _id: unitId,
+            society: societyId,
+        })
+            .populate("owner", "name email phone")
+            .populate("primaryResident", "name email phone")
+            .populate("building", "name numberOfFloors");
+
+        if (!unit) {
+            return res.status(404).json({ message: "Unit not found" });
+        }
+
+        return res.status(200).json({
+            message: "Unit details fetched successfully",
+            unit,
+            building: unit.building,
+        });
+    } catch (error) {
+        console.log("Error in getUnitById:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
