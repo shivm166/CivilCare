@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { assignResidentToUnit } from "../../../api/services/unit.api";
+import { getSocietyMembers } from "../../../api/services/member.api"; // ✅ Import service
+import { useSocietyContext } from "../../../contexts/SocietyContext"; // ✅ Import context
 import { useState } from "react";
+import toast from "react-hot-toast"; // ✅ Added toast import if missing
 
 function AssignResidentModal({ isOpen, onClose, unit }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -8,22 +11,21 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   const [role, setRole] = useState("member");
 
   const queryClient = useQueryClient();
+  const { activeSocietyId } = useSocietyContext(); // ✅ Get society ID
 
-  // Fetch members (you'll need to implement this API)
-  const { data: membersData } = useQuery({
-    queryKey: ["societyMembers"],
-    queryFn: async () => {
-      const response = await axiosInstance.get("/member/search");
-      return response.data;
-    },
-    enabled: isOpen,
+  // ✅ Use correct API service
+  const { data: membersData, isLoading } = useQuery({
+    queryKey: ["societyMembers", activeSocietyId],
+    queryFn: () => getSocietyMembers(activeSocietyId),
+    enabled: isOpen && !!activeSocietyId,
   });
 
   const { mutate: assignResident, isPending } = useMutation({
-    mutationFn: (data) => assignResidentToUnit({ unitId: unit._id, data }),
+    mutationFn: (data) => assignResidentToUnit(unit._id, data), // ✅ Fixed unit._id access
     onSuccess: () => {
       toast.success("Resident assigned successfully");
       queryClient.invalidateQueries(["unit", unit._id]);
+      queryClient.invalidateQueries(["buildings"]); // Refresh building view too
       setSelectedUser(null);
       setSearchQuery("");
       onClose();
@@ -34,22 +36,22 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   });
 
   const members = membersData?.members || [];
-  const filteredMembers = members.filter(
-    (member) =>
-    {
-        const name = member.name || ""
-        const email = member.email || ""
-        const query = searchQuery.toLowerCase();
 
-        return (
-            name?.toLowerCase()?.includes(query) || email?.toLowerCase()?.includes(query)
-        )
-    }
-  );
+  // ✅ Fix filter logic to handle nested user object
+  const filteredMembers = members.filter((member) => {
+    const name = member.user?.name || "";
+    const email = member.user?.email || "";
+    const query = searchQuery.toLowerCase();
+
+    return (
+      name.toLowerCase().includes(query) || email.toLowerCase().includes(query)
+    );
+  });
 
   const handleAssign = () => {
     if (!selectedUser) return;
-    assignResident({ userId: selectedUser._id, role });
+    // ✅ Send the USER ID (from the nested user object), not the member ID
+    assignResident({ userId: selectedUser.user._id, role });
   };
 
   if (!isOpen) return null;
@@ -66,7 +68,10 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
               Select a member and assign their role
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <span className="text-2xl">&times;</span>
           </button>
         </div>
@@ -108,8 +113,13 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
             <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-indigo-900">{selectedUser.name}</p>
-                  <p className="text-sm text-indigo-700">{selectedUser.email}</p>
+                  {/* ✅ Corrected data access */}
+                  <p className="font-medium text-indigo-900">
+                    {selectedUser.user?.name}
+                  </p>
+                  <p className="text-sm text-indigo-700">
+                    {selectedUser.user?.email}
+                  </p>
                 </div>
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -126,29 +136,60 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
               Select Member
             </label>
             <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-[300px] overflow-y-auto">
-              {filteredMembers.map((member) => (
-                <div
-                  key={member._id}
-                  className={`p-4 hover:bg-gray-50 cursor-pointer ${
-                    selectedUser?._id === member._id ? "bg-indigo-50" : ""
-                  }`}
-                  onClick={() => setSelectedUser(member)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">{member.name}</p>
-                      <p className="text-sm text-gray-600">{member.email}</p>
-                    </div>
-                    {selectedUser?._id === member._id && (
-                      <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
+              {isLoading ? (
+                <div className="p-4 text-center text-gray-500">
+                  Loading members...
                 </div>
-              ))}
+              ) : filteredMembers.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No members found
+                </div>
+              ) : (
+                filteredMembers.map((member) => (
+                  <div
+                    key={member._id}
+                    className={`p-4 hover:bg-gray-50 cursor-pointer ${
+                      selectedUser?._id === member._id ? "bg-indigo-50" : ""
+                    }`}
+                    onClick={() => setSelectedUser(member)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        {/* ✅ Corrected data access for display */}
+                        <p className="font-medium text-gray-900">
+                          {member.user?.name}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {member.user?.email}
+                        </p>
+                        {/* Optional: Show unit if already assigned */}
+                        {member.unit && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Current Unit: {member.unit.unitNumber || "Assigned"}
+                          </p>
+                        )}
+                      </div>
+                      {selectedUser?._id === member._id && (
+                        <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -175,4 +216,4 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   );
 }
 
-export default AssignResidentModal
+export default AssignResidentModal;
