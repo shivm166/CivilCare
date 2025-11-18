@@ -1,349 +1,520 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   Users,
-  Building,
+  Building2,
+  Wrench,
   Megaphone,
-  AlertCircle,
-  User,
   Bell,
+  Loader2,
   TrendingUp,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Activity,
+  UserPlus,
+  FileText,
+  Settings,
+  Package,
+  Shield,
+  BarChart3,
+  MessageSquare,
+  Home,
+  ChevronRight,
+  Zap,
+  Star,
 } from "lucide-react";
-import { useSocietyWiseUserCount } from "../../../../hooks/api/useSocietyWiseCount";
+import { motion } from "framer-motion";
+import Container from "../../../../components/layout/Container/Container";
+import { useSocietyContext } from "../../../../contexts/SocietyContext";
+import { useGetAllComplaints } from "../../../../hooks/api/useComplaints";
+import { useGetAdminAnnouncements } from "../../../../hooks/api/useAnnouncements";
+import { useMembers } from "../../../../hooks/api/useMembers";
+import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
+import useProfile from "../../../../hooks/api/auth/useProfile";
+
+// Animations
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.03 } },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+};
+
+// Stat Card with Icon
+const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
+  <motion.div variants={item} whileHover={{ scale: 1.05, y: -5 }}>
+    <Link
+      to={link}
+      className={`block rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 ${gradient} relative overflow-hidden`}
+    >
+      <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full" />
+      <div className="relative z-10">
+        <Icon className="w-10 h-10 text-white mb-3" />
+        <p className="text-white/90 text-sm font-semibold mb-1">{title}</p>
+        <p className="text-5xl font-black text-white">{value}</p>
+      </div>
+    </Link>
+  </motion.div>
+);
+
+// Quick Action Card
+const ActionCard = ({ title, desc, icon: Icon, link, color }) => (
+  <motion.div variants={item} whileHover={{ scale: 1.03, y: -3 }}>
+    <Link
+      // to={link}
+      className="group block p-5 rounded-2xl bg-white border-2 border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-xl transition-all"
+    >
+      <div className="flex items-center gap-4">
+        <div
+          className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110 transition-transform`}
+        >
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-base text-gray-800">{title}</h3>
+          <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+      </div>
+    </Link>
+  </motion.div>
+);
+
+// Mini Stat
+const MiniStat = ({ icon: Icon, label, value, color }) => (
+  <motion.div
+    variants={item}
+    whileHover={{ scale: 1.05 }}
+    className={`${color} rounded-2xl p-5 shadow-md`}
+  >
+    <div className="flex items-center gap-3 mb-2">
+      <Icon className="w-5 h-5 text-white" />
+      <span className="text-xs font-bold text-white">{label}</span>
+    </div>
+    <p className="text-3xl font-black text-white">{value}</p>
+  </motion.div>
+);
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
-  const { data, isLoading, error } = useSocietyWiseUserCount();
+  const { activeSocietyId } = useSocietyContext();
+  const { user, loading: userLoading } = useProfile();
+
+  // Fetch data without society stats API (temporary)
+  const { data: complaintsData, isLoading: complaintsLoading } =
+    useGetAllComplaints(activeSocietyId);
+  const { data: announcementsData, isLoading: announcementsLoading } =
+    useGetAdminAnnouncements(activeSocietyId);
+  const { membersCount, isMembersLoading } = useMembers(activeSocietyId);
+  const { data: requestsData, isLoading: requestsLoading } =
+    useGetSocietyRequests(activeSocietyId);
+
+  const isLoading =
+    userLoading ||
+    complaintsLoading ||
+    announcementsLoading ||
+    isMembersLoading ||
+    requestsLoading;
+
+  const { stats, recentComplaints, recentAnnouncements } = useMemo(() => {
+    // Safe array handling with fallback to empty array
+    const complaintsArray = Array.isArray(complaintsData) ? complaintsData : [];
+    const announcementsArray = Array.isArray(announcementsData)
+      ? announcementsData
+      : [];
+    const requestsArray = Array.isArray(requestsData?.requests)
+      ? requestsData.requests
+      : [];
+
+    const pending = complaintsArray.filter((c) => c?.status === "pending");
+    const resolved = complaintsArray.filter((c) => c?.status === "resolved");
+    const inProgress = complaintsArray.filter(
+      (c) => c?.status === "in_progress"
+    );
+
+    return {
+      stats: {
+        residents: membersCount || 0,
+        pending: pending.length,
+        resolved: resolved.length,
+        inProgress: inProgress.length,
+        requests: requestsArray.length,
+        announcements: announcementsArray.length,
+        buildings: 8, // Default value
+        complaints: complaintsArray.length,
+      },
+      recentComplaints: pending.slice(0, 4),
+      recentAnnouncements: announcementsArray.slice(0, 4),
+    };
+  }, [complaintsData, announcementsData, membersCount, requestsData]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <Loader2 className="w-16 h-16 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-semibold">Loading Dashboard...</p>
         </div>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 text-lg font-semibold">
-            Error loading dashboard
-          </p>
-          <p className="text-gray-500 mt-2">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const dashboardData = data?.data || {};
-
-  const StatCard = ({
-    icon: Icon,
-    title,
-    value,
-    color,
-    bgColor,
-    trend,
-    onClick,
-  }) => (
-    <div
-      className={`${bgColor} rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 ${
-        onClick ? "cursor-pointer" : ""
-      }`}
-      onClick={onClick}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
-          <p className={`text-3xl font-bold ${color} mb-3`}>{value || 0}</p>
-          {trend && (
-            <div className="flex items-center text-sm">
-              <TrendingUp
-                className={`w-4 h-4 mr-1 ${
-                  trend > 0 ? "text-green-500" : "text-red-500"
-                }`}
-              />
-              <span className={trend > 0 ? "text-green-600" : "text-red-600"}>
-                {trend > 0 ? "+" : ""}
-                {trend}% this month
-              </span>
-            </div>
-          )}
-        </div>
-        <div className={`${color} bg-opacity-10 p-3 rounded-lg`}>
-          <Icon className={`w-7 h-7 ${color}`} />
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
+      <Container className="py-8">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="space-y-8"
+        >
+          {/* Header */}
+          <motion.div
+            variants={item}
+            className="flex items-center justify-between"
+          >
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {dashboardData.society?.name || "Society Management"}
+              <h1 className="text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-400 bg-clip-text text-transparent">
+                Hello, {user?.name?.split(" ")[0] || "Admin"}! 👋
               </h1>
-              <p className="text-sm text-gray-500 mt-1">Admin Dashboard</p>
+              <p className="text-gray-500 text-sm mt-2 font-medium">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">Admin</p>
-                <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
-                  ADMIN
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={Users}
-            title="Total Users"
-            value={dashboardData.totalUsers}
-            color="text-blue-600"
-            bgColor="bg-blue-50"
-            trend={12}
-            onClick={() => navigate("/admin/residents")}
-          />
-          <StatCard
-            icon={Building}
-            title="Society Members"
-            value={dashboardData.totalSocietyMembers}
-            color="text-purple-600"
-            bgColor="bg-purple-50"
-            trend={8}
-          />
-          <StatCard
-            icon={Megaphone}
-            title="Announcements"
-            value={dashboardData.totalAnnouncements}
-            color="text-green-600"
-            bgColor="bg-green-50"
-            trend={5}
-            onClick={() => navigate("/admin/announcements")}
-          />
-          <StatCard
-            icon={AlertCircle}
-            title="Total Complaints"
-            value={dashboardData.totalComplaints}
-            color="text-orange-600"
-            bgColor="bg-orange-50"
-            trend={-3}
-            onClick={() => navigate("/admin/complaints")}
-          />
-        </div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Complaint Status */}
-          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-              <AlertCircle className="w-5 h-5 mr-2 text-orange-600" />
-              Complaint Status
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Pending
-                  </span>
-                  <span className="text-lg font-bold text-orange-600">
-                    {dashboardData.pendingComplaints || 0}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-orange-500 h-2 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${
-                        dashboardData.totalComplaints > 0
-                          ? (dashboardData.pendingComplaints /
-                              dashboardData.totalComplaints) *
-                            100
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Resolved
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {dashboardData.resolvedComplaints || 0}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${
-                        dashboardData.totalComplaints > 0
-                          ? (dashboardData.resolvedComplaints /
-                              dashboardData.totalComplaints) *
-                            100
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Resolution Rate</span>
-                <span className="text-xl font-bold text-green-600">
-                  {dashboardData.totalComplaints > 0
-                    ? Math.round(
-                        (dashboardData.resolvedComplaints /
-                          dashboardData.totalComplaints) *
-                          100
-                      )
-                    : 0}
-                  %
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Complaints */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center justify-between">
-              <span className="flex items-center">
-                <Bell className="w-5 h-5 mr-2 text-orange-600" />
-                Recent Complaints
-              </span>
-              <button
-                onClick={() => navigate("/admin/complaints")}
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            {/* <motion.div whileHover={{ rotate: 90, scale: 1.1 }}>
+              <Link
+                to="/admin/settings"
+                className="btn btn-circle bg-white shadow-lg border-2 border-gray-200 hover:border-indigo-300"
               >
-                View All
-              </button>
-            </h3>
-            <div className="space-y-3">
-              {dashboardData.recentComplaints?.length > 0 ? (
-                dashboardData.recentComplaints.map((complaint) => (
-                  <div
-                    key={complaint.id}
-                    className="flex items-start p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200"
-                  >
-                    <div
-                      className={`p-2 rounded-full mr-3 ${
-                        complaint.status === "resolved"
-                          ? "bg-green-100"
-                          : "bg-orange-100"
-                      }`}
+                <Settings className="w-6 h-6 text-gray-700" />
+              </Link>
+            </motion.div> */}
+          </motion.div>
+
+          {/* Top Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Total Residents"
+              value={stats.residents}
+              icon={Users}
+              link="/admin/residents"
+              gradient="bg-gradient-to-br from-blue-400 to-blue-400"
+            />
+            <StatCard
+              title="Pending Issues"
+              value={stats.pending}
+              icon={AlertCircle}
+              link="/admin/complaints"
+              gradient="bg-gradient-to-br from-orange-400 to-red-400"
+            />
+            <StatCard
+              title="Join Requests"
+              value={stats.requests}
+              icon={Bell}
+              link="/admin/notifications"
+              gradient="bg-gradient-to-br from-pink-400 to-rose-500"
+            />
+            <StatCard
+              title="Announcements"
+              value={stats.announcements}
+              icon={Megaphone}
+              link="/admin/announcements"
+              gradient="bg-gradient-to-br from-purple-400 to-indigo-500"
+            />
+          </div>
+
+          {/* Mini Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <MiniStat
+              icon={CheckCircle2}
+              label="Resolved"
+              value={stats.resolved}
+              color="bg-gradient-to-br from-green-500 to-emerald-400"
+            />
+            <MiniStat
+              icon={Clock}
+              label="In Progress"
+              value={stats.inProgress}
+              color="bg-gradient-to-br from-amber-500 to-orange-400"
+            />
+            <MiniStat
+              icon={TrendingUp}
+              label="Success"
+              value={
+                stats.resolved > 0
+                  ? `${Math.round(
+                      (stats.resolved / (stats.resolved + stats.pending)) * 100
+                    )}%`
+                  : "0%"
+              }
+              color="bg-gradient-to-br from-cyan-500 to-blue-400"
+            />
+            <MiniStat
+              icon={Building2}
+              label="Buildings"
+              value={stats.buildings}
+              color="bg-gradient-to-br from-violet-500 to-purple-400"
+            />
+          </div>
+
+          {/* Quick Actions */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-2xl font-black text-gray-800">
+                Quick Actions
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <ActionCard
+                title="Add Resident"
+                desc="Register new members"
+                icon={UserPlus}
+                link="/admin/residents"
+                color="bg-gradient-to-br from-purple-500 to-purple-700"
+              />
+              <ActionCard
+                title="Manage Buildings"
+                desc="Update buildings & units"
+                icon={Building2}
+                link="/admin/buildings"
+                color="bg-gradient-to-br from-blue-500 to-blue-700"
+              />
+              <ActionCard
+                title="New Announcement"
+                desc="Send notices"
+                icon={Megaphone}
+                link="/admin/announcements"
+                color="bg-gradient-to-br from-cyan-500 to-cyan-700"
+              />
+              <ActionCard
+                title="View Reports"
+                desc="Analytics & insights"
+                icon={BarChart3}
+                link="/admin/reports"
+                color="bg-gradient-to-br from-green-500 to-green-700"
+              />
+              <ActionCard
+                title="Security"
+                desc="Access & permissions"
+                icon={Shield}
+                // link="/admin/security"
+                color="bg-gradient-to-br from-orange-500 to-orange-700"
+              />
+              <ActionCard
+                title="Facilities"
+                desc="Manage amenities"
+                icon={Package}
+                // link="/admin/facilities"
+                color="bg-gradient-to-br from-pink-500 to-pink-700"
+              />
+              <ActionCard
+                title="Messages"
+                desc="Resident communications"
+                icon={MessageSquare}
+                link="/admin/messages"
+                color="bg-gradient-to-br from-indigo-500 to-indigo-700"
+              />
+              <ActionCard
+                title="Complaints"
+                desc="View all issues"
+                icon={Wrench}
+                link="/admin/complaints"
+                color="bg-gradient-to-br from-red-500 to-red-700"
+              />
+            </div>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pending Complaints */}
+            <motion.div
+              variants={item}
+              className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border-2 border-orange-100"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-xl">
+                    <Wrench className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <h3 className="font-black text-xl text-gray-800">
+                    Pending Issues
+                  </h3>
+                </div>
+                <Link
+                  to="/admin/complaints"
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-bold hover:underline flex items-center gap-1"
+                >
+                  View All <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              {recentComplaints && recentComplaints.length > 0 ? (
+                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                  {recentComplaints.map((item, idx) => (
+                    <Link
+                      key={item._id || idx}
+                      to="/admin/complaints"
+                      className="block bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-2xl hover:shadow-md transition-all border border-orange-100"
                     >
-                      <AlertCircle
-                        className={`w-4 h-4 ${
-                          complaint.status === "resolved"
-                            ? "text-green-600"
-                            : "text-orange-600"
-                        }`}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-800 text-sm">
-                        {complaint.title}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-gray-500">
-                          {complaint.building}
-                        </span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <span className="text-xs text-gray-500">
-                          {complaint.time}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-bold text-sm text-gray-800 line-clamp-1">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            By: {item.createdBy?.name || "Unknown"}
+                          </p>
+                          {item.time && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {item.time}
+                            </p>
+                          )}
+                        </div>
+                        <span className="badge bg-orange-500 text-white text-xs font-bold border-0 ml-2">
+                          Pending
                         </span>
                       </div>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        complaint.status === "resolved"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-orange-100 text-orange-700"
-                      }`}
-                    >
-                      {complaint.status}
-                    </span>
-                  </div>
-                ))
+                    </Link>
+                  ))}
+                </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>No complaints yet</p>
+                <div className="text-center py-16">
+                  <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-3 opacity-60" />
+                  <p className="text-sm text-gray-600 font-semibold">
+                    All clear! No pending issues 🎉
+                  </p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
+            </motion.div>
 
-        {/* Recent Members */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center justify-between">
-            <span className="flex items-center">
-              <User className="w-5 h-5 mr-2 text-blue-600" />
-              Recent Members
-            </span>
-            <button
-              onClick={() => navigate("/admin/residents")}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            {/* Recent Announcements */}
+            <motion.div
+              variants={item}
+              className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border-2 border-purple-100"
             >
-              View All
-            </button>
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {dashboardData.recentMembers?.length > 0 ? (
-              dashboardData.recentMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200"
-                >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mr-3">
-                    {member.name.charAt(0).toUpperCase()}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-xl">
+                    <Megaphone className="w-5 h-5 text-purple-600" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800 text-sm">
-                      {member.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500 capitalize">
-                        {member.role}
-                      </span>
-                      <span className="text-xs text-gray-400">•</span>
-                      <span className="text-xs text-gray-500">
-                        {member.building}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {member.joinedDate}
-                    </p>
-                  </div>
+                  <h3 className="font-black text-xl text-gray-800">
+                    Latest News
+                  </h3>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-8 text-gray-500">
-                <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p>No members yet</p>
+                <Link
+                  to="/admin/announcements"
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-bold hover:underline flex items-center gap-1"
+                >
+                  View All <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
-            )}
+
+              {recentAnnouncements && recentAnnouncements.length > 0 ? (
+                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                  {recentAnnouncements.map((item) => (
+                    <Link
+                      key={item._id}
+                      to="/admin/announcements"
+                      className="block bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-2xl hover:shadow-md transition-all border border-purple-100"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Star className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-bold text-sm text-gray-800 line-clamp-1">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1 line-clamp-2 leading-relaxed">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3 opacity-60" />
+                  <p className="text-sm text-gray-600 font-semibold">
+                    No announcements yet
+                  </p>
+                </div>
+              )}
+            </motion.div>
           </div>
-        </div>
-      </div>
+
+          {/* Society Overview */}
+          <motion.div
+            variants={item}
+            className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 rounded-3xl p-8 shadow-xl border-2 border-white"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <Activity className="w-7 h-7 text-indigo-600" />
+              <h3 className="text-2xl font-black text-gray-800">
+                Society Overview
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                  <Home className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-3xl font-black text-gray-800">
+                  {stats.buildings}
+                </p>
+                <p className="text-sm text-gray-600 font-semibold mt-1">
+                  Buildings
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-3xl font-black text-gray-800">
+                  {stats.residents}
+                </p>
+                <p className="text-sm text-gray-600 font-semibold mt-1">
+                  Families
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-3xl font-black text-gray-800">24/7</p>
+                <p className="text-sm text-gray-600 font-semibold mt-1">
+                  Security
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                  <Package className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-3xl font-black text-gray-800">12</p>
+                <p className="text-sm text-gray-600 font-semibold mt-1">
+                  Amenities
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </Container>
+
+      {/* Custom Scrollbar */}
+      <style>{`
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #8b5cf6, #6366f1); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #7c3aed, #4f46e5); }
+      `}</style>
     </div>
   );
 };

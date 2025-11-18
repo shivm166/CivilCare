@@ -1,9 +1,8 @@
-import axios from "axios"; // Galti 1: { axiosInstance } ki jagah 'axios' import karein
+import { axiosInstance } from "axios";
 
 const API_URL = "http://localhost:4001/api";
 
-const apiClient = axios.create({
-  // Galti 1: 'axiosInstance' ki jagah 'axios' ka istemal karein
+const apiClient = axiosInstance.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +11,6 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-  
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -24,5 +22,4 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Galti 2: Aap yeh line bhool gaye aakhir mein
 export default apiClient;

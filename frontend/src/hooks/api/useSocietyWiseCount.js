@@ -10,26 +10,47 @@ const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-const getSocietyStats = async (societyId = null) => {
-  const params = societyId ? { societyId } : {};
-  const response = await apiClient.get("/society-stats", { params });
-  return response.data;
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+const getSocietyStats = async () => {
+  try {
+    const response = await apiClient.get("/society-stats");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching society stats:", error);
+    throw error;
+  }
 };
 
-export const useSocietyWiseUserCount = (societyId = null) => {
+export const useSocietyWiseUserCount = () => {
   return useQuery({
-    queryKey: ["societyStats", societyId],
-    queryFn: () => getSocietyStats(societyId),
+    queryKey: ["societyStats"],
+    queryFn: getSocietyStats,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 2,
+    onError: (error) => {
+      console.error("Failed to fetch society stats:", error);
+    },
   });
 };
