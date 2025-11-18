@@ -1,5 +1,6 @@
-import { useQueryClient,useMutation } from "@tanstack/react-query";
-import { assignResidentToUnit, createUnit, deleteUnit, updateUnit } from "../../api/services/unit.api";
+import { useQueryClient,useMutation, useQuery } from "@tanstack/react-query";
+import { assignResidentToUnit, createUnit, deleteUnit, updateUnit, getUnitById } from "../../api/services/unit.api";
+import toast from "react-hot-toast";
 // ==================== UNIT HOOKS ====================
 
 // Create unit
@@ -63,5 +64,14 @@ export const useAssignResident = () => {
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to assign resident");
     },
+  });
+};
+
+// Get unit by ID
+export const useUnitById = (unitId) => {
+  return useQuery({
+    queryKey: ["unit", unitId],
+    queryFn: () => getUnitById(unitId),
+    enabled: !!unitId,
   });
 };

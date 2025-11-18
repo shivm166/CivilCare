@@ -1,7 +1,10 @@
 import React from "react";
 import { Building2, Layers, Eye, Trash2, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Add this import
 
-function BuildingCard({ building, onView, onDelete, isDeleting }) {
+function BuildingCard({ building, onDelete, isDeleting }) {
+  const navigate = useNavigate(); // Add this hook
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       {/* Header */}
@@ -50,12 +53,13 @@ function BuildingCard({ building, onView, onDelete, isDeleting }) {
 
       {/* Actions */}
       <div className="p-4 bg-gray-50 rounded-b-lg flex gap-2">
+        {/* CHANGED: View Units button instead of View Details */}
         <button
-          onClick={() => onView(building)}
+          onClick={() => navigate(`/admin/buildings/${building._id}/units`)}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
         >
           <Eye className="w-4 h-4" />
-          View Details
+          View Units
         </button>
         <button
           onClick={() => onDelete(building._id)}
