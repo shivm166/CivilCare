@@ -16,6 +16,8 @@ import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDas
 import AdminAnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 import UserAnnouncementPage from "../pages/dashboard/User/Announcements/AnnouncementPage";
 import BuildingManagement from "../pages/dashboard/Admin/BuildingManagement/BuildingManagement";
+import BuildingUnitsPage from "../pages/dashboard/Admin/BuildingManagement/BuildingUnitsPage";
+import UnitDetailPage from "../pages/dashboard/Admin/UnitManagement/UnitDetailPage";
 
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
@@ -108,6 +110,9 @@ const ProtectedRoutes = ({ authUser }) => {
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="buildings" element={<BuildingManagement />} />
+          <Route path="buildings/:buildingId/units" element={<BuildingUnitsPage />} />
+          <Route path="buildings/:buildingId/units/:unitId" element={<UnitDetailPage />} />
         </Route>
 
         {/* User Routes */}

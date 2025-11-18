@@ -1,48 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { useCreateUnit } from "../../../hooks/api/useUnit";
+import { useUpdateUnit } from "../../../hooks/api/useUnit";
 import toast from "react-hot-toast";
 
-function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
+function EditUnitModal({ isOpen, onClose, unit, buildingMaxFloors }) {
   const [formData, setFormData] = useState({
     name: "",
     floor: "",
-    type: "vacant",
+    type: "owner_occupied",
   });
 
-  const [errors, setErrors] = useState({});
-  const { mutate: createUnitMutation, isPending } = useCreateUnit();
+  const { mutate: updateUnitMutation, isPending } = useUpdateUnit();
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Unit name is required";
+  useEffect(() => {
+    if (unit) {
+      setFormData({
+        name: unit.name || "",
+        floor: unit.floor || "",
+        type: unit.type || "owner_occupied",
+      });
     }
-
-    if (!formData.floor) {
-      newErrors.floor = "Floor is required";
-    } else if (
-      parseInt(formData.floor) < 0 ||
-      parseInt(formData.floor) > buildingMaxFloors
-    ) {
-      newErrors.floor = `Floor must be between 0 and ${buildingMaxFloors}`;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [unit]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
+    
+    // Validation
+    if (!formData.name.trim()) {
+      toast.error("Unit name is required");
       return;
     }
 
-    createUnitMutation(
+    if (parseInt(formData.floor) < 0 || parseInt(formData.floor) > buildingMaxFloors) {
+      toast.error(`Floor must be between 0 and ${buildingMaxFloors}`);
+      return;
+    }
+
+    updateUnitMutation(
       {
-        buildingId,
+        unitId: unit._id,
         data: {
           name: formData.name.trim(),
           floor: parseInt(formData.floor),
@@ -51,20 +47,10 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
       },
       {
         onSuccess: () => {
-          setFormData({ name: "", floor: "", type: "vacant" });
-          setErrors({});
           onClose();
         },
       }
     );
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
   };
 
   if (!isOpen) return null;
@@ -73,7 +59,7 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Add New Unit</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Edit Unit</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -90,17 +76,13 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
               </label>
               <input
                 type="text"
-                name="name"
                 value={formData.name}
-                onChange={handleChange}
-                placeholder="e.g., 101, A-201, Flat 5"
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="e.g., 101, A-201"
               />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
             </div>
 
             <div>
@@ -109,23 +91,17 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
               </label>
               <input
                 type="number"
-                name="floor"
                 value={formData.floor}
-                onChange={handleChange}
-                placeholder="0"
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, floor: e.target.value }))
+                }
                 min="0"
                 max={buildingMaxFloors}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                  errors.floor ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
-              {errors.floor ? (
-                <p className="text-red-500 text-sm mt-1">{errors.floor}</p>
-              ) : (
-                <p className="text-gray-500 text-sm mt-1">
-                  Max floor: {buildingMaxFloors}
-                </p>
-              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Max floor: {buildingMaxFloors}
+              </p>
             </div>
 
             <div>
@@ -133,9 +109,10 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
                 Type <span className="text-red-500">*</span>
               </label>
               <select
-                name="type"
                 value={formData.type}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, type: e.target.value }))
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="owner_occupied">Owner Occupied</option>
@@ -158,7 +135,7 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
               disabled={isPending}
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
-              {isPending ? "Creating..." : "Create Unit"}
+              {isPending ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
@@ -167,4 +144,4 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
   );
 }
 
-export default CreateUnitModal;
+export default EditUnitModal;
