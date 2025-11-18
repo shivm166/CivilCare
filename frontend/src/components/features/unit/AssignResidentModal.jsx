@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { assignResidentToUnit } from "../../../api/services/unit.api";
-import { getSocietyMembers } from "../../../api/services/member.api"; // ✅ Import service
-import { useSocietyContext } from "../../../contexts/SocietyContext"; // ✅ Import context
+import { getSocietyMembers } from "../../../api/services/member.api";
+import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useState } from "react";
-import toast from "react-hot-toast"; // ✅ Added toast import if missing
+import toast from "react-hot-toast";
 
 function AssignResidentModal({ isOpen, onClose, unit }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,7 +11,7 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   const [role, setRole] = useState("member");
 
   const queryClient = useQueryClient();
-  const { activeSocietyId } = useSocietyContext(); // ✅ Get society ID
+  const { activeSocietyId } = useSocietyContext();
 
   // ✅ Use correct API service
   const { data: membersData, isLoading } = useQuery({
@@ -21,11 +21,11 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   });
 
   const { mutate: assignResident, isPending } = useMutation({
-    mutationFn: (data) => assignResidentToUnit(unit._id, data), // ✅ Fixed unit._id access
+    mutationFn: (data) => assignResidentToUnit(unit._id, data),
     onSuccess: () => {
       toast.success("Resident assigned successfully");
       queryClient.invalidateQueries(["unit", unit._id]);
-      queryClient.invalidateQueries(["buildings"]); // Refresh building view too
+      queryClient.invalidateQueries(["buildings"]);
       setSelectedUser(null);
       setSearchQuery("");
       onClose();
@@ -37,7 +37,6 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
 
   const members = membersData?.members || [];
 
-  // ✅ Fix filter logic to handle nested user object
   const filteredMembers = members.filter((member) => {
     const name = member.user?.name || "";
     const email = member.user?.email || "";
@@ -50,7 +49,6 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
 
   const handleAssign = () => {
     if (!selectedUser) return;
-    // ✅ Send the USER ID (from the nested user object), not the member ID
     assignResident({ userId: selectedUser.user._id, role });
   };
 
@@ -113,7 +111,6 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
             <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
               <div className="flex items-center justify-between">
                 <div>
-                  {/* ✅ Corrected data access */}
                   <p className="font-medium text-indigo-900">
                     {selectedUser.user?.name}
                   </p>
@@ -155,14 +152,12 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        {/* ✅ Corrected data access for display */}
                         <p className="font-medium text-gray-900">
                           {member.user?.name}
                         </p>
                         <p className="text-sm text-gray-600">
                           {member.user?.email}
                         </p>
-                        {/* Optional: Show unit if already assigned */}
                         {member.unit && (
                           <p className="text-xs text-gray-500 mt-1">
                             Current Unit: {member.unit.unitNumber || "Assigned"}
