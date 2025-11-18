@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X, Search, UserPlus } from "lucide-react";
-import { useAssignResident } from "../../../hooks/api/useBuildings";
+import { useAssignResident } from "../../../hooks/api/useUnit";
 import { useMembers } from "../../../hooks/api/useMembers";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
 
