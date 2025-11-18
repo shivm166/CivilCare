@@ -7,7 +7,7 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
   const [formData, setFormData] = useState({
     name: "",
     floor: "",
-    type: "owner_occupied",
+    type: "vacant",
   });
 
   const [errors, setErrors] = useState({});
@@ -51,7 +51,7 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
       },
       {
         onSuccess: () => {
-          setFormData({ name: "", floor: "", type: "owner_occupied" });
+          setFormData({ name: "", floor: "", type: "vacant" });
           setErrors({});
           onClose();
         },

@@ -206,7 +206,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
               {/* Not Found Message */}
               {showNotFound && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-                  <FiAlertCircle className="text-yellow-600 text-xl flex-shrink-0 mt-0.5" />
+                  <FiAlertCircle className="text-yellow-600 text-xl shrink-0 mt-0.5" />
                   <div>
                     <p className="text-yellow-800 font-medium">
                       User not found
@@ -226,7 +226,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
               {foundUser && (
                 <div className="bg-green-50 border-2 border-green-500 rounded-lg p-5 transition-all">
                   <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                    <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0">
                       {foundUser.name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
