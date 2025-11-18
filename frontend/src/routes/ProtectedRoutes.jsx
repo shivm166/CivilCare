@@ -1,6 +1,6 @@
 import { Route, Navigate, Outlet } from "react-router-dom";
 import { useSocietyContext } from "../contexts/SocietyContext";
-import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding/SocietyOnboarding";
+import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding";
 import AdminDashboard from "../pages/dashboard/Admin/AdminDashboard/AdminDashboard";
 import Layout from "../components/layout/Layout";
 import ComplaintsPage from "../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage";
