@@ -11,9 +11,9 @@ import {
   Building2
 } from "lucide-react";
 import EditUnitModal from "../../../../components/features/unit/EditUnitModal";
-import AssignResidentModal from "../../../../components/features/building/AssignResidentModal";
 import PageLoader from "../../../error/PageLoader";
 import { useDeleteUnit, useUnitById } from "../../../../hooks/api/useUnit";
+import AssignResidentModal from "../../../../components/features/unit/AssignResidentModal";
 
 function UnitDetailPage() {
   const { buildingId, unitId } = useParams();
@@ -281,11 +281,11 @@ function UnitDetailPage() {
         buildingMaxFloors={building?.numberOfFloors}
       />
 
-      {/* <AssignResidentModal
+      <AssignResidentModal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         unit={unit}
-      /> */}
+      />
     </div>
   );
 }

@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useLogin from "../../../hooks/api/auth/useLogin";
 import PageLoader from "../../error/PageLoader";
-// import useLogin from "../../hooks/useLogin.js";
-// import PageLoader from "../../components/common/PageLoader.jsx";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
