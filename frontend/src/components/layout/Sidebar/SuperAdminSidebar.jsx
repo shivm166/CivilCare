@@ -1,11 +1,19 @@
-import { Bell, Building2, LayoutDashboard, Mail, Megaphone, User, Users } from 'lucide-react';
-import React from 'react'
-import { NavLink } from 'react-router-dom'
+import {
+  Bell,
+  Building2,
+  LayoutDashboard,
+  Mail,
+  Megaphone,
+  User,
+  Users,
+} from "lucide-react";
+import React from "react";
+import { NavLink } from "react-router-dom";
 
 const menu = [
-  { name: "Dashboard", path: "/superadmin/dashboard", icon: LayoutDashboard },
-  { name: "Societies", path: "/superadmin/societies", icon: Building2 },
-  { name: "Users", path: "/superadmin/users", icon: Users },
+  { name: "Dashboard", path: "/super-admin/dashboard", icon: LayoutDashboard },
+  { name: "Societies", path: "/super-admin/societies", icon: Building2 },
+  { name: "Users", path: "/super-admin/users", icon: Users },
 ];
 
 function SuperAdminSidebar() {
@@ -35,7 +43,7 @@ function SuperAdminSidebar() {
         </nav>
       </div>
     </aside>
-  )
+  );
 }
 
-export default SuperAdminSidebar
+export default SuperAdminSidebar;

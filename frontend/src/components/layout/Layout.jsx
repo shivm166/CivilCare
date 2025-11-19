@@ -21,7 +21,7 @@ const Layout = () => {
             <RoleSocietySwitcher />
 
             <a
-              href={`/${activeRole}/profile`}
+              href={`/${activeRole === "admin" ? "admin" : "user"}/profile`}
               className="btn btn-ghost btn-circle bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               <User className="w-5 h-5 text-gray-600" />
