@@ -43,7 +43,8 @@ const noSocietyMenu = [
 ];
 
 const Sidebar = () => {
-  const { activeRole, activeSociety, societies, activeSocietyId } = useSocietyContext();
+  const { activeRole, activeSociety, societies, activeSocietyId } =
+    useSocietyContext();
 
   // Fetch requests for notification badge (only for admin)
   const { data: requestsData } = useGetSocietyRequests(
@@ -75,7 +76,8 @@ const Sidebar = () => {
         setUnreadAnnouncementsCount(announcements.length);
       } else {
         const newCount = announcements.filter(
-          (announcement) => new Date(announcement.createdAt) > new Date(lastSeenTime)
+          (announcement) =>
+            new Date(announcement.createdAt) > new Date(lastSeenTime)
         ).length;
         setUnreadAnnouncementsCount(newCount);
       }
@@ -91,14 +93,14 @@ const Sidebar = () => {
   useEffect(() => {
     const handleAnnouncementsRead = () => {
       // Trigger re-calculation by updating state
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
     };
 
-    window.addEventListener('announcementsRead', handleAnnouncementsRead);
+    window.addEventListener("announcementsRead", handleAnnouncementsRead);
 
     // Cleanup
     return () => {
-      window.removeEventListener('announcementsRead', handleAnnouncementsRead);
+      window.removeEventListener("announcementsRead", handleAnnouncementsRead);
     };
   }, []);
 
@@ -156,13 +158,13 @@ const Sidebar = () => {
               )}
 
               {/* ✅ NEW: Notification Badge for Announcements (Users Only) */}
-              {item.name === "Announcements" && 
-                activeRole === "member" && 
+              {item.name === "Announcements" &&
+                activeRole === "member" &&
                 unreadAnnouncementsCount > 0 && (
-                <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                  {unreadAnnouncementsCount}
-                </span>
-              )}
+                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                    {unreadAnnouncementsCount}
+                  </span>
+                )}
             </NavLink>
           ))}
         </nav>

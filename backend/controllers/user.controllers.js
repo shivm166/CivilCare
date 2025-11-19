@@ -58,7 +58,7 @@ export const login = async (req, res) => {
         .json({ message: "Credential details are incorrect" });
     }
 
-    const jwt = generateTokenAndSetCookie(res, user._id, user.role);
+    const jwt = generateTokenAndSetCookie(res, user._id, user.globalRole);
 
     res.status(200).json({
       message: "Login successful",
@@ -171,7 +171,6 @@ export const getAllUsers = async (req, res) => {
       totalUsers: total,
       data: users,
     });
-
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

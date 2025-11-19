@@ -11,8 +11,10 @@ export const generateTokenAndSetCookie = (res, userId, role, society) => {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Relies on NODE_ENV
-    sameSite: "none", // Correct for cross-site
+    // ✅ FIX: Use "strict" for localhost (dev), "none" for production (https)
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    // ✅ FIX: Secure must match the environment
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 1000,
   });
 
