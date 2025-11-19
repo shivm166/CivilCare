@@ -7,7 +7,7 @@ import {
   removeMember,
   updateMemberRole,
 } from "../../controllers/member.controllers.js";
-import protectRoute from "../../middlelware/isProtected.js";
+import protectRoute from "../../middleware/isProtected.js";
 
 const router = Router();
 

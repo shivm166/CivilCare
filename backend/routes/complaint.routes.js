@@ -6,8 +6,8 @@ import {
   getComplaints,
   updateComplaintStatus,
 } from "../controllers/complaint.controllers.js";
-import protectRoute, { requireAdmin } from "../middlelware/isProtected.js";
-import attachSocietyContext from "../middlelware/attachSocietyContext.js";
+import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
+import attachSocietyContext from "../middleware/attachSocietyContext.js";
 
 const router = express.Router();
 

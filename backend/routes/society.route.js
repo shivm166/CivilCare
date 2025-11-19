@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { validateSocietyCreate } from "../middlelware/validation.society.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
+import { validateSocietyCreate } from "../middleware/validation.society.js";
+import { validateRequest } from "../middleware/validateMiddleware.js";
 import {
   createSociety,
   deleteSociety,
@@ -8,7 +8,7 @@ import {
   getSocietyById,
   updateSociety,
 } from "../controllers/society.controllers.js";
-import protectRoute from "../middlelware/isProtected.js";
+import protectRoute from "../middleware/isProtected.js";
 
 const router = Router();
 
