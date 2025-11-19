@@ -11,10 +11,9 @@ export const generateTokenAndSetCookie = (res, userId, role, society) => {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    // ✅ FIX: Use "strict" for localhost (dev), "none" for production (https)
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    // ✅ FIX: Secure must match the environment
     secure: process.env.NODE_ENV === "production",
+    // CHANGE: Use 'lax' in development because 'none' requires secure: true (HTTPS)
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 60 * 60 * 1000,
   });
 

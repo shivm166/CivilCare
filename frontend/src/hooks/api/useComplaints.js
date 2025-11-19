@@ -51,7 +51,6 @@ export const useGetAllComplaints = (societyId) => {
   });
 };
 
-// hooks/useComplaints.js
 export const useUpdateComplaintStatus = () => {
   const queryClient = useQueryClient();
 
@@ -59,12 +58,33 @@ export const useUpdateComplaintStatus = () => {
     mutationFn: ({ id, status }) => updateComplaintStatus(id, status),
 
     onSuccess: (data) => {
-      // The updated complaint
+      // The updated complaint object returned by the backend
       const updated = data.data;
 
-      // 🔥 Update ALL versions of cached complaints
-      queryClient.invalidateQueries({ queryKey: ["allComplaints"] });
-      queryClient.invalidateQueries({ queryKey: ["myComplaints"] });
+      // Helper function to find and update the item in a list
+      const updateList = (oldData) => {
+        if (Array.isArray(oldData)) {
+          return oldData.map((complaint) =>
+            complaint._id === updated._id ? updated : complaint
+          );
+        }
+        return oldData; // Return old data if it's not an array
+      };
+
+      // 🔥 FIX: Manual cache update using setQueriesData to prevent full reload.
+      // This searches for the list and updates the specific complaint object in the array.
+
+      // 1. Manually update allComplaints cache for all variants (with or without societyId)
+      queryClient.setQueriesData(
+        { queryKey: ["allComplaints"], exact: false },
+        updateList
+      );
+
+      // 2. Manually update myComplaints cache for all variants (with or without societyId)
+      queryClient.setQueriesData(
+        { queryKey: ["myComplaints"], exact: false },
+        updateList
+      );
     },
   });
 

@@ -7,9 +7,9 @@ import {
   acceptRequest,
   rejectRequest,
 } from "../../controllers/request.controllers.js";
-import { validateSendRequest } from "../../middlelware/validation.request.js";
-import { validateRequest } from "../../middlelware/validateMiddleware.js";
-import protectRoute from "../../middlelware/isProtected.js";
+import { validateSendRequest } from "../../middleware/validation.request.js";
+import { validateRequest } from "../../middleware/validateMiddleware.js";
+import protectRoute from "../../middleware/isProtected.js";
 
 const router = Router();
 

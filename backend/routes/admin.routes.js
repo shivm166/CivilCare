@@ -3,7 +3,7 @@ import {
   getSocietyWiseUserCount,
   getSocietyDetails,
 } from "../controllers/admin.controllers.js";
-import { authenticateToken } from "../middlelware/auth.middleware.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 // import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

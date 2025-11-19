@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { validateSocietyCreate } from "../middlelware/validation.society.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
+import { validateSocietyCreate } from "../middleware/validation.society.js";
+import { validateRequest } from "../middleware/validateMiddleware.js";
 import {
   createSociety,
   deleteSociety,
@@ -9,8 +9,8 @@ import {
   updateSociety,
 } from "../controllers/society.controllers.js";
 
-import protectRoute, { requireAdmin } from "../middlelware/isProtected.js";
-import attachSocietyContext from "../middlelware/attachSocietyContext.js";
+import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
+import attachSocietyContext from "../middleware/attachSocietyContext.js";
 
 const router = Router();
 
