@@ -111,8 +111,14 @@ const ProtectedRoutes = ({ authUser }) => {
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="buildings" element={<BuildingManagement />} />
-          <Route path="buildings/:buildingId/units" element={<BuildingUnitsPage />} />
-          <Route path="buildings/:buildingId/units/:unitId" element={<UnitDetailPage />} />
+          <Route
+            path="buildings/:buildingId/units"
+            element={<BuildingUnitsPage />}
+          />
+          <Route
+            path="buildings/:buildingId/units/:unitId"
+            element={<UnitDetailPage />}
+          />
         </Route>
 
         {/* User Routes */}

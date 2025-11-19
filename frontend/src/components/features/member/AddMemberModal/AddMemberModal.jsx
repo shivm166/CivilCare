@@ -200,7 +200,9 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
                       placeholder="Enter email address"
                       value={searchEmail}
                       onChange={(e) => setSearchEmail(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleSearchByEmail()}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSearchByEmail()
+                      }
                       className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none"
                     />
                     <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
@@ -401,7 +403,8 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
                 <p className="text-xs sm:text-sm text-purple-700 flex items-start gap-2.5">
                   <span className="text-xl flex-shrink-0">📧</span>
                   <span>
-                    An invitation will be sent to activate the account and set password.
+                    An invitation will be sent to activate the account and set
+                    password.
                   </span>
                 </p>
               </div>
@@ -419,7 +422,9 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
               Cancel
             </button>
             <button
-              onClick={modalType === "existing" ? handleAddExisting : handleInviteNew}
+              onClick={
+                modalType === "existing" ? handleAddExisting : handleInviteNew
+              }
               disabled={modalType === "existing" && !foundUser}
               className={`flex-1 px-6 py-3.5 font-semibold rounded-xl transition-all duration-200 shadow-lg ${
                 modalType === "existing"
@@ -439,8 +444,12 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
 
       <style jsx>{`
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes slideUp {
           from {

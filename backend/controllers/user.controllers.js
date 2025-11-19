@@ -158,3 +158,21 @@ export const getSocieties = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// dashboard admin get all users
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    const total = await User.countDocuments();
+
+    res.status(200).json({
+      success: true,
+      totalUsers: total,
+      data: users,
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

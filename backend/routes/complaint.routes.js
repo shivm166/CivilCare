@@ -5,6 +5,7 @@ import {
   getAllComplaints,
   getComplaints,
   updateComplaintStatus,
+  getTotalComplaints,
 } from "../controllers/complaint.controllers.js";
 import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
 import attachSocietyContext from "../middleware/attachSocietyContext.js";
@@ -23,5 +24,6 @@ router.patch(
   requireAdmin,
   updateComplaintStatus
 );
+router.get("/complaints", getTotalComplaints);
 
 export default router;

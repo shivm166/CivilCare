@@ -1,5 +1,6 @@
 // ES6 import (ensure .js extension in Node.js with ESM)
-import { Complaint } from "../models/complaint.model.js";
+import Complaint from "../models/complaint.model.js";
+import { User } from "../models/user.model.js";
 
 // controllers/complaintsController.js
 export const createComplaint = async (req, res) => {
@@ -246,6 +247,30 @@ export const updateComplaintStatus = async (req, res) => {
       success: false,
       message: "Server error",
       error: error.message,
+    });
+  }
+};
+
+export const getTotalComplaints = async (req, res) => {
+  try {
+    const total = await Complaint.countDocuments();
+    const resolved = await Complaint.countDocuments({ status: "resolved" });
+    const pending = await Complaint.countDocuments({ status: "pending" });
+    const inProgress = await Complaint.countDocuments({
+      status: "in_progress",
+    });
+
+    return res.json({
+      success: true,
+      totalComplaints: total,
+      resolved,
+      pending,
+      inProgress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch complaint stats",
     });
   }
 };
