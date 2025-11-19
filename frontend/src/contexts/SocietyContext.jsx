@@ -5,9 +5,9 @@ import React, {
   useState,
   useMemo,
 } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getSocieties } from "../api/services/society.api";
-import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import PageLoader from "../pages/error/PageLoader";
 
 const SocietyContext = createContext(null);
@@ -22,9 +22,8 @@ const getAvailableRoles = (roleInSociety) => {
 
 export const SocietyProvider = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation(); // 🔥 Added this
-  const queryClient = useQueryClient();
-  
+  const location = useLocation();
+
   const [activeSocietyId, setActiveSocietyId] = useState(
     () => localStorage.getItem("activeSocietyId") || null
   );
@@ -80,33 +79,41 @@ export const SocietyProvider = ({ children }) => {
     }
   }, [societies, activeSocietyId, isSocietiesLoading, activeRole, navigate]);
 
-useEffect(() => {
-  if (!isSocietiesLoading && activeSociety && societies.length > 0) {
-    const currentPath = location.pathname;
-    const availableRoles = getAvailableRoles(activeSociety.role);
+  useEffect(() => {
+    if (!isSocietiesLoading && activeSociety && societies.length > 0) {
+      const currentPath = location.pathname;
+      const availableRoles = getAvailableRoles(activeSociety.role);
 
-    let urlImpliedRole = null;
-    if (currentPath.startsWith('/admin/')) {
-      urlImpliedRole = 'admin';
-    } else if (currentPath.startsWith('/user/')) {
-      urlImpliedRole = 'member';
-    }
+      let urlImpliedRole = null;
+      if (currentPath.startsWith("/admin/")) {
+        urlImpliedRole = "admin";
+      } else if (currentPath.startsWith("/user/")) {
+        urlImpliedRole = "member";
+      }
 
-    if (urlImpliedRole && urlImpliedRole !== activeRole) {
-      if (availableRoles.includes(urlImpliedRole)) {
-        setActiveRole(urlImpliedRole);
-        localStorage.setItem('activeRole', urlImpliedRole);
-      } else {
-        // 🔥 FIX: Only redirect if not already on a valid path
-        const correctPath = activeSociety.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
-        if (location.pathname !== correctPath) {
-          navigate(correctPath, { replace: true });
+      if (urlImpliedRole && urlImpliedRole !== activeRole) {
+        if (availableRoles.includes(urlImpliedRole)) {
+          setActiveRole(urlImpliedRole);
+          localStorage.setItem("activeRole", urlImpliedRole);
+        } else {
+          const correctPath =
+            activeSociety.role === "admin"
+              ? "/admin/dashboard"
+              : "/user/dashboard";
+          if (location.pathname !== correctPath) {
+            navigate(correctPath, { replace: true });
+          }
         }
       }
     }
-  }
-}, [location.pathname, activeSociety, activeRole, isSocietiesLoading, societies.length, navigate]);
-
+  }, [
+    location.pathname,
+    activeSociety,
+    activeRole,
+    isSocietiesLoading,
+    societies.length,
+    navigate,
+  ]);
 
   const switchSociety = (societyId) => {
     const newSociety = societies.find((s) => s.societyId === societyId);
@@ -114,10 +121,10 @@ useEffect(() => {
       const newHighestRole = newSociety.role;
       setActiveSocietyId(societyId);
       localStorage.setItem("activeSocietyId", societyId);
-      
+
       setActiveRole(newHighestRole);
       localStorage.setItem("activeRole", newHighestRole);
-      
+
       const newPath =
         newHighestRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
       navigate(newPath);
@@ -128,7 +135,7 @@ useEffect(() => {
     if (activeSociety?.availableRoles?.includes(role) && role !== activeRole) {
       setActiveRole(role);
       localStorage.setItem("activeRole", role);
-      
+
       const newPath = role === "admin" ? "/admin/dashboard" : "/user/dashboard";
       navigate(newPath);
     }
@@ -152,11 +159,7 @@ useEffect(() => {
 
   return (
     <SocietyContext.Provider value={contextValue}>
-      {isSocietiesLoading ? (
-        <PageLoader />
-      ) : (
-        children
-      )}
+      {isSocietiesLoading ? <PageLoader /> : children}
     </SocietyContext.Provider>
   );
 };

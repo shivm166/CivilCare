@@ -5,14 +5,13 @@ import AdminDashboard from "../pages/dashboard/Admin/AdminDashboard/AdminDashboa
 import Layout from "../components/layout/Layout";
 import ComplaintsPage from "../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage";
 import { SocietyProvider } from "../contexts/SocietyContext";
-import SuperAdminRoutes from "./SuperAdminRoutes";
 import ResidentsPage from "../pages/dashboard/Admin/ResidentManagement/ResidentsPage";
 import NotificationsPage from "../pages/dashboard/Admin/Notification/NotificationsPage";
 import ProfilePage from "../pages/dashboard/User/Profile/ProfilePage";
 import RaiseComplaintPage from "../pages/dashboard/User/Complaints/RaiseComplaintPage";
 import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDashboard";
 
-// ✅ CORRECT IMPORTS - Two separate announcement pages
+// Two separate announcement pages
 import AdminAnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
 import UserAnnouncementPage from "../pages/dashboard/User/Announcements/AnnouncementPage";
 import BuildingManagement from "../pages/dashboard/Admin/BuildingManagement/BuildingManagement";
@@ -22,7 +21,7 @@ import UnitDetailPage from "../pages/dashboard/Admin/UnitManagement/UnitDetailPa
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
-  // ✅ CRITICAL: If no authUser, redirect to login (this was missing!)
+  // If no authUser, redirect to login
   if (!authUser) {
     return <Navigate to="/login" replace />;
   }
@@ -54,7 +53,7 @@ const SocietyChecker = ({ children, authUser }) => {
   return children;
 };
 
-// ✅ Dashboard wrapper to show onboarding when no society
+// Dashboard wrapper to show onboarding when no society
 const DashboardWrapper = () => {
   const { societies, activeRole } = useSocietyContext();
   const hasSociety = societies && societies.length > 0;
@@ -73,9 +72,15 @@ const DashboardWrapper = () => {
 };
 
 const ProtectedRoutes = ({ authUser }) => {
-  // ✅ CRITICAL: Add auth check at the top level
+  // If no authUser, redirect to login
   if (!authUser) {
     return <Route path="*" element={<Navigate to="/login" replace />} />;
+  }
+
+  // ⚠️ CRITICAL: Super admin should NEVER reach this component
+  // This is handled in App.jsx now, but adding extra safety check
+  if (authUser?.globalRole === "super_admin") {
+    return <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />;
   }
 
   return (
@@ -88,11 +93,6 @@ const ProtectedRoutes = ({ authUser }) => {
           </SocietyProvider>
         }
       >
-        {/* Super Admin Routes */}
-        {authUser?.globalRole === "super_admin" && (
-          <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
-        )}
-
         {/* Admin Routes */}
         <Route
           path="/admin"
@@ -103,14 +103,12 @@ const ProtectedRoutes = ({ authUser }) => {
           }
         >
           <Route path="dashboard" element={<DashboardWrapper />} />
-          {/* ✅ FIXED: Use AdminAnnouncementPage for admin */}
           <Route path="announcements" element={<AdminAnnouncementPage />} />
           <Route path="buildings" element={<BuildingManagement />} />
           <Route path="complaints" element={<ComplaintsPage />} />
           <Route path="residents" element={<ResidentsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="buildings" element={<BuildingManagement />} />
           <Route
             path="buildings/:buildingId/units"
             element={<BuildingUnitsPage />}
@@ -138,20 +136,8 @@ const ProtectedRoutes = ({ authUser }) => {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        {/* Fallback: redirect to appropriate dashboard */}
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to={
-                authUser?.globalRole === "super_admin"
-                  ? "/super-admin/dashboard"
-                  : "/user/dashboard"
-              }
-              replace
-            />
-          }
-        />
+        {/* Fallback: redirect to user dashboard */}
+        <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
       </Route>
     </>
   );

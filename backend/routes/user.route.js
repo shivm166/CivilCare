@@ -5,8 +5,9 @@ import {
   login,
   logout,
   signup,
-  updateProfile, // ✅ make sure it's imported here
+  updateProfile,
   getAllUsers,
+  getMe, // ✅ Import the new function
 } from "../controllers/user.controllers.js";
 
 import { validateUser, validateLogin } from "../middleware/validation.user.js";
@@ -21,23 +22,22 @@ router.post("/signup", validateRequest(validateUser), signup);
 // ✅ Login
 router.post("/login", validateRequest(validateLogin), login);
 
+// ✅ Get current authenticated user (CRITICAL for useAuthUser hook)
+router.get("/me", protectRoute, getMe);
+
 // ✅ Get profile (read)
 router.get("/profile", protectRoute, getprofile);
 
 // ✅ Update profile (edit)
 router.put("/profile", protectRoute, updateProfile);
 
-// ✅ Get societies (optional)
+// ✅ Get societies
 router.get("/societies", protectRoute, getSocieties);
-
-// ✅ Current logged-in user (for testing)
-router.get("/me", protectRoute, (req, res) => {
-  res.status(200).json({ success: true, user: req.user });
-});
 
 // ✅ Logout
 router.post("/logout", protectRoute, logout);
 
+// ✅ Get all users (admin only - you might want to add admin middleware here)
 router.get("/", getAllUsers);
 
 export default router;

@@ -1,16 +1,32 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import useLogin from "../../../hooks/api/auth/useLogin";
+import useAuthUser from "../../../hooks/api/auth/useAuthUser";
 import PageLoader from "../../error/PageLoader";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
 
   const { isPending, error, loginMutation } = useLogin();
+  const { authUser, isLoading } = useAuthUser();
+
+  // 🔥 CRITICAL: Redirect after successful login based on user role
+  useEffect(() => {
+    if (authUser && !isLoading) {
+      // Determine redirect path based on globalRole
+      const redirectPath = authUser.globalRole === "super_admin" 
+        ? "/super-admin/dashboard" 
+        : "/user/dashboard";
+      
+      toast.success(`Welcome back, ${authUser.name}!`);
+      navigate(redirectPath, { replace: true });
+    }
+  }, [authUser, isLoading, navigate]);
 
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -18,11 +34,29 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    await loginMutation(loginData);
+    
+    // Basic validation
+    if (!loginData.email || !loginData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      await loginMutation(loginData);
+      // Success is handled by useEffect above when authUser updates
+    } catch (err) {
+      // Error is already displayed by the error state
+      toast.error(err?.response?.data?.message || "Login failed. Please try again.");
+    }
   };
 
+  // Show loader while checking authentication
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4  from-blue-100 via-white to-blue-200">
+    <div className="min-h-screen flex items-center justify-center p-4 from-blue-100 via-white to-blue-200">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto rounded-2xl shadow-2xl overflow-hidden border border-gray-200 bg-white/10 backdrop-blur-md">
         {/* LEFT SIDE - LOGIN FORM */}
         <div
@@ -47,7 +81,20 @@ const Login = () => {
 
           {/* ERROR MESSAGE */}
           {error && (
-            <div className="alert alert-error mb-4">
+            <div className="alert alert-error mb-4 shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
               <span>{error.response?.data?.message || error.message}</span>
             </div>
           )}
@@ -63,10 +110,11 @@ const Login = () => {
                 type="email"
                 name="email"
                 placeholder="you@example.com"
-                className="input input-bordered w-full rounded-lg"
+                className="input input-bordered w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 value={loginData.email}
                 onChange={handleChange}
                 required
+                disabled={isPending}
               />
             </div>
 
@@ -85,23 +133,24 @@ const Login = () => {
                 type="password"
                 name="password"
                 placeholder="••••••••"
-                className="input input-bordered w-full rounded-lg"
+                className="input input-bordered w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 value={loginData.password}
                 onChange={handleChange}
                 required
+                disabled={isPending}
               />
             </div>
 
             {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              className="btn btn-primary w-full transition-all hover:scale-[1.02]"
+              className="btn btn-primary w-full transition-all hover:scale-[1.02] shadow-lg"
               disabled={isPending}
             >
               {isPending ? (
                 <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  {<PageLoader />}
+                  <span className="loading loading-spinner loading-sm"></span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 "Sign In"
@@ -111,8 +160,11 @@ const Login = () => {
             {/* SIGNUP LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
-                Don’t have an account?{" "}
-                <Link to="/signup" className="text-primary hover:underline">
+                Don't have an account?{" "}
+                <Link 
+                  to="/signup" 
+                  className="text-primary hover:underline font-semibold"
+                >
                   Create one
                 </Link>
               </p>

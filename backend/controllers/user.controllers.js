@@ -25,9 +25,7 @@ export const signup = async (req, res) => {
 
     res.status(201).json({
       message: "User created successfully",
-      user: {
-        newUser,
-      },
+      user: newUser,
       jwt,
     });
   } catch (error) {
@@ -62,9 +60,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
-      user: {
-        user,
-      },
+      user,
       jwt,
     });
   } catch (error) {
@@ -73,23 +69,59 @@ export const login = async (req, res) => {
   }
 };
 
-export const getprofile = async (req, res) => {
+// ✅ NEW: Get current authenticated user
+export const getMe = async (req, res) => {
   try {
-    const userId = req.user._id;
-    console.log(req);
-    const user = await User.findById(userId);
-    res.json(user);
-    console.log(user);
+    const userId = req.user.id || req.user._id || req.user.userId;
+    
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Unauthorized - No user ID found" 
+      });
+    }
+
+    const user = await User.findById(userId).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
   } catch (error) {
-    console.log(error);
+    console.error("Error in getMe:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
   }
 };
 
-// Updateprofile code
+export const getprofile = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id || req.user.userId;
+    const user = await User.findById(userId).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 export const updateProfile = async (req, res) => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?._id || req.user?.id || req.user?.userId;
     if (!userId)
       return res.status(401).json({ success: false, message: "Unauthorized" });
 
@@ -127,15 +159,16 @@ export const updateProfile = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     res.clearCookie("jwt");
-    res.status(200).json({ success: true, message: "logout successffully" });
+    res.status(200).json({ success: true, message: "Logout successful" });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 export const getSocieties = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user._id || req.user.id || req.user.userId;
 
     const societies = await UserSocietyRel.find({
       user: userId,
@@ -158,8 +191,6 @@ export const getSocieties = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// dashboard admin get all users
 
 export const getAllUsers = async (req, res) => {
   try {
