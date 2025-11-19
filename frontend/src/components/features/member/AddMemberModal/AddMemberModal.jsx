@@ -7,6 +7,7 @@ import {
   FiAlertCircle,
   FiUser,
   FiPhone,
+  FiShield,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useSearchUserByEmail } from "../../../../hooks/api/useMembers";
@@ -17,6 +18,10 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
   const [foundUser, setFoundUser] = useState(null);
   const [showNotFound, setShowNotFound] = useState(false);
 
+  // Role for existing user (admin / member)
+  const [existingUserRole, setExistingUserRole] = useState("member");
+
+  // New user data with only admin/member roles
   const [newUserData, setNewUserData] = useState({
     name: "",
     email: "",
@@ -88,7 +93,8 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
       toast.error("Please search and select a user first");
       return;
     }
-    onAddMember({ userId: foundUser._id, roleInSociety: "member" });
+    // Send with selected role (admin or member)
+    onAddMember({ userId: foundUser._id, roleInSociety: existingUserRole });
     handleClose();
   };
 
@@ -103,6 +109,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
       return;
     }
 
+    // Send with selected role (admin or member)
     onInviteMember(newUserData);
     handleClose();
   };
@@ -111,6 +118,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
     setSearchEmail("");
     setFoundUser(null);
     setShowNotFound(false);
+    setExistingUserRole("member");
     setNewUserData({ name: "", email: "", phone: "", roleInSociety: "member" });
     setModalType("existing");
     onClose();
@@ -211,6 +219,34 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
                     </span>
                   </button>
                 </div>
+              </div>
+
+              {/* Role Selection for Existing User */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Select Role in Society
+                </label>
+                <div className="relative">
+                  <select
+                    value={existingUserRole}
+                    onChange={(e) => setExistingUserRole(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none bg-white appearance-none cursor-pointer"
+                  >
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none" />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {existingUserRole === "admin" 
+                    ? "⚡ Admin role cannot be changed once assigned" 
+                    : "📝 Member role can be updated to Owner/Tenant later"}
+                </p>
               </div>
 
               {/* Not Found Alert */}
@@ -330,23 +366,34 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Role in Society
+                  Role in Society *
                 </label>
-                <select
-                  value={newUserData.roleInSociety}
-                  onChange={(e) =>
-                    setNewUserData({
-                      ...newUserData,
-                      roleInSociety: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none bg-white"
-                >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                  <option value="owner">Owner</option>
-                  <option value="tenant">Tenant</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={newUserData.roleInSociety}
+                    onChange={(e) =>
+                      setNewUserData({
+                        ...newUserData,
+                        roleInSociety: e.target.value,
+                      })
+                    }
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none bg-white appearance-none cursor-pointer"
+                  >
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none" />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {newUserData.roleInSociety === "admin" 
+                    ? "⚡ Admin role cannot be changed once assigned" 
+                    : "📝 Member role can be updated to Owner/Tenant later"}
+                </p>
               </div>
 
               {/* Info Box */}
@@ -382,7 +429,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
             >
               {modalType === "existing"
                 ? foundUser
-                  ? "Send Invitation"
+                  ? "Add Member"
                   : "Search First"
                 : "Send Invitation"}
             </button>
