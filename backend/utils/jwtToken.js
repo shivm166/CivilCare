@@ -11,8 +11,8 @@ export const generateTokenAndSetCookie = (res, userId, role, society) => {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    secure: process.env.NODE_ENV === "production", // Relies on NODE_ENV
+    sameSite: "none", // Correct for cross-site
     maxAge: 60 * 60 * 1000,
   });
 
