@@ -9,10 +9,12 @@ import v1Routes from "./v1/index.js";
 
 const router = Router();
 
+// ✅ PUBLIC ROUTES - MUST BE BEFORE protectRoute middleware
+router.use("/activation", activationRoute); // 🔓 Public access for email activation
+
 router.use(protectRoute);
 
 // Mount all admin routes
-router.use("/activation", activationRoute);
 router.use("/invitation", invitationRoute);
 router.use("/member", memberRoute);
 router.use("/request", requestRoute);

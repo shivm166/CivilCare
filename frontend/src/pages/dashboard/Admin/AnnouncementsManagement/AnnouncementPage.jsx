@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import {
   useGetAdminAnnouncements,
@@ -7,24 +7,45 @@ import {
   useDeleteAnnouncement,
   useReplyToComment,
 } from "../../../../hooks/api/useAnnouncements";
+import AnnouncementForm from "../../../../components/features/announcement/adminView/AnnouncementForm";
+import AnnouncementList from "../../../../components/features/announcement/adminView/AnnouncementList";
 
 export default function AnnouncementPage() {
   const { activeSocietyId } = useSocietyContext();
 
-  // State
   const [form, setForm] = useState({ title: "", description: "" });
   const [editingId, setEditingId] = useState(null);
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [replyForm, setReplyForm] = useState({});
 
-  // Hooks
-  const { data: announcements, isLoading } = useGetAdminAnnouncements(activeSocietyId);
+  const { data: announcements = [], isLoading } = useGetAdminAnnouncements(activeSocietyId);
   const { createAnnouncement, isCreating } = useCreateAnnouncement();
   const { updateAnnouncement, isUpdating } = useUpdateAnnouncement();
   const { deleteAnnouncement, isDeleting } = useDeleteAnnouncement();
   const { replyToComment, isReplying } = useReplyToComment();
 
-  // Handlers
+  // Fix mobile viewport height & prevent body scroll
+  useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+
+    // Prevent body scroll on desktop only
+    const isDesktop = window.innerWidth >= 1024;
+    if (isDesktop) {
+      document.body.style.overflow = "hidden";
+    }
+    
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.title || !form.description) return;
@@ -32,267 +53,141 @@ export default function AnnouncementPage() {
     if (editingId) {
       updateAnnouncement(
         { id: editingId, formData: form },
-        {
-          onSuccess: () => {
-            setForm({ title: "", description: "" });
-            setEditingId(null);
-          },
-        }
+        { onSuccess: () => { setForm({ title: "", description: "" }); setEditingId(null); } }
       );
     } else {
-      createAnnouncement(form, {
-        onSuccess: () => {
-          setForm({ title: "", description: "" });
-        },
-      });
+      createAnnouncement(form, { onSuccess: () => setForm({ title: "", description: "" }) });
     }
   };
 
   const handleEdit = (announcement) => {
     setForm({ title: announcement.title, description: announcement.description });
     setEditingId(announcement._id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this announcement?")) {
+    if (window.confirm("Delete this announcement?")) {
       deleteAnnouncement(id);
     }
   };
 
-  const handleReply = (announcementId, commentId) => {
-    const reply = replyForm[commentId];
-    if (!reply || reply.trim() === "") return;
-
-    replyToComment(
-      { announcementId, commentId, reply },
-      {
-        onSuccess: () => {
-          setReplyForm({ ...replyForm, [commentId]: "" });
-        },
-      }
-    );
+  const handleReply = (announcementId, commentId, reply) => {
+    replyToComment({ announcementId, commentId, reply });
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="text-lg text-gray-600">Loading announcements...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            📢 Announcement Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Create and manage announcements for your society
-          </p>
+    <>
+      {/* Mobile Layout */}
+      <div className="lg:hidden min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        {/* Fixed Header */}
+        <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+          <div className="px-4 py-3">
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              📢 Announcements
+            </h1>
+            <p className="text-gray-600 text-xs mt-1">Manage society announcements</p>
+          </div>
         </div>
 
-        {/* Create/Edit Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            {editingId ? "✏️ Edit Announcement" : "➕ Create New Announcement"}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="Enter announcement title"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                rows="4"
-                placeholder="Enter announcement description"
-                required
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={isCreating || isUpdating}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition disabled:opacity-50"
-              >
-                {editingId
-                  ? isUpdating
-                    ? "Updating..."
-                    : "Update"
-                  : isCreating
-                  ? "Creating..."
-                  : "Create"}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setForm({ title: "", description: "" });
-                    setEditingId(null);
-                  }}
-                  className="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
+        {/* Scrollable Content */}
+        <div className="p-4 space-y-4">
+          {/* Form */}
+          <AnnouncementForm
+            form={form}
+            setForm={setForm}
+            editingId={editingId}
+            setEditingId={setEditingId}
+            handleSubmit={handleSubmit}
+            isCreating={isCreating}
+            isUpdating={isUpdating}
+            announcements={announcements}
+          />
 
-        {/* Announcements List */}
-        <div className="space-y-6">
-          {!announcements || announcements.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-xl p-12 text-center border border-gray-100">
-              <p className="text-gray-500 text-lg">
-                No announcements yet. Create your first one!
-              </p>
-            </div>
-          ) : (
-            announcements.map((announcement) => (
-              <div
-                key={announcement._id}
-                className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition"
-              >
-                {/* Announcement Header */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      {announcement.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {announcement.description}
-                    </p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Posted on {new Date(announcement.createdAt).toLocaleDateString()} at{" "}
-                      {new Date(announcement.createdAt).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleEdit(announcement)}
-                      className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(announcement._id)}
-                      disabled={isDeleting}
-                      className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() =>
-                        setSelectedAnnouncement(
-                          selectedAnnouncement?._id === announcement._id
-                            ? null
-                            : announcement
-                        )
-                      }
-                      className="px-4 py-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition"
-                    >
-                      {selectedAnnouncement?._id === announcement._id
-                        ? "Hide"
-                        : `💬 ${announcement.comments?.length || 0}`}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Comments Section */}
-                {selectedAnnouncement?._id === announcement._id && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                      💬 Comments ({announcement.comments?.length || 0})
-                    </h4>
-                    {announcement.comments?.length === 0 ? (
-                      <p className="text-gray-500 text-center py-4">
-                        No comments yet
-                      </p>
-                    ) : (
-                      <div className="space-y-4">
-                        {announcement.comments.map((comment) => (
-                          <div
-                            key={comment._id}
-                            className="bg-gray-50 rounded-lg p-4 border border-gray-200"
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="font-semibold text-gray-800">
-                                  {comment.user?.name || "Unknown User"}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  {new Date(comment.createdAt).toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-                            <p className="text-gray-700 mb-3">{comment.comment}</p>
-
-                            {/* Admin Reply */}
-                            {comment.adminReply ? (
-                              <div className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
-                                <p className="text-sm font-semibold text-blue-700 mb-1">
-                                  Admin Reply:
-                                </p>
-                                <p className="text-gray-700">{comment.adminReply}</p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Replied on{" "}
-                                  {new Date(comment.repliedAt).toLocaleString()}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={replyForm[comment._id] || ""}
-                                  onChange={(e) =>
-                                    setReplyForm({
-                                      ...replyForm,
-                                      [comment._id]: e.target.value,
-                                    })
-                                  }
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Type your reply..."
-                                />
-                                <button
-                                  onClick={() =>
-                                    handleReply(announcement._id, comment._id)
-                                  }
-                                  disabled={isReplying}
-                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                                >
-                                  Reply
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+          {/* Announcements */}
+          <div>
+            <AnnouncementList
+              announcements={announcements}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              handleReply={handleReply}
+              isDeleting={isDeleting}
+              isReplying={isReplying}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Desktop Layout */}
+      <div 
+        className="hidden lg:flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden"
+        style={{ height: 'calc(var(--vh, 1vh) * 100)' }}
+      >
+        {/* Fixed Header */}
+        <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                  📢 Announcements
+                </h1>
+                <p className="text-gray-600 text-sm mt-1">Manage society announcements</p>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg font-medium">
+                  {announcements.length} Total
+                </span>
+                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg font-medium">
+                  {announcements.filter((a) => a.comments?.length > 0).length} Commented
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden min-h-0">
+          <div className="max-w-7xl mx-auto px-6 py-6 h-full">
+            <div className="flex gap-6 h-full">
+              {/* Left Sidebar - Fixed */}
+              <aside className="w-80 flex-shrink-0">
+                <AnnouncementForm
+                  form={form}
+                  setForm={setForm}
+                  editingId={editingId}
+                  setEditingId={setEditingId}
+                  handleSubmit={handleSubmit}
+                  isCreating={isCreating}
+                  isUpdating={isUpdating}
+                  announcements={announcements}
+                />
+              </aside>
+
+              {/* Right Content - Scrollable */}
+              <main className="flex-1 min-w-0 min-h-0 h-full">
+                <AnnouncementList
+                  announcements={announcements}
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  handleReply={handleReply}
+                  isDeleting={isDeleting}
+                  isReplying={isReplying}
+                />
+              </main>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

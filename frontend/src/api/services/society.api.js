@@ -31,3 +31,14 @@ export const searchSocietyByCode = async (joiningCode) => {
     throw error;
   }
 };
+
+// ✅ ADD THIS NEW FUNCTION
+export const getSocietyById = async (societyId) => {
+  try {
+    const response = await axiosInstance.get(`/society/${societyId}`);
+    return response.data;
+  } catch (error) {
+    console.log("Error in getting society details", error);
+    throw error;
+  }
+};

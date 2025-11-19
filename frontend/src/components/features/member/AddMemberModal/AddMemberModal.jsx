@@ -5,8 +5,9 @@ import {
   FiSearch,
   FiX,
   FiAlertCircle,
+  FiUser,
+  FiPhone,
 } from "react-icons/fi";
-// import { useSearchUserByEmail } from "../../hooks/useMembers";
 import toast from "react-hot-toast";
 import { useSearchUserByEmail } from "../../../../hooks/api/useMembers";
 
@@ -26,20 +27,25 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
   const searchUserMutation = useSearchUserByEmail();
 
   useEffect(() => {
-    // Reset states when modal type changes
     setFoundUser(null);
     setShowNotFound(false);
   }, [modalType]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Handle email search
   const handleSearchByEmail = async () => {
     const email = searchEmail.trim();
 
@@ -57,22 +63,13 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
       const result = await searchUserMutation.mutateAsync(email);
 
       if (result.success && result.found) {
-        // ✅ User found
         setFoundUser(result.user);
         setShowNotFound(false);
         toast.success("User found!");
       } else {
-        // ❌ User not found - Auto switch to invite tab
         setFoundUser(null);
         setShowNotFound(true);
-
-        // Pre-fill email in invite form
-        setNewUserData({
-          ...newUserData,
-          email: email.toLowerCase(),
-        });
-
-        // Show message and auto-switch after 1.5 seconds
+        setNewUserData({ ...newUserData, email: email.toLowerCase() });
         toast.error("User not found. Redirecting to invite...");
         setTimeout(() => {
           setModalType("new");
@@ -86,18 +83,15 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
     }
   };
 
-  // Handle add existing user
   const handleAddExisting = () => {
     if (!foundUser) {
       toast.error("Please search and select a user first");
       return;
     }
-
     onAddMember({ userId: foundUser._id, roleInSociety: "member" });
     handleClose();
   };
 
-  // Handle invite new user
   const handleInviteNew = () => {
     if (!newUserData.name || !newUserData.email || !newUserData.phone) {
       toast.error("All fields are required");
@@ -113,7 +107,6 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
     handleClose();
   };
 
-  // Close and reset
   const handleClose = () => {
     setSearchEmail("");
     setFoundUser(null);
@@ -124,98 +117,114 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
-        <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Add Member</h2>
-            <p className="text-gray-600 mt-1">
-              Search by email or invite new member
-            </p>
-          </div>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 animate-fadeIn">
+      <div
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col animate-slideUp"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="relative px-6 sm:px-8 pt-6 sm:pt-8 pb-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl transition-colors"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-all duration-200 hover:rotate-90"
+            aria-label="Close modal"
           >
-            <FiX />
+            <FiX className="text-xl" />
           </button>
+
+          <div className="pr-12">
+            <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              Add Member
+            </h2>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">
+              Search existing users or invite new members
+            </p>
+          </div>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex border-b bg-gray-50">
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200 bg-gray-50/50">
           <button
             onClick={() => setModalType("existing")}
-            className={`flex-1 py-3 font-medium transition-all ${
+            className={`flex-1 py-3.5 sm:py-4 px-4 font-semibold text-sm sm:text-base transition-all duration-200 relative ${
               modalType === "existing"
-                ? "text-blue-600 border-b-2 border-blue-600 bg-white"
-                : "text-gray-500 hover:text-gray-700"
+                ? "text-indigo-600 bg-white"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
-            <FiUserPlus className="inline mr-2" />
-            Search Existing User
+            <FiUserPlus className="inline mr-2 text-lg" />
+            <span className="hidden sm:inline">Search Existing</span>
+            <span className="sm:hidden">Search</span>
+            {modalType === "existing" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600" />
+            )}
           </button>
           <button
             onClick={() => setModalType("new")}
-            className={`flex-1 py-3 font-medium transition-all ${
+            className={`flex-1 py-3.5 sm:py-4 px-4 font-semibold text-sm sm:text-base transition-all duration-200 relative ${
               modalType === "new"
-                ? "text-purple-600 border-b-2 border-purple-600 bg-white"
-                : "text-gray-500 hover:text-gray-700"
+                ? "text-purple-600 bg-white"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
-            <FiMail className="inline mr-2" />
-            Invite New User
+            <FiMail className="inline mr-2 text-lg" />
+            <span className="hidden sm:inline">Invite New</span>
+            <span className="sm:hidden">Invite</span>
+            {modalType === "new" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600" />
+            )}
           </button>
         </div>
 
-        <div className="p-6">
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 sm:py-8">
           {modalType === "existing" ? (
-            /* ========== EXISTING USER TAB ========== */
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Search Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search by Email Address
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Search by Email
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter exact email address..."
-                    value={searchEmail}
-                    onChange={(e) => setSearchEmail(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        handleSearchByEmail();
-                      }
-                    }}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="email"
+                      placeholder="Enter email address"
+                      value={searchEmail}
+                      onChange={(e) => setSearchEmail(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSearchByEmail()}
+                      className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none"
+                    />
+                    <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+                  </div>
                   <button
                     onClick={handleSearchByEmail}
                     disabled={searchUserMutation.isPending}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all"
+                    className="px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
                   >
-                    <FiSearch />
-                    {searchUserMutation.isPending ? "Searching..." : "Search"}
+                    <FiSearch className="text-lg" />
+                    <span className="hidden sm:inline">
+                      {searchUserMutation.isPending ? "Searching..." : "Search"}
+                    </span>
+                    <span className="sm:hidden">
+                      {searchUserMutation.isPending ? "..." : "Go"}
+                    </span>
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Enter the complete email address to search
-                </p>
               </div>
 
-              {/* Not Found Message */}
+              {/* Not Found Alert */}
               {showNotFound && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-                  <FiAlertCircle className="text-yellow-600 text-xl flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-yellow-800 font-medium">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-xl p-4 flex items-start gap-3 animate-slideDown">
+                  <FiAlertCircle className="text-amber-600 text-xl flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-amber-900 font-semibold text-sm sm:text-base">
                       User not found
                     </p>
-                    <p className="text-yellow-700 text-sm mt-1">
-                      No user exists with email:{" "}
-                      <span className="font-mono">{searchEmail}</span>
+                    <p className="text-amber-700 text-xs sm:text-sm mt-1 break-all">
+                      {searchEmail}
                     </p>
-                    <p className="text-yellow-600 text-sm mt-1">
+                    <p className="text-amber-600 text-xs sm:text-sm mt-1.5">
                       Redirecting to invite form...
                     </p>
                   </div>
@@ -224,104 +233,103 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
 
               {/* Found User Card */}
               {foundUser && (
-                <div className="bg-green-50 border-2 border-green-500 rounded-lg p-5 transition-all">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-400 rounded-2xl p-5 sm:p-6 animate-slideDown overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl" />
+                  <div className="relative flex items-start gap-4">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl flex-shrink-0 shadow-lg">
                       {foundUser.name?.charAt(0).toUpperCase()}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 break-words">
                         {foundUser.name}
                       </h3>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        📧 {foundUser.email}
-                      </p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                        📱 {foundUser.phone}
-                      </p>
-                      {foundUser.isInvited && !foundUser.isActivated && (
-                        <span className="inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full mt-2">
-                          ⏳ Activation Pending
-                        </span>
-                      )}
-                      {foundUser.isActivated && (
-                        <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full mt-2">
-                          ✅ Active Account
-                        </span>
-                      )}
+                      <div className="space-y-1.5">
+                        <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-2 break-all">
+                          <FiMail className="shrink-0" />
+                          {foundUser.email}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-2">
+                          <FiPhone className="flex-shrink-0" />
+                          {foundUser.phone}
+                        </p>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {foundUser.isInvited && !foundUser.isActivated && (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full">
+                            ⏳ Pending Activation
+                          </span>
+                        )}
+                        {foundUser.isActivated && (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full">
+                            ✓ Active
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={handleClose}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddExisting}
-                  disabled={!foundUser}
-                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {foundUser ? "Send Invitation" : "Search User First"}
-                </button>
-              </div>
             </div>
           ) : (
-            /* ========== INVITE NEW USER TAB ========== */
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Form Fields */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Full Name *
                 </label>
-                <input
-                  type="text"
-                  placeholder="Enter full name"
-                  value={newUserData.name}
-                  onChange={(e) =>
-                    setNewUserData({ ...newUserData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    value={newUserData.name}
+                    onChange={(e) =>
+                      setNewUserData({ ...newUserData, name: e.target.value })
+                    }
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none"
+                  />
+                  <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Email Address *
                 </label>
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={newUserData.email}
-                  onChange={(e) =>
-                    setNewUserData({ ...newUserData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={newUserData.email}
+                    onChange={(e) =>
+                      setNewUserData({ ...newUserData, email: e.target.value })
+                    }
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none"
+                  />
+                  <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Phone Number *
                 </label>
-                <input
-                  type="tel"
-                  placeholder="Enter 10-digit phone number"
-                  value={newUserData.phone}
-                  onChange={(e) =>
-                    setNewUserData({ ...newUserData, phone: e.target.value })
-                  }
-                  maxLength={10}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type="tel"
+                    placeholder="1234567890"
+                    value={newUserData.phone}
+                    onChange={(e) =>
+                      setNewUserData({ ...newUserData, phone: e.target.value })
+                    }
+                    maxLength={10}
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none"
+                  />
+                  <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Role in Society
                 </label>
                 <select
@@ -332,7 +340,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
                       roleInSociety: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none bg-white"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
@@ -341,34 +349,82 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, onInviteMember }) => {
                 </select>
               </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-purple-700 flex items-start gap-2">
-                  <span className="text-lg">📧</span>
+              {/* Info Box */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-500 rounded-xl p-4">
+                <p className="text-xs sm:text-sm text-purple-700 flex items-start gap-2.5">
+                  <span className="text-xl flex-shrink-0">📧</span>
                   <span>
-                    An invitation email will be sent to activate the account.
-                    The user can set their password and join the society.
+                    An invitation will be sent to activate the account and set password.
                   </span>
                 </p>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={handleClose}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleInviteNew}
-                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
-                >
-                  Send Invitation
-                </button>
               </div>
             </div>
           )}
         </div>
+
+        {/* Footer Actions */}
+        <div className="px-6 sm:px-8 py-5 sm:py-6 bg-gray-50 border-t border-gray-200">
+          <div className="flex flex-col-reverse sm:flex-row gap-3">
+            <button
+              onClick={handleClose}
+              className="flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={modalType === "existing" ? handleAddExisting : handleInviteNew}
+              disabled={modalType === "existing" && !foundUser}
+              className={`flex-1 px-6 py-3.5 font-semibold rounded-xl transition-all duration-200 shadow-lg ${
+                modalType === "existing"
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-indigo-500/30 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
+                  : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/30 hover:shadow-xl"
+              }`}
+            >
+              {modalType === "existing"
+                ? foundUser
+                  ? "Send Invitation"
+                  : "Search First"
+                : "Send Invitation"}
+            </button>
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

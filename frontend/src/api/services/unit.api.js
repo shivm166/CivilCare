@@ -69,3 +69,14 @@ export const assignResidentToUnit = async (unitId, assignmentData) => {
     throw error;
   }
 };
+
+// Get unit by ID
+export const getUnitById = async (unitId) => {
+  try {
+    const response = await axiosInstance.get(`/admin/v1/unit/${unitId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching unit:", error);
+    throw error;
+  }
+};
