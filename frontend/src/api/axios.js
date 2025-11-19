@@ -5,7 +5,7 @@ import axios from "axios";
 //   baseURL = import.meta.env.VITE_BACKEND_URL+"/api"
 // }
 
-const BASE_URL =
+const baseURL =
   import.meta.env.VITE_ENVIRONMENT === "development"
     ? "http://localhost:4001/api"
     : import.meta.env.VITE_BACKEND_URL + "/api";
