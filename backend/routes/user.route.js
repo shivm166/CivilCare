@@ -6,6 +6,7 @@ import {
   logout,
   signup,
   updateProfile, // ✅ make sure it's imported here
+  getAllUsers,
 } from "../controllers/user.controllers.js";
 
 import { validateUser, validateLogin } from "../middlelware/validation.user.js";
@@ -36,5 +37,7 @@ router.get("/me", protectRoute, (req, res) => {
 
 // ✅ Logout
 router.post("/logout", protectRoute, logout);
+
+router.get("/", getAllUsers);
 
 export default router;
