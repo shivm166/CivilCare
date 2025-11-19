@@ -46,9 +46,7 @@ export const updateUnit = async (unitId, unitData) => {
 // Delete unit
 export const deleteUnit = async (unitId) => {
   try {
-    const response = await axiosInstance.delete(
-      `/admin/v1/unit/${unitId}`
-    );
+    const response = await axiosInstance.delete(`/admin/v1/unit/${unitId}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting unit:", error);
@@ -56,12 +54,12 @@ export const deleteUnit = async (unitId) => {
   }
 };
 
-// Assign resident to unit
+// 🔥 UPDATED: Assign resident to unit with unitRole support
 export const assignResidentToUnit = async (unitId, assignmentData) => {
   try {
     const response = await axiosInstance.post(
       `/admin/v1/unit/${unitId}/assign-resident`,
-      assignmentData
+      assignmentData // Now expects: { userId, unitRole }
     );
     return response.data;
   } catch (error) {
