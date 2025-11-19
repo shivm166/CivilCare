@@ -17,7 +17,7 @@ const App = () => {
 
   return (
     <>
-      <div className="font-serif" data-theme="light">
+      <div className="font-sans" data-theme="light">
         <Routes>
           <Route path="/activate-account" element={<ActivateAccountPage />} />
 
