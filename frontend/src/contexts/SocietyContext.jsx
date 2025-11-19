@@ -80,35 +80,33 @@ export const SocietyProvider = ({ children }) => {
     }
   }, [societies, activeSocietyId, isSocietiesLoading, activeRole, navigate]);
 
-  // 🔥 NEW: Sync activeRole with URL changes (when user manually types URL)
-  useEffect(() => {
-    if (!isSocietiesLoading && activeSociety && societies.length > 0) {
-      const currentPath = location.pathname;
-      const availableRoles = getAvailableRoles(activeSociety.role);
-      
-      // Determine what role the URL implies
-      let urlImpliedRole = null;
-      if (currentPath.startsWith('/admin/')) {
-        urlImpliedRole = 'admin';
-      } else if (currentPath.startsWith('/user/')) {
-        urlImpliedRole = 'member';
-      }
-      
-      // Only act if URL implies a role different from current activeRole
-      if (urlImpliedRole && urlImpliedRole !== activeRole) {
-        // Check if user has permission for this role
-        if (availableRoles.includes(urlImpliedRole)) {
-          // ✅ User has permission - update the role state
-          setActiveRole(urlImpliedRole);
-          localStorage.setItem('activeRole', urlImpliedRole);
-        } else {
-          // ❌ User doesn't have permission - redirect to correct dashboard
-          const correctPath = activeRole === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+useEffect(() => {
+  if (!isSocietiesLoading && activeSociety && societies.length > 0) {
+    const currentPath = location.pathname;
+    const availableRoles = getAvailableRoles(activeSociety.role);
+
+    let urlImpliedRole = null;
+    if (currentPath.startsWith('/admin/')) {
+      urlImpliedRole = 'admin';
+    } else if (currentPath.startsWith('/user/')) {
+      urlImpliedRole = 'member';
+    }
+
+    if (urlImpliedRole && urlImpliedRole !== activeRole) {
+      if (availableRoles.includes(urlImpliedRole)) {
+        setActiveRole(urlImpliedRole);
+        localStorage.setItem('activeRole', urlImpliedRole);
+      } else {
+        // 🔥 FIX: Only redirect if not already on a valid path
+        const correctPath = activeSociety.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+        if (location.pathname !== correctPath) {
           navigate(correctPath, { replace: true });
         }
       }
     }
-  }, [location.pathname, activeSociety, activeRole, isSocietiesLoading, societies.length, navigate]);
+  }
+}, [location.pathname, activeSociety, activeRole, isSocietiesLoading, societies.length, navigate]);
+
 
   const switchSociety = (societyId) => {
     const newSociety = societies.find((s) => s.societyId === societyId);
