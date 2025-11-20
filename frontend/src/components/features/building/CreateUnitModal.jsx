@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useCreateUnit } from "../../../hooks/api/useUnit";
 import toast from "react-hot-toast";
+import UnitTypeSelect from "../unit/UnitTypeSelect";
 
 function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
   const [formData, setFormData] = useState({
     name: "",
     floor: "",
+    bhkType: "2bhk",
     type: "vacant",
   });
 
@@ -46,6 +48,7 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
         data: {
           name: formData.name.trim(),
           floor: parseInt(formData.floor),
+          bhkType: formData.bhkType,
           type: formData.type,
         },
       },
@@ -127,6 +130,12 @@ function CreateUnitModal({ isOpen, onClose, buildingId, buildingMaxFloors }) {
                 </p>
               )}
             </div>
+
+            <UnitTypeSelect
+              value={formData.bhkType}
+              onChange={(value) => setFormData(prev => ({ ...prev, bhkType: value }))}
+              error={errors.bhkType}
+            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

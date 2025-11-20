@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { UNIT_BHK_TYPES } from "../config/unit.config.js";
 
 export const validateUnitCreate = (data) => {
   const schema = Joi.object({
@@ -14,6 +15,13 @@ export const validateUnitCreate = (data) => {
       "number.max": "Floor cannot exceed 200",
       "any.required": "Floor is required",
     }),
+    bhkType: Joi.string()
+      .valid(...UNIT_BHK_TYPES)
+      .required()
+      .messages({
+        "any.only": `BHK type must be one of: ${UNIT_BHK_TYPES}`,
+        "any.required": "BHK type is required",
+      }),
     type: Joi.string()
       .valid("owner_occupied", "tenant_occupied", "vacant")
       .optional()
@@ -49,6 +57,12 @@ export const validateUnitUpdate = (data) => {
       "number.base": "Floor must be a number",
       "number.min": "Floor cannot be negative",
       "number.max": "Floor cannot exceed 200",
+    }),
+    bhkType: Joi.string()
+    .valid(...UNIT_BHK_TYPES)
+    .optional()
+    .messages({
+      "any.only": `BHK type must be one of: ${UNIT_BHK_TYPES}`,
     }),
     type: Joi.string()
       .valid("owner_occupied", "tenant_occupied", "vacant")
