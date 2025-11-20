@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,13 +9,11 @@ import {
   Mail,
   User,
   Building2,
+  Menu,
+  X,
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
-import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
-import { useMyInvitations } from "../../../hooks/api/useInvitations";
-import { useGetUserAnnouncements } from "../../../hooks/api/useAnnouncements";
 
-// Define the menu configurations
 const adminMenu = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Buildings", path: "/admin/buildings", icon: Building2 },
@@ -35,141 +33,125 @@ const userMenu = [
   { name: "Profile", path: "/user/profile", icon: User },
 ];
 
-// ✅ NEW: Menu for users without society
-const noSocietyMenu = [
-  { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
-  { name: "Notifications", path: "/user/notifications", icon: Bell },
-  { name: "Profile", path: "/user/profile", icon: User },
-];
-
 const Sidebar = () => {
-  const { activeRole, activeSociety, societies, activeSocietyId } =
-    useSocietyContext();
+  const { activeRole } = useSocietyContext();
+  const [open, setOpen] = useState(window.innerWidth > 1000);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1000);
 
-  // Fetch requests for notification badge (only for admin)
-  const { data: requestsData } = useGetSocietyRequests(
-    activeRole === "admin" ? activeSociety?.societyId : null
-  );
+  const menu = activeRole === "admin" ? adminMenu : userMenu;
 
-  // Fetch invitations for notification badge (for users)
-  const { data: invitationsData } = useMyInvitations();
-
-  // ✅ NEW: Fetch announcements for user badge count (only for members)
-  const { data: announcements } = useGetUserAnnouncements(
-    activeRole === "member" ? activeSocietyId : null
-  );
-
-  const unreadCount = requestsData?.requests?.length || 0;
-  const invitationCount = invitationsData?.count || 0;
-
-  // ✅ NEW: Calculate unread announcements count
-  const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // ✅ Force re-calculation
-
-  // ✅ Function to calculate unread count
-  const calculateUnreadCount = () => {
-    if (announcements && activeSocietyId && activeRole === "member") {
-      const storageKey = `lastSeenAnnouncements_${activeSocietyId}`;
-      const lastSeenTime = localStorage.getItem(storageKey);
-
-      if (!lastSeenTime) {
-        setUnreadAnnouncementsCount(announcements.length);
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width > 1000) {
+        setOpen(true);
+        setIsMobile(false);
       } else {
-        const newCount = announcements.filter(
-          (announcement) =>
-            new Date(announcement.createdAt) > new Date(lastSeenTime)
-        ).length;
-        setUnreadAnnouncementsCount(newCount);
+        setOpen(false);
+        setIsMobile(true);
       }
-    }
-  };
-
-  // ✅ Calculate on mount and when data changes
-  useEffect(() => {
-    calculateUnreadCount();
-  }, [announcements, activeSocietyId, activeRole, refreshTrigger]);
-
-  // ✅ NEW: Listen for custom event from AnnouncementPage
-  useEffect(() => {
-    const handleAnnouncementsRead = () => {
-      // Trigger re-calculation by updating state
-      setRefreshTrigger((prev) => prev + 1);
     };
 
-    window.addEventListener("announcementsRead", handleAnnouncementsRead);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener("announcementsRead", handleAnnouncementsRead);
-    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Determine which menu to show
-  const hasSociety = societies && societies.length > 0;
-  let menu = userMenu; // Default
-
-  if (!hasSociety) {
-    menu = noSocietyMenu;
-  } else if (activeRole === "admin") {
-    menu = adminMenu;
-  } else {
-    menu = userMenu;
-  }
-
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-screen sticky top-0 overflow-y-auto">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-indigo-600 mb-8">CivilCare</h2>
-        <nav className="space-y-2">
+    <>
+      {/* ✅ MENU ICON - MOBILE PAR JAB SIDEBAR CLOSED HO */}
+      {isMobile && !open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed top-20 left-4 z-[60] bg-white text-indigo-600 p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-indigo-100"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* ✅ OVERLAY - SIRF MOBILE PAR DIKHEGA */}
+      {isMobile && open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* ✅ SIDEBAR - DESKTOP PAR ALWAYS VISIBLE, MOBILE PAR TOGGLE */}
+      <aside
+        className={`
+          fixed top-0 left-0 z-50 bg-white h-full w-64
+          shadow-xl transition-transform duration-300 ease-in-out
+          ${
+            !isMobile
+              ? "translate-x-0"
+              : open
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
+        `}
+      >
+        {/* SIDEBAR HEADER - USER PANEL TEXT KE SAATH MENU ICON */}
+        <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
+          {/* LEFT SIDE - MENU ICON + USER PANEL TEXT (MOBILE ONLY) */}
+          {isMobile ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setOpen(false)}
+                className="text-gray-500 hover:text-indigo-600 transition-colors p-1 rounded-lg hover:bg-gray-50"
+                aria-label="Close menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <h2 className="text-lg font-bold text-gray-800">User Panel</h2>
+            </div>
+          ) : (
+            // DESKTOP - CIVILCARE LOGO
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              CivilCare
+            </h2>
+          )}
+
+          {/* RIGHT SIDE - CLOSE X ICON (MOBILE ONLY) */}
+          {isMobile && (
+            <button
+              onClick={() => setOpen(false)}
+              className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
+              aria-label="Close sidebar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        {/* NAVIGATION MENU */}
+        <nav className="px-4 py-6 space-y-1 overflow-y-auto h-[calc(100vh-88px)]">
           {menu.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={() => {
+                if (isMobile) setOpen(false);
+              }}
               className={({ isActive }) =>
-                `flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 font-semibold shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
                 }`
               }
             >
-              <div className="flex items-center space-x-3">
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.name}</span>
-              </div>
-
-              {/* ✅ Notification Badge for Notifications */}
-              {item.name === "Notifications" && (
-                <>
-                  {/* Admin: Show join request count */}
-                  {activeRole === "admin" && unreadCount > 0 && (
-                    <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
-
-                  {/* User: Show invitation count */}
-                  {activeRole !== "admin" && invitationCount > 0 && (
-                    <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                      {invitationCount}
-                    </span>
-                  )}
-                </>
-              )}
-
-              {/* ✅ NEW: Notification Badge for Announcements (Users Only) */}
-              {item.name === "Announcements" &&
-                activeRole === "member" &&
-                unreadAnnouncementsCount > 0 && (
-                  <span className="flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                    {unreadAnnouncementsCount}
-                  </span>
-                )}
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm">{item.name}</span>
             </NavLink>
           ))}
         </nav>
-      </div>
-    </aside>
+      </aside>
+
+      {/* ✅ SPACER - DESKTOP PAR CONTENT KO PUSH KAREGA */}
+      {!isMobile && <div className="w-64" />}
+    </>
   );
 };
 
