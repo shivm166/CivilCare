@@ -1,6 +1,5 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-// import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { getAllSocieties } from "../../../../api/services/superadmin.api";
 
@@ -42,7 +41,7 @@ function SocietyCard({ society, onDelete, onEdit }) {
         </div>
         <div>
           <strong>Created:</strong>{" "}
-          {/* {society.createdAt ? format(new Date(society.createdAt), "dd MMM yyyy") : "-"} */}
+          {society.createdAt && new Date(society.createdAt).toLocaleDateString() }
         </div>
       </div>
     </div>

@@ -1,4 +1,7 @@
-import { User } from "../../models/user.model"
+import { Announcement } from "../../models/announcement.model.js"
+import Complaint from "../../models/complaint.model.js"
+import { Society } from "../../models/society.model.js"
+import { User } from "../../models/user.model.js"
 
 export const getAllUsers = async (req, res) =>{
     try {

@@ -68,7 +68,7 @@ function SuperAdminDashboard() {
       <section className="mt-8">
         <h2 className="text-lg font-semibold mb-3">Overview</h2>
         <p className="text-gray-600">
-          Use the Societies and Users tabs to manage system-wide records. Click update to edit or delete to remove entries.
+          Use the Societies and Users tabs to manage system-wide records.
         </p>
       </section>
     </div>

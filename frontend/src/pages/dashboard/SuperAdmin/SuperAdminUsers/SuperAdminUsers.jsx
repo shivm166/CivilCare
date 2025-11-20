@@ -1,7 +1,5 @@
 import React from "react";
 import { useQuery,} from "@tanstack/react-query";
-// import { getAllUsers,} from "../../lib/api";
-// import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { getAllUsers } from "../../../../api/services/superadmin.api";
 
@@ -39,7 +37,7 @@ function UserCard({ user, onEdit, onDelete }) {
         </div>
         <div>
           <strong>Joined:</strong>{" "}
-          {/* {user.createdAt ? format(new Date(user.createdAt), "dd MMM yyyy") : "-"} */}
+          {user.createdAt && new Date(user.createdAt).toLocaleDateString()}
         </div>
       </div>
     </div>

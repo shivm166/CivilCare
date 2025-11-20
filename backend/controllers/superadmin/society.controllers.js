@@ -1,6 +1,6 @@
-import { Society } from "../../models/society.model";
-import { UserSocietyRel } from "../../models/user_society_rel.model";
-import { generateSocietyCode } from "../../utils/generateSocietyCode";
+import { Society } from "../../models/society.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { generateSocietyCode } from "../../utils/generateSocietyCode.js";
 
 export const createSociety = async (req, res) => {
   try {
