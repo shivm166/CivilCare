@@ -139,6 +139,7 @@ function BuildingUnitsPage() {
                 <div>
                   <h4 className="font-semibold text-gray-900">{unit.name}</h4>
                   <p className="text-sm text-gray-600">Floor {unit.floor}</p>
+                  <p className="text-sm text-gray-600">Unit Type - {unit.bhkType}</p>
                 </div>
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded-full ${

@@ -75,7 +75,7 @@ function UnitDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">{unit?.name}</h1>
                   <p className="text-gray-600">{building?.name} - Floor {unit?.floor}</p>
-                  <p className="text-sm text-gray-600 mb-2">Unit Type - {unit.bhkType}</p>
+                  <p className="text-sm text-gray-600 mb-2">Unit Type - {unit.bhkType.toUpperCase()}</p>
                 </div>
               </div>
             </div>
@@ -118,21 +118,11 @@ function UnitDetailPage() {
                   <p className="font-medium text-gray-900">Floor {unit?.floor}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Type</p>
+                  <p className="text-sm text-gray-600">Unit Type</p>
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      unit?.type === "owner_occupied"
-                        ? "bg-green-100 text-green-700"
-                        : unit?.type === "tenant_occupied"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700`}
                   >
-                    {unit?.type === "owner_occupied"
-                      ? "Owner Occupied"
-                      : unit?.type === "tenant_occupied"
-                      ? "Tenant Occupied"
-                      : "Vacant"}
+                    {unit.bhkType.toUpperCase()}
                   </span>
                 </div>
                 <div>
