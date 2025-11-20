@@ -6,7 +6,7 @@ import { isValidObjectId } from "mongoose";
 export const createUnit = async (req, res) => {
     try {
         const { buildingId } = req.params;
-        const { name, floor, type, owner, primaryResident } = req.body;
+        const { name, floor, bhkType, type, owner, primaryResident } = req.body;
         const societyId = req.society?._id;
 
         if (!isValidObjectId(buildingId)) {
@@ -47,6 +47,7 @@ export const createUnit = async (req, res) => {
             floor,
             building: buildingId,
             society: societyId,
+            bhkType: bhkType,
             type: type || "vacant",
             owner: owner || null,
             primaryResident: primaryResident || null,

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useUpdateUnit } from "../../../hooks/api/useUnit";
 import toast from "react-hot-toast";
+import UnitTypeSelect from "./UnitTypeSelect";
 
 function EditUnitModal({ isOpen, onClose, unit, buildingMaxFloors }) {
   const [formData, setFormData] = useState({
     name: "",
     floor: "",
+    bhkType: "2bhk",
     type: "owner_occupied",
   });
 
@@ -17,6 +19,7 @@ function EditUnitModal({ isOpen, onClose, unit, buildingMaxFloors }) {
       setFormData({
         name: unit.name || "",
         floor: unit.floor || "",
+        bhkType: unit.bhkType || "2bhk",
         type: unit.type || "owner_occupied",
       });
     }
@@ -42,6 +45,7 @@ function EditUnitModal({ isOpen, onClose, unit, buildingMaxFloors }) {
         data: {
           name: formData.name.trim(),
           floor: parseInt(formData.floor),
+          bhkType: formData.bhkType,
           type: formData.type,
         },
       },
@@ -103,6 +107,11 @@ function EditUnitModal({ isOpen, onClose, unit, buildingMaxFloors }) {
                 Max floor: {buildingMaxFloors}
               </p>
             </div>
+
+            <UnitTypeSelect
+              value={formData.bhkType}
+              onChange={(value) => setFormData(prev => ({ ...prev, bhkType: value }))}
+            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

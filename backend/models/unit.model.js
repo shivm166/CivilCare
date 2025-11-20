@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { UNIT_BHK_TYPES } from "../config/unit.config.js";
 
 const unitSchema = new mongoose.Schema(
   {
@@ -21,6 +22,11 @@ const unitSchema = new mongoose.Schema(
       ref: "Society",
       required: true,
       index: true,
+    },
+    bhkType: {
+      type: String,
+      enum: UNIT_BHK_TYPES,
+      required: true,
     },
     type: {
       type: String,
