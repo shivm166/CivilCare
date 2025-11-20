@@ -9,3 +9,8 @@ export const updateProfile = async (profileData) => {
     throw error;
   }
 };
+
+export const getAllUsers = async () => {
+  const res = await axiosInstance.get("/user");
+  return res.data;
+};

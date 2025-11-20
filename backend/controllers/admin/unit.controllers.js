@@ -199,67 +199,82 @@ export const deleteUnit = async (req, res) => {
 }
 
 export const assignResidentToUnit = async (req, res) => {
-    try {
-        const { unitId } = req.params;
-        const { userId, role } = req.body; // role: 'owner', 'member', 'tenant'
-        const societyId = req.society?._id;
+  try {
+    const { unitId } = req.params;
+    const { userId, unitRole } = req.body; // 🔥 Changed from 'role' to 'unitRole'
+    const societyId = req.society?._id;
 
-        if (!isValidObjectId(unitId) || !isValidObjectId(userId)) {
-            return res.status(400).json({ message: "Invalid unit or user ID" });
-        }
-
-        const unit = await Unit.findOne({
-            _id: unitId,
-            society: societyId,
-        });
-
-        if (!unit) {
-            return res.status(404).json({ message: "Unit not found" });
-        }
-
-        // Check if user is already a member of this society
-        let userSocietyRel = await UserSocietyRel.findOne({
-            user: userId,
-            society: societyId,
-        });
-
-        if (!userSocietyRel) {
-            return res.status(400).json({
-                message: "User must be a member of the society first",
-            });
-        }
-
-        // Update unit assignment
-        userSocietyRel.unit = unitId;
-        userSocietyRel.roleInSociety = role || "member";
-        await userSocietyRel.save();
-
-        // Update unit owner/primaryResident based on role
-        if (role === "owner") {
-            unit.owner = userId;
-            unit.type = "owner_occupied";
-        } else if (role === "tenant") {
-            unit.primaryResident = userId;
-            unit.type = "tenant_occupied";
-        } else {
-            unit.primaryResident = userId;
-        }
-
-        await unit.save();
-
-        const updatedUnit = await Unit.findById(unitId)
-            .populate("owner", "name email phone")
-            .populate("primaryResident", "name email phone");
-
-        return res.status(200).json({
-            message: "Resident assigned to unit successfully",
-            unit: updatedUnit,
-        });
-    } catch (error) {
-        console.log("Error in assignResidentToUnit:", error)
-        return res.status(500).json({message: "Internal Server Error"})
+    if (!isValidObjectId(unitId) || !isValidObjectId(userId)) {
+      return res.status(400).json({ message: "Invalid unit or user ID" });
     }
-}
+
+    const unit = await Unit.findOne({
+      _id: unitId,
+      society: societyId,
+    });
+
+    if (!unit) {
+      return res.status(404).json({ message: "Unit not found" });
+    }
+
+    // Check if user is already a member of this society
+    let userSocietyRel = await UserSocietyRel.findOne({
+      user: userId,
+      society: societyId,
+    });
+
+    if (!userSocietyRel) {
+      return res.status(400).json({
+        message: "User must be a member of the society first",
+      });
+    }
+
+    // 🔥 Validate unitRole
+    const allowedUnitRoles = ["owner", "member", "tenant"];
+    if (!unitRole || !allowedUnitRoles.includes(unitRole)) {
+      return res.status(400).json({
+        message: "Invalid unit role. Allowed: owner, member, tenant",
+      });
+    }
+
+    // 🔥 NEW LOGIC: 
+    // - Keep roleInSociety unchanged (admin stays admin, member stays member)
+    // - Set unitRole separately (this can be changed anytime)
+    userSocietyRel.unit = unitId;
+    userSocietyRel.unitRole = unitRole; // 🔥 Set secondary unit role
+    // roleInSociety remains untouched - admin stays admin!
+    await userSocietyRel.save();
+
+    // Update unit owner/primaryResident based on unitRole
+    if (unitRole === "owner") {
+      unit.owner = userId;
+      unit.type = "owner_occupied";
+    } else if (unitRole === "tenant") {
+      unit.primaryResident = userId;
+      unit.type = "tenant_occupied";
+    } else {
+      unit.primaryResident = userId;
+    }
+
+    await unit.save();
+
+    const updatedUnit = await Unit.findById(unitId)
+      .populate("owner", "name email phone")
+      .populate("primaryResident", "name email phone");
+
+    return res.status(200).json({
+      message: "Resident assigned to unit successfully",
+      unit: updatedUnit,
+      userRole: {
+        primaryRole: userSocietyRel.roleInSociety, // admin or member
+        unitRole: userSocietyRel.unitRole, // owner/tenant/member
+      },
+    });
+  } catch (error) {
+    console.log("Error in assignResidentToUnit:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const getUnitById = async (req, res) => {
     try {

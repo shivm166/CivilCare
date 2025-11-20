@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { validateSocietyCreate } from "../middlelware/validation.society.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
+import { validateSocietyCreate } from "../middleware/validation.society.js";
+import { validateRequest } from "../middleware/validateMiddleware.js";
 import {
   createSociety,
   deleteSociety,
@@ -8,7 +8,9 @@ import {
   getSocietyById,
   updateSociety,
 } from "../controllers/society.controllers.js";
-import protectRoute from "../middlelware/isProtected.js";
+
+import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
+import attachSocietyContext from "../middleware/attachSocietyContext.js";
 
 const router = Router();
 
@@ -22,5 +24,6 @@ router.get("/mysocieties", protectRoute, getMySocieties);
 router.get("/:id", protectRoute, getSocietyById);
 router.patch("/:id", protectRoute, updateSociety);
 router.delete("/:id", protectRoute, deleteSociety);
+router.get("/:id", getSocietyById); // dynamic route ALWAYS LAST
 
 export default router;

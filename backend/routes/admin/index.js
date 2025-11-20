@@ -4,7 +4,7 @@ import invitationRoute from "./invitation.route.js";
 import memberRoute from "./member.route.js";
 import requestRoute from "./request.route.js";
 import announcementRoutes from "./announcement.routes.js";
-import protectRoute from "../../middlelware/isProtected.js";
+import protectRoute from "../../middleware/isProtected.js";
 import v1Routes from "./v1/index.js";
 
 const router = Router();

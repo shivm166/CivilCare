@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const userSocietyRelSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const userSocietyRelSchema = new mongoose.Schema(
     },
     building: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Building"
+      ref: "Building",
     },
     unit: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,8 +22,15 @@ const userSocietyRelSchema = new mongoose.Schema(
     },
     roleInSociety: {
       type: String,
-      enum: ["admin", "member", "tenant", "owner"], // Added tenant and owner for clarity
+      enum: ["admin", "member"],
       default: "member",
+      required: true,
+    },
+    // 🔥 NEW: Secondary role for unit assignment
+    unitRole: {
+      type: String,
+      enum: ["owner", "member", "tenant"],
+      default: null, // null means no unit assigned yet
     },
     joinedAt: {
       type: Date,
@@ -39,7 +46,7 @@ const userSocietyRelSchema = new mongoose.Schema(
   }
 );
 
-// Still ensures a user has only one relationship per society
+// Ensures a user has only one relationship per society
 userSocietyRelSchema.index({ user: 1, society: 1 }, { unique: true });
 
 export const UserSocietyRel = mongoose.model(

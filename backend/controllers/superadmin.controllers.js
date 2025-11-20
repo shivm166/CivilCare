@@ -1,44 +1,46 @@
-import { Announcement } from "../models/announcement.model.js"
-import { Complaint } from "../models/complaint.model.js"
-import { Society } from "../models/society.model.js"
-import { User } from "../models/user.model.js"
-import { UserSocietyRel } from "../models/user_society_rel.model.js"
-import { generateSocietyCode } from "../utils/generateSocietyCode.js"
+import { Announcement } from "../models/announcement.model.js";
+import Complaint from "../models/complaint.model.js";
+import { Society } from "../models/society.model.js";
+import { User } from "../models/user.model.js";
+import { UserSocietyRel } from "../models/user_society_rel.model.js";
+import { generateSocietyCode } from "../utils/generateSocietyCode.js";
 
-export const getAllUsers = async (req, res) =>{
-    try {
-        const users = await User.find({})
-        return res.status(200).json({
-            users
-        })
-    } catch (error) {
-        console.log("Error in getAllUsers controller", error)
-        res.status(500).json({
-            message: "Internal Server Error"
-        })
-    }
-}
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    return res.status(200).json({
+      users,
+    });
+  } catch (error) {
+    console.log("Error in getAllUsers controller", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
 
-export const getStats = async (req, res) =>{
-    try {
-        const totalUsers = await User.find({}).countDocuments()
-        const totalSocieties = await Society.find({}).countDocuments()
-        const totalComplaints = await Complaint.find({status: "pending"}).countDocuments()
-        const totalAnnouncements = await Announcement.find({}).countDocuments()
+export const getStats = async (req, res) => {
+  try {
+    const totalUsers = await User.find({}).countDocuments();
+    const totalSocieties = await Society.find({}).countDocuments();
+    const totalComplaints = await Complaint.find({
+      status: "pending",
+    }).countDocuments();
+    const totalAnnouncements = await Announcement.find({}).countDocuments();
 
-        return res.status(200).json({
-            totalUsers,
-            totalSocieties,
-            totalComplaints,
-            totalAnnouncements,
-        })
-    } catch (error) {
-        console.log("Error in getStats controller", error)
-        res.status(500).json({
-            message: "Internal Server Error"
-        })
-    }
-}
+    return res.status(200).json({
+      totalUsers,
+      totalSocieties,
+      totalComplaints,
+      totalAnnouncements,
+    });
+  } catch (error) {
+    console.log("Error in getStats controller", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
 
 export const createSociety = async (req, res) => {
   try {
@@ -102,9 +104,9 @@ export const getAllSocieties = async (req, res) => {
   try {
     const societies = await Society.find({});
     return res.json({
-    success: true,
-    societies,
-    })
+      success: true,
+      societies,
+    });
   } catch (error) {
     console.error("Error in getSocieties controller", error);
     res.status(500).json({ message: "something went wrong" });

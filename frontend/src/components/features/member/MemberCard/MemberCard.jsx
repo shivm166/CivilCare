@@ -1,12 +1,53 @@
 import React from "react";
-import { FiTrash2, FiMail, FiPhone, FiCalendar } from "react-icons/fi";
+import { FiTrash2, FiMail, FiPhone, FiCalendar, FiHome } from "react-icons/fi";
 
 const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
+  // Determine role display logic
+  const primaryRole = member.roleInSociety; // admin or member
+  const unitRole = member.unitRole; // owner, tenant, or member (from unit assignment)
+
+  // 🔥 Smart role display logic:
+  // - Admin: Always show "Admin" + unitRole if exists
+  // - Member: Show unitRole if assigned, otherwise show "Member"
+  const displayRoles = () => {
+    if (primaryRole === "admin") {
+      // Admin always shows, plus unit role if assigned
+      return {
+        primary: "admin",
+        secondary: unitRole && unitRole !== "member" ? unitRole : null,
+      };
+    } else {
+      // Member: Show unit role if assigned, otherwise show "member"
+      return {
+        primary: unitRole || "member",
+        secondary: null, // Members never show both
+      };
+    }
+  };
+
+  const { primary, secondary } = displayRoles();
+
+  // Get role badge styling
+  const getRoleBadgeStyle = (role) => {
+    switch (role) {
+      case "admin":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      case "owner":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "tenant":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "member":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
   return (
     <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-indigo-300 overflow-hidden">
       {/* Subtle gradient accent */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-      
+
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -21,24 +62,35 @@ const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
               )}
             </div>
 
-            {/* Name & Role */}
+            {/* Name & Roles */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 text-sm truncate mb-1">
+              <h3 className="font-semibold text-gray-900 text-sm truncate mb-1.5">
                 {member.user?.name}
               </h3>
-              <span
-                className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${
-                  member.roleInSociety === "admin"
-                    ? "bg-purple-100 text-purple-700"
-                    : member.roleInSociety === "owner"
-                    ? "bg-amber-100 text-amber-700"
-                    : member.roleInSociety === "tenant"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                <span className="capitalize">{member.roleInSociety}</span>
-              </span>
+
+              {/* Role Badges */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Primary Role Badge */}
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border ${getRoleBadgeStyle(
+                    primary
+                  )}`}
+                >
+                  <span className="capitalize">{primary}</span>
+                </span>
+
+                {/* Secondary Role Badge - Only for admins with unit assignment */}
+                {secondary && (
+                  <span
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border ${getRoleBadgeStyle(
+                      secondary
+                    )}`}
+                  >
+                    <FiHome className="text-xs" />
+                    <span className="capitalize">{secondary}</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -74,7 +126,8 @@ const MemberCard = ({ member, onRemove, isRemoving, isAdmin }) => {
           <div className="flex items-center justify-between gap-2 text-xs text-gray-500 pt-1">
             {member.unit && (
               <span className="flex items-center gap-1">
-                <span className="font-medium">Unit:</span> {member.unit.unitNumber}
+                <FiHome className="flex-shrink-0" />
+                <span className="font-medium">{member.unit.name}</span>
               </span>
             )}
             <span className="flex items-center gap-1 ml-auto">

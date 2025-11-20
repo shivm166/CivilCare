@@ -6,11 +6,12 @@ import {
   logout,
   signup,
   updateProfile, // ✅ make sure it's imported here
+  getAllUsers,
 } from "../controllers/user.controllers.js";
 
-import { validateUser, validateLogin } from "../middlelware/validation.user.js";
-import { validateRequest } from "../middlelware/validateMiddleware.js";
-import protectRoute from "../middlelware/isProtected.js";
+import { validateUser, validateLogin } from "../middleware/validation.user.js";
+import { validateRequest } from "../middleware/validateMiddleware.js";
+import protectRoute from "../middleware/isProtected.js";
 
 const router = express.Router();
 
@@ -36,5 +37,7 @@ router.get("/me", protectRoute, (req, res) => {
 
 // ✅ Logout
 router.post("/logout", protectRoute, logout);
+
+router.get("/", getAllUsers);
 
 export default router;
