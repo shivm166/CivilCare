@@ -1,32 +1,15 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import useLogin from "../../../hooks/api/auth/useLogin";
-import useAuthUser from "../../../hooks/api/auth/useAuthUser";
-import PageLoader from "../../error/PageLoader";
+import { AlertCircle } from "lucide-react";
 
 const Login = () => {
-  const navigate = useNavigate();
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
 
   const { isPending, error, loginMutation } = useLogin();
-  const { authUser, isLoading } = useAuthUser();
-
-  // 🔥 CRITICAL: Redirect after successful login based on user role
-  useEffect(() => {
-    if (authUser && !isLoading) {
-      // Determine redirect path based on globalRole
-      const redirectPath = authUser.globalRole === "super_admin" 
-        ? "/super-admin/dashboard" 
-        : "/user/dashboard";
-      
-      toast.success(`Welcome back, ${authUser.name}!`);
-      navigate(redirectPath, { replace: true });
-    }
-  }, [authUser, isLoading, navigate]);
 
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -34,29 +17,52 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Basic validation
-    if (!loginData.email || !loginData.password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    try {
-      await loginMutation(loginData);
-      // Success is handled by useEffect above when authUser updates
-    } catch (err) {
-      // Error is already displayed by the error state
-      toast.error(err?.response?.data?.message || "Login failed. Please try again.");
-    }
+    await loginMutation(loginData);
   };
 
-  // Show loader while checking authentication
-  if (isLoading) {
-    return <PageLoader />;
-  }
+  // 💥 FIX: Updated Error Rendering Logic to handle nested API response structure
+  const renderErrors = () => {
+    if (!error) return null;
+    const responseData = error.response?.data;
+
+    let errorMessages = [];
+
+    // 1. Check for deeply nested API message (e.g., from 401 with meta structure)
+    const metaMessage =
+      responseData?.meta?.message || responseData?.data?.meta?.message;
+    if (metaMessage) {
+      errorMessages = [metaMessage];
+    }
+    // 2. Check for Joi validation errors (array of strings)
+    else if (responseData?.errors && Array.isArray(responseData.errors)) {
+      errorMessages = responseData.errors;
+    }
+    // 3. Check for general controller errors (single string in data root)
+    else if (responseData?.message) {
+      errorMessages = [responseData.message];
+    }
+    // 4. Fallback for network/Axios errors
+    else {
+      errorMessages = [error.message];
+    }
+
+    return (
+      <div className="alert alert-error mb-4 shadow-md">
+        <AlertCircle className="w-5 h-5" />
+        <div className="flex flex-col text-sm">
+          {errorMessages.map((msg, index) => (
+            // Clean up Joi's surrounding quotes
+            <span key={index}>
+              {msg.startsWith('"') ? msg.slice(1, -1).replace(/"/g, "") : msg}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 from-blue-100 via-white to-blue-200">
+    <div className="min-h-screen flex items-center justify-center p-4  from-blue-100 via-white to-blue-200">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto rounded-2xl shadow-2xl overflow-hidden border border-gray-200 bg-white/10 backdrop-blur-md">
         {/* LEFT SIDE - LOGIN FORM */}
         <div
@@ -79,25 +85,8 @@ const Login = () => {
             </p>
           </div>
 
-          {/* ERROR MESSAGE */}
-          {error && (
-            <div className="alert alert-error mb-4 shadow-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="stroke-current shrink-0 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>{error.response?.data?.message || error.message}</span>
-            </div>
-          )}
+          {/* ERROR MESSAGE (Using new renderErrors function) */}
+          {renderErrors()}
 
           {/* LOGIN FORM */}
           <form onSubmit={handleLogin} className="space-y-5">
@@ -110,11 +99,10 @@ const Login = () => {
                 type="email"
                 name="email"
                 placeholder="you@example.com"
-                className="input input-bordered w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="input input-bordered w-full rounded-lg"
                 value={loginData.email}
                 onChange={handleChange}
                 required
-                disabled={isPending}
               />
             </div>
 
@@ -133,24 +121,23 @@ const Login = () => {
                 type="password"
                 name="password"
                 placeholder="••••••••"
-                className="input input-bordered w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="input input-bordered w-full rounded-lg"
                 value={loginData.password}
                 onChange={handleChange}
                 required
-                disabled={isPending}
               />
             </div>
 
             {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              className="btn btn-primary w-full transition-all hover:scale-[1.02] shadow-lg"
+              className="btn btn-primary w-full transition-all hover:scale-[1.02]"
               disabled={isPending}
             >
               {isPending ? (
                 <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  <span>Signing in...</span>
+                  <span className="loading loading-spinner loading-xs"></span>
+                  <span className="ml-2">Signing In...</span>
                 </>
               ) : (
                 "Sign In"
@@ -160,11 +147,8 @@ const Login = () => {
             {/* SIGNUP LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
-                <Link 
-                  to="/signup" 
-                  className="text-primary hover:underline font-semibold"
-                >
+                Don’t have an account?{" "}
+                <Link to="/signup" className="text-primary hover:underline">
                   Create one
                 </Link>
               </p>
