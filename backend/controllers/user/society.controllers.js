@@ -1,46 +1,7 @@
-import { Announcement } from "../models/announcement.model.js";
-import Complaint from "../models/complaint.model.js";
-import { Society } from "../models/society.model.js";
-import { User } from "../models/user.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
-import { generateSocietyCode } from "../utils/generateSocietyCode.js";
-
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find({});
-    return res.status(200).json({
-      users,
-    });
-  } catch (error) {
-    console.log("Error in getAllUsers controller", error);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
-};
-
-export const getStats = async (req, res) => {
-  try {
-    const totalUsers = await User.find({}).countDocuments();
-    const totalSocieties = await Society.find({}).countDocuments();
-    const totalComplaints = await Complaint.find({
-      status: "pending",
-    }).countDocuments();
-    const totalAnnouncements = await Announcement.find({}).countDocuments();
-
-    return res.status(200).json({
-      totalUsers,
-      totalSocieties,
-      totalComplaints,
-      totalAnnouncements,
-    });
-  } catch (error) {
-    console.log("Error in getStats controller", error);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
-};
+import { Society } from "../../models/society.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { generateSocietyCode } from "../../utils/generateSocietyCode.js";
+import { User } from "../../models/user.model.js";
 
 export const createSociety = async (req, res) => {
   try {
@@ -100,15 +61,72 @@ export const createSociety = async (req, res) => {
   }
 };
 
-export const getAllSocieties = async (req, res) => {
+export const getSocietyWiseUserCount = async (req, res) => {
   try {
-    const societies = await Society.find({});
-    return res.json({
+    const societyId = req.society?._id;
+
+    if (!societyId) {
+      return res.status(400).json({
+        success: false,
+        message: "Society context required. Header 'Society-ID' missing",
+      });
+    }
+    const userCount = await UserSocietyRel.countDocuments({
+      society: societyId,
+      isActive: true, // Sirf active members
+    });
+    return res.status(200).json({
       success: true,
-      societies,
+      data: {
+        totalUsers: userCount,
+        totalSocietyMembers: userCount,
+      },
     });
   } catch (error) {
+    console.log("Error in getSocietyWiseUserCount", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while counting society users",
+    });
+  }
+};
+
+export const getMySocieties = async (req, res) => {
+  try {
+    const rels = await UserSocietyRel.find({ user: req.user._id }).populate(
+      "society",
+      "name address city state pincode createdBy"
+    );
+
+    const societies = rels.map((r) => ({
+      society: r.society,
+      role: r.roleInSociety,
+    }));
+
+    return res.json(societies);
+  } catch (error) {
     console.error("Error in getSocieties controller", error);
+    res.status(500).json({ message: "something went wrong" });
+  }
+};
+
+export const getSocietyById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const society = await Society.findById(id);
+    if (!society) return res.status(404).json({ message: "Society not found" });
+
+    const rel = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: id,
+    });
+    if (!rel) {
+      return res.status(403).json({ message: "You can't see others society" });
+    }
+
+    return res.json(society);
+  } catch (error) {
+    console.error("Error in getSocietyById controller", error);
     res.status(500).json({ message: "something went wrong" });
   }
 };
@@ -123,6 +141,17 @@ export const updateSociety = async (req, res) => {
       res.status(400).json({
         message: "Society id is not valid",
       });
+    }
+
+    const userSocRel = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: society._id,
+    });
+
+    if (userSocRel.roleInSociety !== "admin") {
+      return res
+        .status(401)
+        .json({ message: "You are not authorise to update this society" });
     }
 
     const updateSociety = await Society.findByIdAndUpdate(
@@ -150,7 +179,19 @@ export const deleteSociety = async (req, res) => {
       return res.status(400).json({ message: "Society id is not valid" });
     }
 
+    const userSocRel = await UserSocietyRel.findOne({
+      user: req.user._id,
+      society: society._id,
+    });
+
+    if (userSocRel.roleInSociety !== "admin") {
+      return res
+        .status(401)
+        .json({ message: "You are not authorise to delete this society" });
+    }
+
     await Society.findByIdAndDelete(id);
+    await UserSocietyRel.deleteMany({ society: id });
     return res.json({ message: "Society deleted successfully" });
   } catch (error) {
     console.error("Error in deleteSociety controller", error);
