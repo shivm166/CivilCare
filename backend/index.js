@@ -6,7 +6,6 @@ import cors from "cors";
 import "dotenv/config";
 import routes from "./routes/index.js";
 import userRouter from "./routes/v1/user.route.js";
-import societyRouter from "./routes/society.route.js";
 import complaintRouter from "./routes/v1/complaint.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
@@ -30,7 +29,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/user", userRouter);
 app.use("/api", routes);
-app.use("/api/society", societyRouter);
 app.use("/api/complaint", complaintRouter);
 
 app.listen(PORT, () => {

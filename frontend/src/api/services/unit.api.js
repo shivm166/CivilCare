@@ -9,7 +9,7 @@ export const createUnit = async (buildingId, unitData) => {
       `/admin/v1/building/${buildingId}/unit`,
       unitData
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error creating unit:", error);
     throw error;
@@ -22,7 +22,7 @@ export const getUnitsInBuilding = async (buildingId) => {
     const response = await axiosInstance.get(
       `/admin/v1/building/${buildingId}/unit`
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching units:", error);
     throw error;
@@ -36,7 +36,7 @@ export const updateUnit = async (unitId, unitData) => {
       `/admin/v1/unit/${unitId}`,
       unitData
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error updating unit:", error);
     throw error;
@@ -47,7 +47,7 @@ export const updateUnit = async (unitId, unitData) => {
 export const deleteUnit = async (unitId) => {
   try {
     const response = await axiosInstance.delete(`/admin/v1/unit/${unitId}`);
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error deleting unit:", error);
     throw error;
@@ -61,7 +61,7 @@ export const assignResidentToUnit = async (unitId, assignmentData) => {
       `/admin/v1/unit/${unitId}/assign-resident`,
       assignmentData // Now expects: { userId, unitRole }
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error assigning resident:", error);
     throw error;
@@ -72,7 +72,7 @@ export const assignResidentToUnit = async (unitId, assignmentData) => {
 export const getUnitById = async (unitId) => {
   try {
     const response = await axiosInstance.get(`/admin/v1/unit/${unitId}`);
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching unit:", error);
     throw error;
