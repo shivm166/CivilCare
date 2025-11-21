@@ -1,28 +1,18 @@
-import React from "react";
 import { useSocietyContext } from "../../../../contexts/SocietyContext.jsx";
 import {
   useGetMyComplaints,
   useUpdateComplaintStatus,
   useGetAllComplaints,
 } from "../../../../hooks/api/useComplaints.js";
-import {
-  Clock,
-  AlertCircle,
-  CheckCircle2,
-  Lock,
-  FileText,
-  Wrench,
-  Users,
-  Activity,
-  Loader2,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Wrench, User } from "lucide-react";
 
-export default function MyComplaintsPage() {
+export default function ComplaintsPage() {
   const { activeRole, activeSocietyId } = useSocietyContext();
   const isAdmin = activeRole === "admin";
 
   const { updateStatus, isUpdating } = useUpdateComplaintStatus();
 
+  // Fetch data based on role
   const { data: myComplaints, isLoading: isLoadingMy } = useGetMyComplaints(
     isAdmin ? null : activeSocietyId
   );
@@ -54,44 +44,26 @@ export default function MyComplaintsPage() {
       case "pending":
         return <Clock className="w-4 h-4" />;
       case "in_progress":
-        return <Activity className="w-4 h-4" />;
+        return <Wrench className="w-4 h-4" />;
       case "resolved":
         return <CheckCircle2 className="w-4 h-4" />;
       case "closed":
-        return <Lock className="w-4 h-4" />;
+        return <AlertCircle className="w-4 h-4" />;
       default:
-        return <FileText className="w-4 h-4" />;
+        return <Wrench className="w-4 h-4" />;
     }
   };
 
-  // Helper for button styles
-  const getButtonColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-amber-500 hover:bg-amber-600 shadow-amber-500/50";
-      case "in_progress":
-        return "bg-blue-500 hover:bg-blue-600 shadow-blue-500/50";
-      case "resolved":
-        return "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/50";
-      case "closed":
-        return "bg-gray-500 hover:bg-gray-600 shadow-gray-500/50";
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-amber-500";
+      case "low":
+        return "bg-green-500";
       default:
-        return "bg-gray-500 hover:bg-gray-600";
-    }
-  };
-
-  const getButtonIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "in_progress":
-        return <Activity className="w-4 h-4" />;
-      case "resolved":
-        return <CheckCircle2 className="w-4 h-4" />;
-      case "closed":
-        return <Lock className="w-4 h-4" />;
-      default:
-        return null;
+        return "bg-gray-500";
     }
   };
 
@@ -112,26 +84,27 @@ export default function MyComplaintsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-6 px-4 sm:px-6 lg:px-8">
+    // Reduced outer padding for mobile
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 py-4 px-3 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-8 sm:mb-10">
+        {/* Header Section - Reduced size on mobile */}
+        <div className="mb-6 sm:mb-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Wrench className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+              <Wrench className="text-white w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 {isAdmin ? "Society Complaints" : "My Complaints"}
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">
+              <p className="text-xs sm:text-base text-gray-600 mt-1">
                 {isAdmin
-                  ? `Manage and resolve society complaints • ${
+                  ? `Manage and resolve all issues • ${
                       complaints?.length || 0
                     } total`
-                  : `Track your submitted complaints • ${
+                  : `Track your submitted requests • ${
                       complaints?.length || 0
-                    } active`}
+                    } total`}
               </p>
             </div>
           </div>
@@ -140,106 +113,102 @@ export default function MyComplaintsPage() {
         {/* No complaints state */}
         {(!complaints || complaints.length === 0) && (
           <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2"></div>
-              <div className="p-10 text-center">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-10 h-10 text-blue-600" />
+            <div className="bg-white rounded-xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-1.5 sm:h-2"></div>
+              <div className="p-8 sm:p-10 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
+                  <Wrench className="w-8 h-8 text-indigo-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
                   No Complaints Found
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-sm text-gray-500">
                   {isAdmin
                     ? "All clear! No complaints have been submitted yet."
-                    : "You haven't submitted any complaints yet."}
+                    : "You haven't submitted any complaints yet. Use the 'Raise Complaint' menu to start."}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Complaints Grid */}
+        {/* Complaints Grid - Reduced gap */}
         {complaints && complaints.length > 0 && (
-          <div className="grid gap-6 sm:gap-7 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:gap-7 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {complaints.map((c) => (
               <div
                 key={c._id}
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden transform hover:-translate-y-1"
+                className="group relative bg-white rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden transform hover:-translate-y-1"
               >
-                {/* Color accent bar */}
+                {/* Vertical Status Bar */}
                 <div
-                  className={`h-1.5 ${
-                    c.status === "pending"
-                      ? "bg-gradient-to-r from-amber-400 to-orange-500"
-                      : c.status === "in_progress"
-                      ? "bg-gradient-to-r from-blue-400 to-cyan-500"
-                      : c.status === "resolved"
-                      ? "bg-gradient-to-r from-emerald-400 to-green-500"
-                      : "bg-gradient-to-r from-gray-400 to-gray-500"
-                  }`}
+                  className={`absolute left-0 top-0 bottom-0 w-1.5 sm:w-2 ${getPriorityColor(
+                    c.priority
+                  )}`}
                 ></div>
+                {/* Priority Corner Tag - Adjusted size */}
+                <div
+                  className={`absolute right-0 top-0 px-2 py-1 text-xs font-bold text-white ${getPriorityColor(
+                    c.priority
+                  )}`}
+                >
+                  {c.priority.toUpperCase()}
+                </div>
 
-                <div className="p-5 sm:p-6">
+                {/* Reduced padding */}
+                <div className="p-4 sm:p-6 pl-4">
                   {/* Status Badge */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
                         c.status
                       )}`}
                     >
                       {getStatusIcon(c.status)}
                       {c.status.replace("_", " ").toUpperCase()}
                     </span>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
-                        c.priority === "high"
-                          ? "bg-red-500 text-white border-red-600"
-                          : c.priority === "medium"
-                          ? "bg-amber-400 text-white border-amber-500"
-                          : "bg-green-400 text-white border-green-500"
-                      }`}
-                    >
-                      {c.priority.toUpperCase()}
+                    <span className="text-xs text-gray-500">
+                      {new Date(c.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  {/* Title - Reduced font size on mobile */}
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
                     {c.title}
                   </h3>
 
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-4 line-clamp-3">
+                  {/* Description - Reduced font size on mobile */}
+                  <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
                     {c.description}
                   </p>
 
-                  {/* Admin Info */}
+                  {/* Admin Info (Reported By) - Reduced padding/size */}
                   {isAdmin && c.createdBy && (
-                    <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 mb-4 border border-gray-100">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                        Reported By
-                      </p>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                          <Users className="w-4 h-4 text-blue-600" />
-                          {c.createdBy?.name || "N/A"}
-                        </p>
-                        <p className="text-xs text-gray-600 flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-gray-400" />
-                          {c.createdBy?.email || "N/A"}
-                        </p>
+                    <div className="bg-gradient-to-br from-gray-50 to-indigo-50 rounded-lg p-3 mb-4 border border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            Reported By
+                          </p>
+                          <p className="text-sm font-semibold text-gray-800 truncate">
+                            {c.createdBy?.name || "Unknown"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Status Action Buttons (Admin Only) - ENHANCED */}
+                  {/* Status Action Buttons (Admin Only) - Reduced vertical padding, smaller gap */}
                   {isAdmin && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                         Update Status
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {["pending", "in_progress", "resolved", "closed"].map(
                           (s) => (
                             <button
@@ -247,25 +216,20 @@ export default function MyComplaintsPage() {
                               onClick={() =>
                                 updateStatus({ id: c._id, status: s })
                               }
-                              disabled={isUpdating && c.status !== s}
+                              disabled={isUpdating || c.status === s}
                               className={`
-                                flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white
-                                transition-all duration-200 transform hover:scale-[1.02]
-                                ${getButtonColor(s)} 
-                                ${
-                                  c.status === s
-                                    ? "opacity-100 shadow-lg"
-                                    : "opacity-80"
-                                }
-                                disabled:opacity-50 disabled:cursor-not-allowed
-                                `}
+                              px-2 py-1 rounded-lg text-xs font-semibold
+                              transition-all duration-200 transform
+                              ${
+                                c.status === s
+                                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
+                              }
+                              disabled:opacity-50 disabled:cursor-not-allowed
+                            `}
                             >
-                              {isUpdating &&
-                              isUpdating.id === c._id &&
-                              c.status !== s ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                getButtonIcon(s)
+                              {isUpdating && c.status !== s && (
+                                <span className="inline-block w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-1"></span>
                               )}
                               {s.replace("_", " ")}
                             </button>

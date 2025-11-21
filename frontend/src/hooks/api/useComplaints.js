@@ -61,30 +61,29 @@ export const useUpdateComplaintStatus = () => {
       // The updated complaint object returned by the backend
       const updated = data.data;
 
-      // Helper function to find and update the item in a list
+      // 🔥 FIX: Correctly check for nested 'data' array structure before updating
       const updateList = (oldData) => {
-        if (Array.isArray(oldData)) {
-          return oldData.map((complaint) =>
+        // Check if the actual list is wrapped in a 'data' property (like how getMyComplaints returns)
+        const listToUpdate = Array.isArray(oldData) ? oldData : oldData?.data;
+
+        if (Array.isArray(listToUpdate)) {
+          const newList = listToUpdate.map((complaint) =>
             complaint._id === updated._id ? updated : complaint
           );
+
+          // Return the list in the same structure it was found
+          return Array.isArray(oldData)
+            ? newList
+            : { ...oldData, data: newList };
         }
-        return oldData; // Return old data if it's not an array
+        return oldData; // Return old data if it's not a recognizable list structure
       };
 
-      // 🔥 FIX: Manual cache update using setQueriesData to prevent full reload.
-      // This searches for the list and updates the specific complaint object in the array.
+      // 1. Manually update allComplaints cache for all variants
+      queryClient.setQueriesData({ queryKey: ["allComplaints"] }, updateList);
 
-      // 1. Manually update allComplaints cache for all variants (with or without societyId)
-      queryClient.setQueriesData(
-        { queryKey: ["allComplaints"], exact: false },
-        updateList
-      );
-
-      // 2. Manually update myComplaints cache for all variants (with or without societyId)
-      queryClient.setQueriesData(
-        { queryKey: ["myComplaints"], exact: false },
-        updateList
-      );
+      // 2. Manually update myComplaints cache for all variants
+      queryClient.setQueriesData({ queryKey: ["myComplaints"] }, updateList);
     },
   });
 
