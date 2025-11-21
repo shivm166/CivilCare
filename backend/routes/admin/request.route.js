@@ -6,7 +6,7 @@ import {
   getAllRequestsForSociety,
   acceptRequest,
   rejectRequest,
-} from "../../controllers/request.controllers.js";
+} from "../../controllers/admin/request.controllers.js";
 import { validateSendRequest } from "../../middleware/validation.request.js";
 import { validateRequest } from "../../middleware/validateMiddleware.js";
 import protectRoute from "../../middleware/isProtected.js";

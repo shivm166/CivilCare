@@ -5,7 +5,7 @@ import {
   getComplaints,
   updateComplaintStatus,
   getTotalComplaints,
-} from "../../controllers/auth/complaint.controllers.js";
+} from "../../controllers/user/complaint.controllers.js";
 import protectRoute, { requireAdmin } from "../../middleware/isProtected.js";
 import attachSocietyContext from "../../middleware/attachSocietyContext.js";
 

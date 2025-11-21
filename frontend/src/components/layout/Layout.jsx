@@ -14,7 +14,7 @@ const Layout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
           <h1 className="text-xl font-bold text-gray-800">
-            {activeRole === "admin" ? "Admin Panel" : "User Panel"}
+            {activeRole === "admin" ? "" : ""}
           </h1>
 
           <div className="flex items-center space-x-4">

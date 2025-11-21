@@ -7,7 +7,7 @@ import {
   replyToComment,
   getAllAnnouncementsUser,
   addComment,
-} from "../../controllers/announcement.controllers.js";
+} from "../../controllers/admin/announcement.controllers.js";
 import protectRoute, { requireAdmin } from "../../middleware/isProtected.js";
 import attachSocietyContext from "../../middleware/attachSocietyContext.js";
 

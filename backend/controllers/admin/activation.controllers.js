@@ -1,5 +1,5 @@
-import { User } from "../models/user.model.js";
-import { generateTokenAndSetCookie } from "../utils/jwtToken.js";
+import { User } from "../../models/user.model.js";
+import { generateTokenAndSetCookie } from "../../utils/jwtToken.js";
 
 // ==================== USER ACTIVATION CONTROLLERS ====================
 

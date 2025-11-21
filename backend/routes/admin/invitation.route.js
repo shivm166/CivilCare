@@ -5,7 +5,7 @@ import {
   acceptInvitation,
   rejectInvitation,
   getSentInvitations,
-} from "../../controllers/invitation.controllers.js";
+} from "../../controllers/admin/invitation.controllers.js";
 import protectRoute from "../../middleware/isProtected.js";
 
 const router = Router();

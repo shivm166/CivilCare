@@ -3,7 +3,7 @@ import {
   activateAccount,
   verifyInvitationToken,
   resendInvitation,
-} from "../../controllers/activation.controllers.js";
+} from "../../controllers/admin/activation.controllers.js";
 
 const router = Router();
 

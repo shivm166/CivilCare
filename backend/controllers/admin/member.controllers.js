@@ -1,9 +1,9 @@
-import { User } from "../models/user.model.js";
-import { Society } from "../models/society.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
-import { Unit } from "../models/unit.model.js";
-import { sendInvitationEmail } from "../utils/sendEmail.js";
-import { MemberInvitation } from "../models/member_invitation.model.js";
+import { User } from "../../models/user.model.js";
+import { Society } from "../../models/society.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { Unit } from "../../models/unit.model.js";
+import { sendInvitationEmail } from "../../utils/sendEmail.js";
+import { MemberInvitation } from "../../models/member_invitation.model.js";
 import { isValidObjectId } from "mongoose"; // 🔥 ADDED THIS IMPORT
 
 // ==================== MEMBER MANAGEMENT CONTROLLERS ====================

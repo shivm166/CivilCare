@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-hot-toast";
 import useSignup from "../../../hooks/api/auth/useSignup";
-import PageLoader from "../../error/PageLoader";
-// import useSignup from "../../hooks/useSignup.js";
-// import PageLoader from "../../components/common/PageLoader.jsx";
+import { AlertCircle } from "lucide-react";
 
 const Signup = () => {
   const [signUpData, setSignUpData] = useState({
@@ -23,6 +20,47 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     await signupMutation(signUpData);
+  };
+
+  // 💥 FIX: Updated Error Rendering Logic to handle nested API response structure
+  const renderErrors = () => {
+    if (!error) return null;
+    const responseData = error.response?.data;
+
+    let errorMessages = [];
+
+    // 1. Check for deeply nested API message (e.g., from 401 with meta structure)
+    const metaMessage =
+      responseData?.meta?.message || responseData?.data?.meta?.message;
+    if (metaMessage) {
+      errorMessages = [metaMessage];
+    }
+    // 2. Check for Joi validation errors (array of strings)
+    else if (responseData?.errors && Array.isArray(responseData.errors)) {
+      errorMessages = responseData.errors;
+    }
+    // 3. Check for general controller errors (single string in data root)
+    else if (responseData?.message) {
+      errorMessages = [responseData.message];
+    }
+    // 4. Fallback for network/Axios errors
+    else {
+      errorMessages = [error.message];
+    }
+
+    return (
+      <div className="alert alert-error mb-4 shadow-md">
+        <AlertCircle className="w-5 h-5" />
+        <div className="flex flex-col text-sm">
+          {errorMessages.map((msg, index) => (
+            // Clean up Joi's surrounding quotes
+            <span key={index}>
+              {msg.startsWith('"') ? msg.slice(1, -1).replace(/"/g, "") : msg}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -47,12 +85,8 @@ const Signup = () => {
             </p>
           </div>
 
-          {/* ERROR MESSAGE */}
-          {error && (
-            <div className="alert alert-error mb-4">
-              <span>{error.response?.data?.message || error.message}</span>
-            </div>
-          )}
+          {/* ERROR MESSAGE (Using new renderErrors function) */}
+          {renderErrors()}
 
           {/* FORM */}
           <form onSubmit={handleSignup} className="space-y-4">
@@ -151,7 +185,7 @@ const Signup = () => {
               {isPending ? (
                 <>
                   <span className="loading loading-spinner loading-xs"></span>
-                  {<PageLoader />}
+                  <span className="ml-2">Creating Account...</span>
                 </>
               ) : (
                 "Create Account"
