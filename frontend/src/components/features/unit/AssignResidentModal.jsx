@@ -55,7 +55,6 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
     );
   });
 
-  // 🔥 Reset unitRole when user selection changes
   useEffect(() => {
     if (selectedUser) {
       // If user already has a unit role, use it; otherwise default to member
@@ -66,7 +65,6 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
   const handleAssign = () => {
     if (!selectedUser) return;
 
-    // 🔥 Always send unitRole - works for both admin and member
     assignResident({ 
       userId: selectedUser.user._id, 
       unitRole: unitRole 
@@ -139,9 +137,9 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
                 <option value="tenant">Tenant</option>
               </select>
               {isAdminUser && (
-                <div className="mt-3 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-3">
+                <div className="mt-3 rounded-lg bg-linear-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-3">
                   <p className="text-xs text-purple-700 flex items-start gap-2">
-                    <svg className="h-4 w-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                     <span>
@@ -155,12 +153,12 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
 
           {/* Selected User Card */}
           {selectedUser && (
-            <div className="mb-6 rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
+            <div className="mb-6 rounded-xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-4">
               <p className="mb-2 text-sm font-semibold text-indigo-900">
                 Selected Member
               </p>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-lg font-bold text-white shadow-lg">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 to-purple-600 text-lg font-bold text-white shadow-lg">
                   {selectedUser.user?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
@@ -243,7 +241,7 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
                           )}
                         </div>
                         {isSelected && (
-                          <svg className="h-6 w-6 flex-shrink-0 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="h-6 w-6 shrink-0 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         )}
@@ -267,7 +265,7 @@ function AssignResidentModal({ isOpen, onClose, unit }) {
           <button
             onClick={handleAssign}
             disabled={!selectedUser || isPending}
-            className="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-indigo-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-indigo-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "Assigning..." : "Assign Resident"}
           </button>

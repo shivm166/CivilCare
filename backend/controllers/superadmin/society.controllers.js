@@ -3,37 +3,55 @@ import { Society } from "../../models/society.model.js";
 import { Unit } from "../../models/unit.model.js";
 import { UserSocietyRel } from "../../models/user_society_rel.model.js";
 import { generateSocietyCode } from "../../utils/generateSocietyCode.js";
+import { sendErrorResponse, sendSuccessResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const { SUCCESS, CREATED, DELETED, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, SERVER_ERROR } = STATUS_CODES
 
 export const createSociety = async (req, res) => {
   try {
     const { name, address, city, state, pincode } = req.body;
 
     if (!name || !address || !city || !state || !pincode) {
-      return res.status(400).json({
-        message: "All fields are required",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        error - null,
+        "All fields are required",
+      )
     }
 
     const existedSocietyName = await Society.findOne({ name: name });
 
     if (existedSocietyName) {
-      return res.status(409).json({
-        message: "Society name is already exist",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "Society name is already exist",
+      )
     }
 
     const existedSocietyAddress = await Society.findOne({ address: address });
 
     if (existedSocietyAddress) {
-      return res.status(409).json({
-        message: "Society address is already exist",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "Society address is already exist"
+      )
     }
     let JoiningCode;
     try {
       JoiningCode = generateSocietyCode(name);
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return sendErrorResponse(
+        res,
+        SERVER_ERROR,
+        error,
+        error.message,
+      )
     }
 
     const society = await Society.create({
@@ -52,26 +70,34 @@ export const createSociety = async (req, res) => {
       roleInSociety: "admin",
     });
 
-    return res.status(201).json({
-      message: "society created successfully",
-      society,
-    });
+    return sendSuccessResponse(
+      res,
+      CREATED,
+      {
+        society,
+      },
+      "society created successfully"
+    )
   } catch (error) {
     console.error("Error in createSociety controller", error);
-    res.status(500).json({ message: "something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
 export const getAllSocieties = async (req, res) => {
   try {
     const societies = await Society.find({});
-    return res.json({
-    success: true,
-    societies,
-    })
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        societies,
+      },
+      "society fetched successfully"
+    )
   } catch (error) {
     console.error("Error in getSocieties controller", error);
-    res.status(500).json({ message: "something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -82,9 +108,12 @@ export const updateSociety = async (req, res) => {
     const society = await Society.findById(id);
 
     if (!society) {
-      res.status(400).json({
-        message: "Society id is not valid",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Please select society"
+      )
     }
 
     const updateSociety = await Society.findByIdAndUpdate(
@@ -92,13 +121,18 @@ export const updateSociety = async (req, res) => {
       { name, address, city, state, pincode },
       { new: true }
     );
-    return res.status(200).json({
-      message: "society updated successfully",
-      society: updateSociety,
-    });
+
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        society: updateSociety,
+      },
+      "society updated successfully"
+    )
   } catch (error) {
     console.error("Error in updateSociety controller", error);
-    return res.status(500).json({ message: "something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -133,16 +167,17 @@ export const getAllSocietiesWithUserCount = async (req, res) => {
       })
     );
 
-    return res.json({
-      success: true,
-      societies: societiesWithMemberCount,
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        societies: societiesWithMemberCount,
+      },
+      "Data Fetched Successfully"
+    )
   } catch (error) {
     console.error("Error in getAllSocieties controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -153,10 +188,12 @@ export const getSocietyById = async (req, res) => {
     const society = await Society.findById(id).populate("createdBy", "name email");
 
     if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found",
-      });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "Please select Society",
+      )
     }
 
     // Get member count
@@ -175,21 +212,22 @@ export const getSocietyById = async (req, res) => {
       society: id,
     });
 
-    return res.status(200).json({
-      success: true,
-      society: {
-        ...society.toObject(),
-        memberCount,
-        buildingCount,
-        unitCount,
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        society: {
+          ...society.toObject(),
+          memberCount,
+          buildingCount,
+          unitCount,
+        },
       },
-    });
+      "Data Fetched Successfully"
+    )
   } catch (error) {
     console.error("Error in getSocietyById controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -200,10 +238,12 @@ export const deleteSociety = async (req, res) => {
     const society = await Society.findById(id);
 
     if (!society) {
-      return res.status(404).json({
-        success: false,
-        message: "Society not found",
-      });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "Society not found",
+      )
     }
 
     // Check if society has buildings/units
@@ -211,10 +251,12 @@ export const deleteSociety = async (req, res) => {
     const unitCount = await Unit.countDocuments({ society: id });
 
     if (buildingCount > 0 || unitCount > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete society. It has ${buildingCount} building(s) and ${unitCount} unit(s). Please delete them first.`,
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        `Cannot delete society. It has ${buildingCount} building(s) and ${unitCount} unit(s). Please delete them first.`,
+      )
     }
 
     // Delete all user-society relationships
@@ -223,15 +265,14 @@ export const deleteSociety = async (req, res) => {
     // Delete society
     await Society.findByIdAndDelete(id);
 
-    return res.json({
-      success: true,
-      message: "Society deleted successfully",
-    });
+    return sendSuccessResponse(
+      res,
+      DELETED,
+      null,
+      "Society deleted successfully"
+    )
   } catch (error) {
     console.error("Error in deleteSociety controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 }

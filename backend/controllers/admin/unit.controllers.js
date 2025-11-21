@@ -2,6 +2,10 @@ import { Building } from "../../models/building.model.js";
 import { Unit } from "../../models/unit.model.js";
 import { UserSocietyRel } from "../../models/user_society_rel.model.js";
 import { isValidObjectId } from "mongoose";
+import { sendErrorResponse, sendSuccessResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const { SUCCESS, CREATED, DELETED, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, SERVER_ERROR } = STATUS_CODES
 
 export const createUnit = async (req, res) => {
     try {
@@ -10,7 +14,12 @@ export const createUnit = async (req, res) => {
         const societyId = req.society?._id;
 
         if (!isValidObjectId(buildingId)) {
-            return res.status(400).json({ message: "Invalid building ID" });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid Building Id"
+            )
         }
 
         // Verify building exists in this society
@@ -20,7 +29,12 @@ export const createUnit = async (req, res) => {
         });
 
         if (!building) {
-            return res.status(404).json({ message: "Building not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Building Not Found"
+            )
         }
 
         // Check if unit with same name exists in this building
@@ -30,16 +44,21 @@ export const createUnit = async (req, res) => {
         });
 
         if (existingUnit) {
-            return res.status(409).json({
-                message: "Unit with this name already exists in this building",
-            });
+            return sendErrorResponse(
+                res,
+                CONFLICT,
+                null,
+                "Unit with this name already exists in this building",
+            )
         }
 
         // Validate floor number
         if (floor > building.numberOfFloors) {
-            return res.status(400).json({
-                message: `Floor number cannot exceed building's floor count (${building.numberOfFloors})`,
-            });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                `Floor number cannot exceed building's floor count (${building.numberOfFloors})`,
+            )
         }
 
         const unit = await Unit.create({
@@ -57,13 +76,17 @@ export const createUnit = async (req, res) => {
         .populate("owner", "name email phone")
         .populate("primaryResident", "name email phone");
 
-        return res.status(201).json({
-            message: "Unit created successfully",
-            unit: populatedUnit,
-        });
+        return sendSuccessResponse(
+            res,
+            CREATED,
+            {
+                unit: populatedUnit,
+            },
+            "Unit created successfully",
+        )
     } catch (error) {
         console.log("Error in createUnit:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -73,7 +96,12 @@ export const getUnitsInBuilding = async (req, res) => {
         const societyId = req.society?._id;
 
         if (!isValidObjectId(buildingId)) {
-            return res.status(400).json({ message: "Invalid building ID" });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid Building Id"
+            )
         }
 
         // Verify building exists
@@ -83,7 +111,12 @@ export const getUnitsInBuilding = async (req, res) => {
         });
 
         if (!building) {
-            return res.status(404).json({ message: "Building not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Building Not Found"
+            )
         }
 
         const units = await Unit.find({ building: buildingId })
@@ -91,13 +124,17 @@ export const getUnitsInBuilding = async (req, res) => {
             .populate("primaryResident", "name email phone")
             .sort({ floor: 1, name: 1 });
 
-        return res.status(200).json({
-            message: "Units fetched successfully",
-            units,
-        });
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                units,
+            },
+            "Units fetched successfully"
+        )
     } catch (error) {
         console.log("Error in getUnitsInBuilding:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -108,7 +145,12 @@ export const updateUnit = async (req, res) => {
         const societyId = req.society?._id;
 
         if (!isValidObjectId(unitId)) {
-            return res.status(400).json({ message: "Invalid unit ID" });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid unit Id"
+            )
         }
 
         const unit = await Unit.findOne({
@@ -117,15 +159,23 @@ export const updateUnit = async (req, res) => {
         });
 
         if (!unit) {
-            return res.status(404).json({ message: "Unit not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Unit not found"
+            )
         }
 
         // Get building to validate floor
         const building = await Building.findById(unit.building);
         if (floor && floor > building.numberOfFloors) {
-            return res.status(400).json({
-                message: `Floor number cannot exceed building's floor count (${building.numberOfFloors})`,
-            });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                `Floor number cannot exceed building's floor count (${building.numberOfFloors})`,
+            )
         }
 
         // Check if new name conflicts
@@ -137,9 +187,12 @@ export const updateUnit = async (req, res) => {
             });
 
             if (existingUnit) {
-                return res.status(409).json({
-                message: "Unit with this name already exists in this building",
-                });
+                return sendErrorResponse(
+                    res,
+                    CONFLICT,
+                    null,
+                    "Unit with this name already exists in this building",
+                )
             }
         }
 
@@ -156,13 +209,17 @@ export const updateUnit = async (req, res) => {
         .populate("owner", "name email phone")
         .populate("primaryResident", "name email phone");
 
-        return res.status(200).json({
-        message: "Unit updated successfully",
-        unit: updatedUnit,
-        });
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                unit: updatedUnit,
+            },
+            "Unit updated successfully",
+        )
     } catch (error) {
         console.log("Error in updateUnit:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -172,7 +229,12 @@ export const deleteUnit = async (req, res) => {
         const societyId = req.society?._id;
 
         if (!isValidObjectId(unitId)) {
-            return res.status(400).json({ message: "Invalid unit ID" });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid unit Id"
+            )
         }
 
         const unit = await Unit.findOneAndDelete({
@@ -181,7 +243,12 @@ export const deleteUnit = async (req, res) => {
         });
 
         if (!unit) {
-            return res.status(404).json({ message: "Unit not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Unit not found"
+            )
         }
 
         // Remove unit reference from UserSocietyRel
@@ -190,23 +257,31 @@ export const deleteUnit = async (req, res) => {
             { $unset: { unit: "" } }
         );
 
-        return res.status(200).json({
-            message: "Unit deleted successfully",
-        });
+        return sendSuccessResponse(
+            res,
+            DELETED,
+            null,
+            "Unit deleted successfully",
+        )
+
     } catch (error) {
         console.log("Error in deleteUnit:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
 export const assignResidentToUnit = async (req, res) => {
   try {
     const { unitId } = req.params;
-    const { userId, unitRole } = req.body; // 🔥 Changed from 'role' to 'unitRole'
+    const { userId, unitRole } = req.body;
     const societyId = req.society?._id;
 
     if (!isValidObjectId(unitId) || !isValidObjectId(userId)) {
-      return res.status(400).json({ message: "Invalid unit or user ID" });
+        return sendErrorResponse(
+            res,
+            BAD_REQUEST,
+            "Invalid unit or user ID",
+        )
     }
 
     const unit = await Unit.findOne({
@@ -215,7 +290,12 @@ export const assignResidentToUnit = async (req, res) => {
     });
 
     if (!unit) {
-      return res.status(404).json({ message: "Unit not found" });
+        return sendErrorResponse(
+            res,
+            NOT_FOUND,
+            null,
+            "Unit not found"
+        )
     }
 
     // Check if user is already a member of this society
@@ -225,25 +305,26 @@ export const assignResidentToUnit = async (req, res) => {
     });
 
     if (!userSocietyRel) {
-      return res.status(400).json({
-        message: "User must be a member of the society first",
-      });
+        return sendErrorResponse(
+            res,
+            BAD_REQUEST,
+            null,
+            "User must be a member of the society first"
+        )
     }
 
-    // 🔥 Validate unitRole
     const allowedUnitRoles = ["owner", "member", "tenant"];
     if (!unitRole || !allowedUnitRoles.includes(unitRole)) {
-      return res.status(400).json({
-        message: "Invalid unit role. Allowed: owner, member, tenant",
-      });
+        return sendErrorResponse(
+            res,
+            BAD_REQUEST,
+            null,
+            "Invalid unit role. Allowed: owner, member, tenant"
+        )
     }
 
-    // 🔥 NEW LOGIC: 
-    // - Keep roleInSociety unchanged (admin stays admin, member stays member)
-    // - Set unitRole separately (this can be changed anytime)
     userSocietyRel.unit = unitId;
-    userSocietyRel.unitRole = unitRole; // 🔥 Set secondary unit role
-    // roleInSociety remains untouched - admin stays admin!
+    userSocietyRel.unitRole = unitRole;
     await userSocietyRel.save();
 
     // Update unit owner/primaryResident based on unitRole
@@ -263,17 +344,21 @@ export const assignResidentToUnit = async (req, res) => {
       .populate("owner", "name email phone")
       .populate("primaryResident", "name email phone");
 
-    return res.status(200).json({
-      message: "Resident assigned to unit successfully",
-      unit: updatedUnit,
-      userRole: {
-        primaryRole: userSocietyRel.roleInSociety, // admin or member
-        unitRole: userSocietyRel.unitRole, // owner/tenant/member
-      },
-    });
+    return sendSuccessResponse(
+        res,
+        SUCCESS,
+        {
+            unit: updatedUnit,
+            userRole: {
+                primaryRole: userSocietyRel.roleInSociety,
+                unitRole: userSocietyRel.unitRole,
+            },
+        },
+        "Resident assigned to unit successfully"
+    )
   } catch (error) {
     console.log("Error in assignResidentToUnit:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -283,7 +368,12 @@ export const getUnitById = async (req, res) => {
         const societyId = req.society?._id;
 
         if (!isValidObjectId(unitId)) {
-            return res.status(400).json({ message: "Invalid unit ID" });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid unit ID"
+            )
         }
 
         const unit = await Unit.findOne({
@@ -295,16 +385,25 @@ export const getUnitById = async (req, res) => {
             .populate("building", "name numberOfFloors");
 
         if (!unit) {
-            return res.status(404).json({ message: "Unit not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Unit not found"
+            )
         }
 
-        return res.status(200).json({
-            message: "Unit details fetched successfully",
-            unit,
-            building: unit.building,
-        });
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                unit,
+                building: unit.building,
+            },
+            "Unit details fetched successfully"
+        )
     } catch (error) {
         console.log("Error in getUnitById:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 };

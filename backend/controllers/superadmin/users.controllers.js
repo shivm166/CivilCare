@@ -3,18 +3,25 @@ import Complaint from "../../models/complaint.model.js"
 import { Society } from "../../models/society.model.js"
 import { User } from "../../models/user.model.js"
 import { UserSocietyRel } from "../../models/user_society_rel.model.js"
+import { sendErrorResponse, sendSuccessResponse } from "../../utils/response.js"
+import { STATUS_CODES } from "../../utils/status.js"
+
+const { SUCCESS, CREATED, DELETED, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, SERVER_ERROR } = STATUS_CODES
 
 export const getAllUsers = async (req, res) =>{
     try {
-        const users = await User.find({}).select("-password")
-        return res.status(200).json({
-            users
-        })
+      const users = await User.find({}).select("-password")
+      return sendSuccessResponse(
+        res,
+        SUCCESS,
+        {
+          users
+        },
+        "Users fetched successfully"
+      )
     } catch (error) {
         console.log("Error in getAllUsers controller", error)
-        res.status(500).json({
-            message: "Internal Server Error"
-        })
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -25,17 +32,20 @@ export const getStats = async (req, res) => {
     const totalComplaints = await Complaint.countDocuments({ status: "pending" });
     const totalAnnouncements = await Announcement.countDocuments();
 
-    return res.status(200).json({
-      totalUsers,
-      totalSocieties,
-      totalComplaints,
-      totalAnnouncements,
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        totalUsers,
+        totalSocieties,
+        totalComplaints,
+        totalAnnouncements,
+      },
+      "Stats fetched successfully"
+    )
   } catch (error) {
     console.log("Error in getStats controller", error);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -46,10 +56,13 @@ export const getUserById = async (req, res) => {
     const user = await User.findById(id).select("-password");
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "User not found",
+      )
     }
 
     // Get user's societies
@@ -60,19 +73,20 @@ export const getUserById = async (req, res) => {
       .populate("society", "name city state")
       .select("roleInSociety society");
 
-    return res.status(200).json({
-      success: true,
-      user: {
-        ...user.toObject(),
-        societies,
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        user: {
+          ...user.toObject(),
+          societies,
+        },
       },
-    });
+      "user fetched successfully"
+    )
   } catch (error) {
     console.log("Error in getUserById controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -82,27 +96,33 @@ export const deleteUser = async (req, res) => {
 
     // Prevent self-deletion
     if (id === req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You cannot delete your own account",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You cannot delete your own account"
+      )
     }
 
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "User not found"
+      )
     }
 
     // Check if user is super_admin
     if (user.globalRole === "super_admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Cannot delete a super admin user",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Cannot delete a super admin user",
+      )
     }
 
     // Delete user's society relationships
@@ -111,16 +131,15 @@ export const deleteUser = async (req, res) => {
     // Delete user
     await User.findByIdAndDelete(id);
 
-    return res.status(200).json({
-      success: true,
-      message: "User deleted successfully",
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      null,
+      "User deleted successfully"
+    )
   } catch (error) {
     console.log("Error in deleteUser controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -145,16 +164,17 @@ export const getUserWithSocietyCount = async (req, res) => {
       })
     );
 
-    return res.status(200).json({
-      success: true,
-      users: usersWithSocietyCount,
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        users: usersWithSocietyCount,
+      },
+      "Data fetched successfully"
+    )
   } catch (error) {
     console.log("Error in getAllUsers controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
 
@@ -166,18 +186,21 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        "User not found",
+      )
     }
 
     // Validate globalRole if provided
     if (globalRole && !["user", "super_admin"].includes(globalRole)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid global role. Must be 'user' or 'super_admin'",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Invalid global role. Must be 'user' or 'super_admin'"
+      )
     }
 
     // Prevent self-demotion (super admin removing their own super_admin role)
@@ -186,10 +209,12 @@ export const updateUser = async (req, res) => {
       globalRole === "user" &&
       user.globalRole === "super_admin"
     ) {
-      return res.status(403).json({
-        success: false,
-        message: "You cannot remove your own super admin privileges",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You cannot remove your own super admin privileges",
+      )
     }
 
     // Update fields
@@ -199,22 +224,22 @@ export const updateUser = async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({
-      success: true,
-      message: "User updated successfully",
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        globalRole: user.globalRole,
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          globalRole: user.globalRole,
+        },
       },
-    });
+      "User updated successfully"
+    )
   } catch (error) {
     console.log("Error in updateUser controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
   }
 };
