@@ -1,9 +1,21 @@
+import React from "react";
 import { useSocietyContext } from "../../../../contexts/SocietyContext.jsx";
 import {
   useGetMyComplaints,
   useUpdateComplaintStatus,
   useGetAllComplaints,
 } from "../../../../hooks/api/useComplaints.js";
+import {
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  Lock,
+  FileText,
+  Wrench,
+  Users,
+  Activity,
+  Loader2,
+} from "lucide-react";
 
 export default function MyComplaintsPage() {
   const { activeRole, activeSocietyId } = useSocietyContext();
@@ -25,13 +37,13 @@ export default function MyComplaintsPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-100 text-amber-800 border-amber-300";
       case "in_progress":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-blue-100 text-blue-800 border-blue-300";
       case "resolved":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        return "bg-emerald-100 text-emerald-800 border-emerald-300";
       case "closed":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-gray-100 text-gray-800 border-gray-300";
       default:
         return "bg-gray-100 text-gray-600 border-gray-200";
     }
@@ -40,15 +52,46 @@ export default function MyComplaintsPage() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "pending":
-        return "⏳";
+        return <Clock className="w-4 h-4" />;
       case "in_progress":
-        return "🔄";
+        return <Activity className="w-4 h-4" />;
       case "resolved":
-        return "✅";
+        return <CheckCircle2 className="w-4 h-4" />;
       case "closed":
-        return "🔒";
+        return <Lock className="w-4 h-4" />;
       default:
-        return "📋";
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  // Helper for button styles
+  const getButtonColor = (status) => {
+    switch (status) {
+      case "pending":
+        return "bg-amber-500 hover:bg-amber-600 shadow-amber-500/50";
+      case "in_progress":
+        return "bg-blue-500 hover:bg-blue-600 shadow-blue-500/50";
+      case "resolved":
+        return "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/50";
+      case "closed":
+        return "bg-gray-500 hover:bg-gray-600 shadow-gray-500/50";
+      default:
+        return "bg-gray-500 hover:bg-gray-600";
+    }
+  };
+
+  const getButtonIcon = (status) => {
+    switch (status) {
+      case "pending":
+        return <Clock className="w-4 h-4" />;
+      case "in_progress":
+        return <Activity className="w-4 h-4" />;
+      case "resolved":
+        return <CheckCircle2 className="w-4 h-4" />;
+      case "closed":
+        return <Lock className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -75,9 +118,7 @@ export default function MyComplaintsPage() {
         <div className="mb-8 sm:mb-10">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl sm:text-3xl">
-                {isAdmin ? "📢" : "📄"}
-              </span>
+              <Wrench className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -103,7 +144,7 @@ export default function MyComplaintsPage() {
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2"></div>
               <div className="p-10 text-center">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-5xl">📭</span>
+                  <FileText className="w-10 h-10 text-blue-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
                   No Complaints Found
@@ -147,8 +188,19 @@ export default function MyComplaintsPage() {
                         c.status
                       )}`}
                     >
-                      <span>{getStatusIcon(c.status)}</span>
+                      {getStatusIcon(c.status)}
                       {c.status.replace("_", " ").toUpperCase()}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        c.priority === "high"
+                          ? "bg-red-500 text-white border-red-600"
+                          : c.priority === "medium"
+                          ? "bg-amber-400 text-white border-amber-500"
+                          : "bg-green-400 text-white border-green-500"
+                      }`}
+                    >
+                      {c.priority.toUpperCase()}
                     </span>
                   </div>
 
@@ -170,18 +222,18 @@ export default function MyComplaintsPage() {
                       </p>
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                          <span className="text-blue-600">👤</span>
+                          <Users className="w-4 h-4 text-blue-600" />
                           {c.createdBy?.name || "N/A"}
                         </p>
                         <p className="text-xs text-gray-600 flex items-center gap-2">
-                          <span>📧</span>
+                          <AlertCircle className="w-4 h-4 text-gray-400" />
                           {c.createdBy?.email || "N/A"}
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Status Action Buttons (Admin Only) */}
+                  {/* Status Action Buttons (Admin Only) - ENHANCED */}
                   {isAdmin && (
                     <div className="pt-4 border-t border-gray-100">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -195,25 +247,25 @@ export default function MyComplaintsPage() {
                               onClick={() =>
                                 updateStatus({ id: c._id, status: s })
                               }
-                              disabled={isUpdating || c.status === s}
+                              disabled={isUpdating && c.status !== s}
                               className={`
-                              px-3 py-1.5 rounded-lg text-xs font-semibold
-                              transition-all duration-200 transform
-                              ${
-                                c.status === s
-                                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md scale-105"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md hover:scale-105"
-                              }
-                              ${
-                                isUpdating
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : "cursor-pointer"
-                              }
-                              disabled:opacity-50 disabled:cursor-not-allowed
-                            `}
+                                flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white
+                                transition-all duration-200 transform hover:scale-[1.02]
+                                ${getButtonColor(s)} 
+                                ${
+                                  c.status === s
+                                    ? "opacity-100 shadow-lg"
+                                    : "opacity-80"
+                                }
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                `}
                             >
-                              {isUpdating && c.status !== s && (
-                                <span className="inline-block w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-1"></span>
+                              {isUpdating &&
+                              isUpdating.id === c._id &&
+                              c.status !== s ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                getButtonIcon(s)
                               )}
                               {s.replace("_", " ")}
                             </button>

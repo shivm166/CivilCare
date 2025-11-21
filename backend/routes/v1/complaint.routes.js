@@ -1,4 +1,3 @@
-// routes/complaints.js
 import express from "express";
 import {
   createComplaint,
@@ -6,24 +5,28 @@ import {
   getComplaints,
   updateComplaintStatus,
   getTotalComplaints,
-} from "../controllers/complaint.controllers.js";
-import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
-import attachSocietyContext from "../middleware/attachSocietyContext.js";
+} from "../../controllers/user/complaint.controllers.js";
+import protectRoute, { requireAdmin } from "../../middleware/isProtected.js";
+import attachSocietyContext from "../../middleware/attachSocietyContext.js";
 
 const router = express.Router();
 
 router.use(protectRoute);
 router.use(attachSocietyContext);
 
+// User Routes (Uses context for societyId)
 router.post("/createComplaint", createComplaint);
 router.get("/getMyComplaints", getComplaints);
 
+// Admin Routes (Uses context for societyId and requires admin role)
 router.get("/getAllComplaints", requireAdmin, getAllComplaints);
 router.patch(
   "/updateComplaint/:id/status",
   requireAdmin,
   updateComplaintStatus
 );
-router.get("/complaints", getTotalComplaints);
+
+// Global Stats Route
+router.get("/complaints", getTotalComplaints); // Retained original endpoint name for consistency
 
 export default router;

@@ -5,9 +5,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import routes from "./routes/index.js";
-import userRouter from "./routes/user.route.js";
+import userRouter from "./routes/v1/user.route.js";
 import societyRouter from "./routes/society.route.js";
-import complaintRouter from "./routes/complaint.routes.js";
+import complaintRouter from "./routes/v1/complaint.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();

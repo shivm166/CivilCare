@@ -33,7 +33,7 @@ function BuildingManagement() {
     return (
       <div className="p-6">
         <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-          Error loading buildings: {error.message}
+          {error.response?.data?.message || error.message}
         </div>
       </div>
     );

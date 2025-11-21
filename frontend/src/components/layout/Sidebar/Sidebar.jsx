@@ -33,124 +33,185 @@ const userMenu = [
   { name: "Profile", path: "/user/profile", icon: User },
 ];
 
-const Sidebar = () => {
-  const { activeRole } = useSocietyContext();
-  const [open, setOpen] = useState(window.innerWidth > 1000);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1000);
+const noSocietyMenu = [
+  { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
+  { name: "Notifications", path: "/user/notifications", icon: Bell },
+  { name: "Profile", path: "/user/profile", icon: User },
+];
 
-  const menu = activeRole === "admin" ? adminMenu : userMenu;
+const Sidebar = () => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const { activeRole, activeSociety, societies, activeSocietyId } =
+    useSocietyContext();
+  const { data: requestsData } = useGetSocietyRequests(
+    activeRole === "admin" ? activeSociety?.societyId : null
+  );
+  const { data: invitationsData } = useMyInvitations();
+  const { data: announcements } = useGetUserAnnouncements(
+    activeRole === "member" ? activeSocietyId : null
+  );
+
+  const unreadCount = requestsData?.requests?.length || 0;
+  const invitationCount = invitationsData?.count || 0;
+
+  const calculateUnreadCount = () => {
+    if (announcements && activeSocietyId && activeRole === "member") {
+      const storageKey = `lastSeenAnnouncements_${activeSocietyId}`;
+      const lastSeenTime = localStorage.getItem(storageKey);
+
+      if (!lastSeenTime) {
+        setUnreadAnnouncementsCount(announcements.length);
+      } else {
+        const newCount = announcements.filter(
+          (announcement) =>
+            new Date(announcement.createdAt) > new Date(lastSeenTime)
+        ).length;
+        setUnreadAnnouncementsCount(newCount);
+      }
+    }
+  };
 
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width > 1000) {
-        setOpen(true);
-        setIsMobile(false);
-      } else {
-        setOpen(false);
-        setIsMobile(true);
-      }
-    };
+    calculateUnreadCount();
+  }, [announcements, activeSocietyId, activeRole, refreshTrigger]);
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+  useEffect(() => {
+    const handleAnnouncementsRead = () => {
+      setRefreshTrigger((prev) => prev + 1);
+    };
+    window.addEventListener("announcementsRead", handleAnnouncementsRead);
+    return () =>
+      window.removeEventListener("announcementsRead", handleAnnouncementsRead);
   }, []);
+
+  const hasSociety = societies && societies.length > 0;
+  let menu = userMenu;
+
+  if (!hasSociety) {
+    menu = noSocietyMenu;
+  } else if (activeRole === "admin") {
+    menu = adminMenu;
+  }
+
+  const getBadgeCount = (itemName) => {
+    if (itemName === "Notifications") {
+      return activeRole === "admin" ? unreadCount : invitationCount;
+    }
+    if (itemName === "Announcements" && activeRole === "member") {
+      return unreadAnnouncementsCount;
+    }
+    return 0;
+  };
+
+  const closeMobileSidebar = () => setIsMobileOpen(false);
 
   return (
     <>
-      {/* ✅ MENU ICON - MOBILE PAR JAB SIDEBAR CLOSED HO */}
-      {isMobile && !open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed top-20 left-4 z-[60] bg-white text-indigo-600 p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-indigo-100"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-      )}
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isMobileOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <Menu className="w-6 h-6" />
+        )}
+      </button>
 
-      {/* ✅ OVERLAY - SIRF MOBILE PAR DIKHEGA */}
-      {isMobile && open && (
+      {/* Overlay for mobile */}
+      {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity"
+          onClick={closeMobileSidebar}
         />
       )}
 
-      {/* ✅ SIDEBAR - DESKTOP PAR ALWAYS VISIBLE, MOBILE PAR TOGGLE */}
+      {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 bg-white h-full w-64
-          shadow-xl transition-transform duration-300 ease-in-out
+          fixed lg:sticky top-0 left-0 z-40
+          w-64 h-screen bg-gradient-to-b from-white to-gray-50 
+          border-r border-gray-200 shadow-xl lg:shadow-none
+          transform transition-transform duration-300 ease-in-out
           ${
-            !isMobile
+            isMobileOpen
               ? "translate-x-0"
-              : open
-              ? "translate-x-0"
-              : "-translate-x-full"
+              : "-translate-x-full lg:translate-x-0"
           }
+          overflow-y-auto
         `}
       >
-        {/* SIDEBAR HEADER - USER PANEL TEXT KE SAATH MENU ICON */}
-        <div className="px-6 py-6 flex items-center justify-between border-b border-gray-100">
-          {/* LEFT SIDE - MENU ICON + USER PANEL TEXT (MOBILE ONLY) */}
-          {isMobile ? (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setOpen(false)}
-                className="text-gray-500 hover:text-indigo-600 transition-colors p-1 rounded-lg hover:bg-gray-50"
-                aria-label="Close menu"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <h2 className="text-lg font-bold text-gray-800">User Panel</h2>
-            </div>
-          ) : (
-            // DESKTOP - CIVILCARE LOGO
+        <div className="p-6">
+          {/* Logo */}
+          <div className="mb-8 flex items-center justify-between">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               CivilCare
             </h2>
-          )}
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          </div>
 
-          {/* RIGHT SIDE - CLOSE X ICON (MOBILE ONLY) */}
-          {isMobile && (
-            <button
-              onClick={() => setOpen(false)}
-              className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
-              aria-label="Close sidebar"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          {/* Navigation */}
+          <nav className="space-y-1">
+            {menu.map((item) => {
+              const badgeCount = getBadgeCount(item.name);
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={closeMobileSidebar}
+                  className={({ isActive }) =>
+                    `group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200"
+                        : "text-gray-700 hover:bg-gray-100 hover:shadow-md"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center space-x-3">
+                        <item.icon
+                          className={`w-5 h-5 transition-transform group-hover:scale-110 ${
+                            isActive ? "text-white" : "text-gray-500"
+                          }`}
+                        />
+                        <span className="font-medium">{item.name}</span>
+                      </div>
+
+                      {badgeCount > 0 && (
+                        <span className="flex items-center justify-center min-w-[24px] h-6 px-2 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse shadow-lg">
+                          {badgeCount > 99 ? "99+" : badgeCount}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          {/* Role Badge */}
+          <div className="mt-8 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-indigo-600 rounded-full" />
+              <span className="text-sm font-semibold text-gray-700 capitalize">
+                {activeRole === "admin" ? "Administrator" : "Member"}
+              </span>
+            </div>
+            {activeSociety?.societyName && (
+              <p className="text-xs text-gray-500 mt-1 truncate">
+                {activeSociety.societyName}
+              </p>
+            )}
+          </div>
         </div>
-
-        {/* NAVIGATION MENU */}
-        <nav className="px-4 py-6 space-y-1 overflow-y-auto h-[calc(100vh-88px)]">
-          {menu.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={() => {
-                if (isMobile) setOpen(false);
-              }}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 font-semibold shadow-sm"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
-                }`
-              }
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm">{item.name}</span>
-            </NavLink>
-          ))}
-        </nav>
       </aside>
-
-      {/* ✅ SPACER - DESKTOP PAR CONTENT KO PUSH KAREGA */}
-      {!isMobile && <div className="w-64" />}
     </>
   );
 };
