@@ -3,7 +3,7 @@ import { axiosInstance } from "../axios";
 export const getSocieties = async () => {
   try {
     const response = await axiosInstance.get("/user/societies");
-    return response.data.societies;
+    return response.data.data.societies;
   } catch (error) {
     console.log("Error in getting societies", error);
     throw error;
