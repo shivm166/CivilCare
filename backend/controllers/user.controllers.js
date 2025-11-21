@@ -59,6 +59,7 @@ export const login = async (req, res) => {
     const jwt = generateTokenAndSetCookie(res, user._id, user.globalRole);
 
     res.status(200).json({
+      success: "true",
       message: "Login successful",
       user,
       jwt,
@@ -73,20 +74,20 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id || req.user.userId;
-    
+
     if (!userId) {
-      return res.status(401).json({ 
-        success: false, 
-        message: "Unauthorized - No user ID found" 
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - No user ID found",
       });
     }
 
     const user = await User.findById(userId).select("-password");
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "User not found" 
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
       });
     }
 
@@ -96,9 +97,9 @@ export const getMe = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getMe:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Internal server error" 
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
@@ -107,11 +108,11 @@ export const getprofile = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id || req.user.userId;
     const user = await User.findById(userId).select("-password");
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     res.json(user);
   } catch (error) {
     console.log(error);

@@ -6,7 +6,6 @@ import { User } from "../models/user.model.js";
 export const createComplaint = async (req, res) => {
   try {
     const userId = req.user.id;
-    // ✅ FIX: Get society from middleware context, not User model
     const societyId = req.society?._id;
 
     if (!societyId) {
@@ -57,8 +56,6 @@ export const createComplaint = async (req, res) => {
       .json({ success: false, message: "Server error", error: error.message });
   }
 };
-
-// ... (keep createComplaint, getAllComplaints, and updateComplaintStatus as they are) ...
 
 export const getComplaints = async (req, res) => {
   try {
