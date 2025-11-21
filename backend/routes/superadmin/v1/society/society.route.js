@@ -1,12 +1,15 @@
 import { Router } from "express"
-import { createSociety, deleteSociety, getAllSocieties, updateSociety } from "../../../../controllers/superadmin/society.controllers.js"
+import { createSociety, deleteSociety, getAllSocieties, getAllSocietiesWithUserCount, getSocietyById, updateSociety } from "../../../../controllers/superadmin/society.controllers.js"
 
 const router = Router()
 
 router.route("/")
                 .post(createSociety)
-                .get(getAllSocieties)
+                .get(getAllSocietiesWithUserCount)
+
+router.route("/:id")
+                .get(getSocietyById)
+                .delete(deleteSociety)
                 .patch(updateSociety)
-router.route("/:id").delete(deleteSociety)
 
 export default router

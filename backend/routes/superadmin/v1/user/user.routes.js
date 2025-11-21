@@ -1,8 +1,13 @@
 import { Router } from "express";
-import { getAllUsers } from "../../../../controllers/superadmin/users.controllers.js";
+import { deleteUser, getAllUsers, getUserById, getUserWithSocietyCount, updateUser } from "../../../../controllers/superadmin/users.controllers.js";
 
 const router = Router()
 
-router.route("/").get(getAllUsers)
+router.route("/").get(getUserWithSocietyCount)
+
+router.route("/:id")
+                .get(getUserById)
+                .patch(updateUser)
+                .delete(deleteUser)
 
 export default router
