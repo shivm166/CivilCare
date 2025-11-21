@@ -1,6 +1,6 @@
-import { Society } from "../models/society.model.js";
-import { UserRequest } from "../models/user_request.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
+import { Society } from "../../models/society.model.js";
+import { UserRequest } from "../../models/user_request.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
 
 // ==================== SEARCH SOCIETY BY JOINING CODE ====================
 export const searchSocietyByCode = async (req, res) => {

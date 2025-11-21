@@ -1,7 +1,7 @@
-import { User } from "../models/user.model.js";
-import { Society } from "../models/society.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
-import { MemberInvitation } from "../models/member_invitation.model.js";
+import { User } from "../../models/user.model.js";
+import { Society } from "../../models/society.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { MemberInvitation } from "../../models/member_invitation.model.js";
 
 // ==================== ADMIN: SEND INVITATION TO EXISTING USER ====================
 export const sendMemberInvitation = async (req, res) => {

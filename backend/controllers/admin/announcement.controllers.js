@@ -1,4 +1,4 @@
-import { Announcement } from "../models/announcement.model.js";
+import { Announcement } from "../../models/announcement.model.js";
 
 // ==================== ADMIN CONTROLLERS ====================
 
