@@ -1,3 +1,4 @@
+// frontend/src/hooks/api/auth/useProfile.js
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "../../../api/services/auth.api.js";
 import { updateProfile } from "../../../api/services/user.api.js";
@@ -9,12 +10,14 @@ const useProfile = () => {
     queryKey: ["profile"],
     queryFn: async () => {
       const res = await getProfile();
-      return res.user ?? res;
+      // FIX: Safely access res.data.user based on the backend's standardized response
+      return res.data?.user ?? null;
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (payload) => {
+      // updateProfile now returns the full API response object: { success, data, meta }
       const res = await updateProfile(payload);
       return res;
     },
@@ -25,12 +28,12 @@ const useProfile = () => {
 
   return {
     user: data,
-    loading: isLoading,
+    loading: isLoading, // This is now stable (boolean)
     error: isError,
     refetch,
     updateProfileMutation: mutation.mutate,
     updateProfileStatus: {
-      isLoading: mutation.isLoading,
+      isLoading: mutation.isPending,
       error: mutation.error,
     },
   };

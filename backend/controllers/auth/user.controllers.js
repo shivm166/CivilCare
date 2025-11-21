@@ -113,15 +113,24 @@ export const login = async (req, res) => {
 
 export const getprofile = async (req, res) => {
   try {
-    const userId = req.user._id;
-    // console.log(req); // Removed debug line
+    // 💡 FIX: Safely retrieve userId, prioritizing the Mongoose object's _id, then the plain object's id.
+    const userId = req.user._id || req.user.id;
+
+    if (!userId) {
+      return sendErrorResponse(
+        res,
+        UNAUTHORIZED,
+        null,
+        "User not authenticated."
+      );
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
       return sendErrorResponse(res, NOT_FOUND, null, "User not found");
     }
 
-    // console.log(user); // Removed debug line
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -168,7 +177,14 @@ export const updateProfile = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("jwt");
+    const isProduction = process.env.NODE_ENV === "production";
+
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: isProduction, // Must match the value used in jwtToken.js
+      sameSite: isProduction ? "none" : "lax", // Must match the value used in jwtToken.js
+    });
+
     return sendSuccessResponse(res, SUCCESS, null, "Logout successfully");
   } catch (error) {
     console.error(error);
