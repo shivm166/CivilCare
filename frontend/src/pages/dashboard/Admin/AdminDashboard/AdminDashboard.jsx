@@ -1,6 +1,5 @@
 // frontend/src/pages/dashboard/Admin/AdminDashboard/AdminDashboard.jsx
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
 import {
   Users,
   Building2,
@@ -11,19 +10,10 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Activity,
   UserPlus,
-  BarChart3,
-  MessageSquare,
-  Package,
-  Shield,
-  Home,
-  ChevronRight,
   Zap,
-  Star,
   Loader2,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import Container from "../../../../components/layout/Container/Container";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import { useGetAllComplaints } from "../../../../hooks/api/useComplaints";
@@ -31,71 +21,7 @@ import { useGetAdminAnnouncements } from "../../../../hooks/api/useAnnouncements
 import { useMembers } from "../../../../hooks/api/useMembers";
 import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
 import useProfile from "../../../../hooks/api/auth/useProfile";
-import Card from "../../../../components/common/Card/Card"; // 💡 NEW IMPORT
-import Button from "../../../../components/common/Button/Button"; // 💡 NEW IMPORT
-
-const anim = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.03 } },
-};
-const fade = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
-};
-
-// 💡 REFACTORED: StatCard now uses the generic Card component
-const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
-  <motion.div variants={fade} whileHover={{ scale: 1.05, y: -5 }}>
-    <Link
-      to={link}
-      className={`block rounded-3xl p-6 shadow-xl ${gradient} relative overflow-hidden`}
-    >
-      <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full" />
-      <div className="relative z-10">
-        <Icon className="w-10 h-10 text-white mb-3" />
-        <p className="text-white/90 text-sm font-semibold mb-1">{title}</p>
-        <p className="text-5xl font-black text-white">{value}</p>
-      </div>
-    </Link>
-  </motion.div>
-);
-
-// 💡 REFACTORED: ActionCard now uses the generic Card component
-const ActionCard = ({ title, desc, icon: Icon, link, color }) => (
-  <motion.div variants={fade} whileHover={{ scale: 1.03, y: -3 }}>
-    <Link to={link} className="block">
-      <Card className="hover:border-blue-200 hover:shadow-xl group">
-        <div className="flex items-center gap-4 p-0">
-          <div
-            className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110 transition-transform`}
-          >
-            <Icon className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-base">{title}</h3>
-            <p className="text-xs text-gray-500">{desc}</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-        </div>
-      </Card>
-    </Link>
-  </motion.div>
-);
-
-// 💡 REFACTORED: MiniStat now uses the generic Card component
-const MiniStat = ({ icon: Icon, label, value, color }) => (
-  <motion.div
-    variants={fade}
-    whileHover={{ scale: 1.05 }}
-    className={`${color} rounded-2xl p-5 shadow-md`}
-  >
-    <div className="flex items-center gap-3 mb-2">
-      <Icon className="w-5 h-5 text-white" />
-      <span className="text-xs font-bold text-white">{label}</span>
-    </div>
-    <p className="text-3xl font-black text-white">{value}</p>
-  </motion.div>
-);
+import DashboardCard from "../../../../components/features/features/dashboard/DashboardCard";
 
 const AdminDashboard = () => {
   const { activeSocietyId } = useSocietyContext();
@@ -117,376 +43,212 @@ const AdminDashboard = () => {
 
     const pending = comp.filter((c) => c.status === "pending");
     const resolved = comp.filter((c) => c.status === "resolved");
-    const progress = comp.filter((c) => c.status === "in_progress");
+    const totalComp = comp.length;
 
     return {
       stats: {
         residents: membersCount || 0,
         pending: pending.length,
         resolved: resolved.length,
-        inProgress: progress.length,
+        inProgress: totalComp - pending.length - resolved.length,
         requests: req.length,
         announcements: ann.length,
-        buildings: 8, // Static mock data
-        complaints: comp.length,
+        buildings: 8, // Mock data
+        complaints: totalComp,
       },
       recentComplaints: pending.slice(0, 4),
-      recentAnnouncements: ann.slice(0, 4),
+      recentAnnouncements: ann
+        .slice(0, 4)
+        .map((a) => ({ ...a, title: a.title, description: a.description })),
     };
   }, [complaints, announcements, membersCount, requests]);
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <Loader2 className="w-16 h-16 animate-spin text-indigo-600" />
       </div>
     );
 
+  const resolutionRate =
+    stats.complaints > 0
+      ? `${Math.round((stats.resolved / stats.complaints) * 100)}%`
+      : "0%";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
-      <Container className="py-8">
-        <motion.div
-          variants={anim}
-          initial="hidden"
-          animate="show"
-          className="space-y-8"
-        >
-          {/* HEADER */}
-          <motion.div
-            variants={fade}
-            className="flex justify-between items-center"
-          >
-            <div>
-              <h1 className="text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-400 bg-clip-text text-transparent">
-                Hello, {user?.name?.split(" ")[0] || "Admin"}!
-              </h1>
-              <p className="text-gray-500 text-sm mt-2">
-                {new Date().toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-          </motion.div>
+    <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
+      <Container className="py-6 sm:py-8 lg:py-10 space-y-6 sm:space-y-8 lg:space-y-10">
+        {/* HEADER */}
+        <div>
+          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-400 bg-clip-text text-transparent">
+            Hello, {user?.name?.split(" ")[0] || "Admin"}!
+          </h1>
+          <p className="text-gray-500 text-sm mt-2">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </p>
+        </div>
 
-          {/* TOP STATS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Residents"
-              value={stats.residents}
-              icon={Users}
-              link="/admin/residents"
-              gradient="bg-gradient-to-br from-blue-400 to-indigo-600"
+        {/* TOP STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <DashboardCard
+            type="stat"
+            data={{
+              title: "Total Residents",
+              value: stats.residents,
+              icon: Users,
+              link: "/admin/residents",
+              gradient: "bg-gradient-to-br from-blue-400 to-indigo-600",
+            }}
+          />
+          <DashboardCard
+            type="stat"
+            data={{
+              title: "Pending Issues",
+              value: stats.pending,
+              icon: AlertCircle,
+              link: "/admin/complaints",
+              gradient: "bg-gradient-to-br from-orange-400 to-red-600",
+            }}
+          />
+          <DashboardCard
+            type="stat"
+            data={{
+              title: "Join Requests",
+              value: stats.requests,
+              icon: Bell,
+              link: "/admin/notifications",
+              gradient: "bg-gradient-to-br from-pink-500 to-purple-600",
+            }}
+          />
+          <DashboardCard
+            type="stat"
+            data={{
+              title: "Announcements",
+              value: stats.announcements,
+              icon: Megaphone,
+              link: "/admin/announcements",
+              gradient: "bg-gradient-to-br from-purple-500 to-fuchsia-600",
+            }}
+          />
+        </div>
+
+        {/* MINI STATS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <DashboardCard
+            type="mini"
+            data={{
+              icon: CheckCircle2,
+              label: "Resolved",
+              value: stats.resolved,
+              color: "bg-green-500",
+            }}
+          />
+          <DashboardCard
+            type="mini"
+            data={{
+              icon: Clock,
+              label: "In Progress",
+              value: stats.inProgress,
+              color: "bg-amber-500",
+            }}
+          />
+          <DashboardCard
+            type="mini"
+            data={{
+              icon: TrendingUp,
+              label: "Success Rate",
+              value: resolutionRate,
+              color: "bg-cyan-500",
+            }}
+          />
+          <DashboardCard
+            type="mini"
+            data={{
+              icon: Building2,
+              label: "Buildings",
+              value: stats.buildings,
+              color: "bg-violet-500",
+            }}
+          />
+        </div>
+
+        {/* QUICK ACTIONS */}
+        <div>
+          <div className="flex gap-2 mb-4 items-center">
+            <Zap className="w-6 h-6 text-indigo-600" />
+            <h2 className="text-xl sm:text-2xl font-black">Quick Actions</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <DashboardCard
+              type="action"
+              data={{
+                title: "Add Resident",
+                desc: "Register new members",
+                icon: UserPlus,
+                link: "/admin/residents",
+                color: "bg-purple-600",
+              }}
             />
-            <StatCard
-              title="Pending Issues"
-              value={stats.pending}
-              icon={AlertCircle}
-              link="/admin/complaints"
-              gradient="bg-gradient-to-br from-orange-400 to-red-600"
+            <DashboardCard
+              type="action"
+              data={{
+                title: "Manage Buildings",
+                desc: "View/add society buildings",
+                icon: Building2,
+                link: "/admin/buildings",
+                color: "bg-blue-600",
+              }}
             />
-            <StatCard
-              title="Join Requests"
-              value={stats.requests}
-              icon={Bell}
-              link="/admin/notifications"
-              gradient="bg-gradient-to-br from-pink-500 to-purple-600"
+            <DashboardCard
+              type="action"
+              data={{
+                title: "New Announcement",
+                desc: "Send notices to residents",
+                icon: Megaphone,
+                link: "/admin/announcements",
+                color: "bg-cyan-600",
+              }}
             />
-            <StatCard
-              title="Announcements"
-              value={stats.announcements}
-              icon={Megaphone}
-              link="/admin/announcements"
-              gradient="bg-gradient-to-br from-purple-500 to-fuchsia-600"
+            <DashboardCard
+              type="action"
+              data={{
+                title: "Complaints",
+                desc: "Review and manage all issues",
+                icon: Wrench,
+                link: "/admin/complaints",
+                color: "bg-red-600",
+              }}
             />
           </div>
+        </div>
 
-          {/* MINI */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MiniStat
-              icon={CheckCircle2}
-              label="Resolved"
-              value={stats.resolved}
-              color="bg-green-500"
-            />
-            <MiniStat
-              icon={Clock}
-              label="In Progress"
-              value={stats.inProgress}
-              color="bg-amber-500"
-            />
-            <MiniStat
-              icon={TrendingUp}
-              label="Success"
-              value={
-                stats.resolved > 0
-                  ? `${Math.round(
-                      (stats.resolved / (stats.resolved + stats.pending)) * 100
-                    )}%`
-                  : "0%"
-              }
-              color="bg-cyan-500"
-            />
-            <MiniStat
-              icon={Building2}
-              label="Buildings"
-              value={stats.buildings}
-              color="bg-violet-500"
-            />
-          </div>
-
-          {/* QUICK ACTIONS */}
-          <div>
-            <div className="flex gap-2 mb-4 items-center">
-              <Zap className="w-6 h-6 text-indigo-600" />
-              <h2 className="text-2xl font-black">Quick Actions</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Using refactored ActionCard (which uses Card internally) */}
-              <ActionCard
-                title="Add Resident"
-                desc="Register new members"
-                icon={UserPlus}
-                link="/admin/residents"
-                color="bg-purple-600"
-              />
-              <ActionCard
-                title="Manage Buildings"
-                desc="Update buildings"
-                icon={Building2}
-                link="/admin/buildings"
-                color="bg-blue-600"
-              />
-              <ActionCard
-                title="New Announcement"
-                desc="Send notices"
-                icon={Megaphone}
-                link="/admin/announcements"
-                color="bg-cyan-600"
-              />
-              <ActionCard
-                title="View Reports"
-                desc="Analytics & insights"
-                icon={BarChart3}
-                link="/admin/reports"
-                color="bg-green-600"
-              />
-              <ActionCard
-                title="Security"
-                desc="Access & permissions"
-                icon={Shield}
-                link="/admin/security"
-                color="bg-orange-600"
-              />
-              <ActionCard
-                title="Facilities"
-                desc="Manage amenities"
-                icon={Package}
-                link="/admin/facilities"
-                color="bg-pink-600"
-              />
-              <ActionCard
-                title="Messages"
-                desc="Resident communications"
-                icon={MessageSquare}
-                link="/admin/messages"
-                color="bg-indigo-600"
-              />
-              <ActionCard
-                title="Complaints"
-                desc="View all issues"
-                icon={Wrench}
-                link="/admin/complaints"
-                color="bg-red-600"
-              />
-            </div>
-          </div>
-
-          {/* TWO COL */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* PENDING ISSUES - Refactored for structure */}
-            <motion.div variants={fade}>
-              <Card className="h-full border-2 border-orange-100 p-0">
-                <div className="p-6">
-                  <div className="flex justify-between mb-5">
-                    <div className="flex gap-3 items-center">
-                      <div className="p-2 bg-orange-100 rounded-xl">
-                        <Wrench className="text-orange-600 w-5 h-5" />
-                      </div>
-                      <h3 className="font-black text-xl">Pending Issues</h3>
-                    </div>
-                    <Link
-                      to="/admin/complaints"
-                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                    >
-                      View All <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-
-                  {recentComplaints.length ? (
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                      {recentComplaints.map((c, i) => (
-                        <Link
-                          key={c._id || i}
-                          to="/admin/complaints"
-                          className="block bg-orange-50 p-4 rounded-2xl border-orange-100 hover:bg-orange-100 transition-colors"
-                        >
-                          <div className="flex justify-between">
-                            <div>
-                              <p className="font-bold text-sm line-clamp-1">
-                                {c.title}
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                By: {c.createdBy?.name || "Unknown"}
-                              </p>
-                            </div>
-                            <span className="badge bg-orange-500 text-white text-xs">
-                              Pending
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16">
-                      <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-3" />
-                      <p className="text-sm text-gray-600 font-semibold">
-                        All clear! No pending issues 🎉
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-
-            {/* ANNOUNCEMENTS - Refactored for structure */}
-            <motion.div variants={fade}>
-              <Card className="h-full border-2 border-purple-100 p-0">
-                <div className="p-6">
-                  <div className="flex justify-between mb-5">
-                    <div className="flex gap-3 items-center">
-                      <div className="p-2 bg-purple-100 rounded-xl">
-                        <Megaphone className="text-purple-600 w-5 h-5" />
-                      </div>
-                      <h3 className="font-black text-xl">Latest News</h3>
-                    </div>
-                    <Link
-                      to="/admin/announcements"
-                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                    >
-                      View All <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-
-                  {recentAnnouncements.length ? (
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                      {recentAnnouncements.map((a) => (
-                        <Link
-                          key={a._id}
-                          to="/admin/announcements"
-                          className="block bg-purple-50 p-4 rounded-2xl border-purple-100 hover:bg-purple-100 transition-colors"
-                        >
-                          <div className="flex gap-3">
-                            <Star className="text-purple-500 w-5 h-5 mt-1 flex-shrink-0" />
-                            <div>
-                              <p className="font-bold text-sm line-clamp-1">
-                                {a.title}
-                              </p>
-                              <p className="text-xs text-gray-600 line-clamp-2">
-                                {a.description}
-                              </p>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16">
-                      <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-600 font-semibold">
-                        No announcements yet
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* OVERVIEW */}
-          <motion.div variants={fade}>
-            <Card className="p-0 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 border-2 border-white">
-              <div className="p-8">
-                <div className="flex items-center gap-2 mb-6">
-                  <Activity className="w-7 h-7 text-indigo-600" />
-                  <h3 className="text-2xl font-black">Society Overview</h3>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {[
-                    {
-                      icon: Home,
-                      val: stats.buildings,
-                      label: "Buildings",
-                      color: "from-indigo-400 to-indigo-600",
-                      link: "/admin/buildings",
-                    },
-                    {
-                      icon: Users,
-                      val: stats.residents,
-                      label: "Families",
-                      color: "from-purple-400 to-purple-600",
-                      link: "/admin/residents",
-                    },
-                    {
-                      icon: Shield,
-                      val: "24/7",
-                      label: "Security",
-                      color: "from-pink-400 to-pink-600",
-                      link: "/admin/security",
-                    },
-                    {
-                      icon: Package,
-                      val: 12,
-                      label: "Amenities",
-                      color: "from-orange-400 to-orange-600",
-                      link: "/admin/facilities",
-                    },
-                  ].map((b, i) => (
-                    <Link
-                      to={b.link || "#"}
-                      key={i}
-                      className="text-center block"
-                    >
-                      <div
-                        className={`w-16 h-16 bg-gradient-to-br ${b.color} rounded-2xl flex items-center justify-center mx-auto mb-3`}
-                      >
-                        <b.icon className="w-8 h-8 text-white" />
-                      </div>
-                      <p className="text-3xl font-black text-gray-900">
-                        {b.val}
-                      </p>
-                      <p className="text-sm text-gray-600 font-semibold">
-                        {b.label}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        </motion.div>
+        {/* TWO COL - PENDING ISSUES & ANNOUNCEMENTS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <DashboardCard
+            type="recent-items"
+            data={{
+              title: "Pending Issues",
+              items: recentComplaints,
+              itemType: "complaint",
+              link: "/admin/complaints",
+            }}
+          />
+          <DashboardCard
+            type="recent-items"
+            data={{
+              title: "Latest News",
+              items: recentAnnouncements,
+              itemType: "announcement",
+              link: "/admin/announcements",
+            }}
+          />
+        </div>
       </Container>
-      {/* SCROLL BAR STYLES REMAINS UNCHANGED */}
-      <style>{`
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #8b5cf6, #6366f1); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #7c3aed, #4f46e5); }
-      `}</style>
     </div>
   );
 };
