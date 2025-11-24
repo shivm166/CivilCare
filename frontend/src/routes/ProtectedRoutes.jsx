@@ -1,27 +1,89 @@
+// frontend/src/routes/ProtectedRoutes.jsx (Optimized for Code Splitting)
+import React, { lazy, Suspense } from "react";
 import { Route, Navigate, Outlet } from "react-router-dom";
-import { useSocietyContext } from "../contexts/SocietyContext";
-import SocietyOnboarding from "../pages/onboarding/SocietyOnboarding";
-import AdminDashboard from "../pages/dashboard/Admin/AdminDashboard/AdminDashboard";
-import Layout from "../components/layout/Layout";
-import ComplaintsPage from "../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage";
-import { SocietyProvider } from "../contexts/SocietyContext";
-import ResidentsPage from "../pages/dashboard/Admin/ResidentManagement/ResidentsPage";
-import NotificationsPage from "../pages/dashboard/Admin/Notification/NotificationsPage";
-import ProfilePage from "../pages/dashboard/User/Profile/ProfilePage";
-import RaiseComplaintPage from "../pages/dashboard/User/Complaints/RaiseComplaintPage";
-import ResidentDashboard from "../pages/dashboard/User/UserDashboard/ResidentDashboard";
+import { useSocietyContext, SocietyProvider } from "../contexts/SocietyContext";
 
-// Two separate announcement pages
-import AdminAnnouncementPage from "../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage";
-import UserAnnouncementPage from "../pages/dashboard/User/Announcements/AnnouncementPage";
-import BuildingManagement from "../pages/dashboard/Admin/BuildingManagement/BuildingManagement";
-import BuildingUnitsPage from "../pages/dashboard/Admin/BuildingManagement/BuildingUnitsPage";
-import UnitDetailPage from "../pages/dashboard/Admin/UnitManagement/UnitDetailPage";
+import PageLoader from "../pages/error/PageLoader";
 
+// 1. Lazy load all large feature components
+const SocietyOnboarding = lazy(() =>
+  import("../pages/onboarding/SocietyOnboarding")
+);
+const AdminDashboard = lazy(() =>
+  import("../pages/dashboard/Admin/AdminDashboard/AdminDashboard")
+);
+const ResidentDashboard = lazy(() =>
+  import("../pages/dashboard/User/UserDashboard/ResidentDashboard")
+);
+const Layout = lazy(() => import("../components/layout/Layout"));
+const ComplaintsPage = lazy(() =>
+  import("../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage")
+);
+const ResidentsPage = lazy(() =>
+  import("../pages/dashboard/Admin/ResidentManagement/ResidentsPage")
+);
+const NotificationsPage = lazy(() =>
+  import("../pages/dashboard/Admin/Notification/NotificationsPage")
+);
+const ProfilePage = lazy(() =>
+  import("../pages/dashboard/User/Profile/ProfilePage")
+);
+const RaiseComplaintPage = lazy(() =>
+  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
+);
+const AdminAnnouncementPage = lazy(() =>
+  import("../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage")
+);
+const UserAnnouncementPage = lazy(() =>
+  import("../pages/dashboard/User/Announcements/AnnouncementPage")
+);
+const BuildingManagement = lazy(() =>
+  import("../pages/dashboard/Admin/BuildingManagement/BuildingManagement")
+);
+const BuildingUnitsPage = lazy(() =>
+  import("../pages/dashboard/Admin/BuildingManagement/BuildingUnitsPage")
+);
+const UnitDetailPage = lazy(() =>
+  import("../pages/dashboard/Admin/UnitManagement/UnitDetailPage")
+);
+
+// 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
+const DashboardWrapper = () => {
+  const { societies, activeRole, isSocietiesLoading } = useSocietyContext();
+
+  if (isSocietiesLoading) {
+    return <PageLoader />;
+  }
+
+  const hasSociety = societies && societies.length > 0;
+
+  if (!hasSociety) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <SocietyOnboarding />
+      </Suspense>
+    );
+  }
+
+  if (activeRole === "admin") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AdminDashboard />
+      </Suspense>
+    );
+  }
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <ResidentDashboard />
+    </Suspense>
+  );
+};
+
+// 3. Society Checker Wrapper provides context and basic access control
 const SocietyChecker = ({ children, authUser }) => {
-  const { societies, isSocietiesLoading } = useSocietyContext();
+  const { societies, isSocietiesLoading, activeRole } = useSocietyContext();
 
-  // If no authUser, redirect to login
   if (!authUser) {
     return <Navigate to="/login" replace />;
   }
@@ -29,23 +91,21 @@ const SocietyChecker = ({ children, authUser }) => {
   if (isSocietiesLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-600"></div>
       </div>
     );
   }
 
   const hasSociety = societies && societies.length > 0;
+  const currentPath = window.location.pathname;
 
-  // If no society, only allow dashboard (onboarding), notifications, and profile
   if (!hasSociety) {
     const allowedPaths = [
       "/user/dashboard",
       "/user/notifications",
       "/user/profile",
     ];
-    const currentPath = window.location.pathname;
-
-    if (!allowedPaths.includes(currentPath)) {
+    if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
       return <Navigate to="/user/dashboard" replace />;
     }
   }
@@ -53,93 +113,157 @@ const SocietyChecker = ({ children, authUser }) => {
   return children;
 };
 
-// Dashboard wrapper to show onboarding when no society
-const DashboardWrapper = () => {
-  const { societies, activeRole } = useSocietyContext();
-  const hasSociety = societies && societies.length > 0;
-
-  // If no society, show onboarding page
-  if (!hasSociety) {
-    return <SocietyOnboarding />;
-  }
-
-  // If has society, show appropriate dashboard based on role
-  if (activeRole === "admin") {
-    return <AdminDashboard />;
-  }
-
-  return <ResidentDashboard />;
-};
-
 const ProtectedRoutes = ({ authUser }) => {
-  // If no authUser, redirect to login
   if (!authUser) {
     return <Route path="*" element={<Navigate to="/login" replace />} />;
   }
 
-  // ⚠️ CRITICAL: Super admin should NEVER reach this component
-  // This is handled in App.jsx now, but adding extra safety check
-  if (authUser?.globalRole === "super_admin") {
-    return <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />;
-  }
-
   return (
-    <>
-      <Route
-        path="/"
-        element={
-          <SocietyProvider>
+    // Top-level route for layout and context provider
+    <Route
+      path="/"
+      element={
+        <SocietyProvider>
+          {/* Wrap Layout in Suspense as it's lazy-loaded */}
+          <Suspense fallback={<PageLoader />}>
             <Layout />
-          </SocietyProvider>
+          </Suspense>
+        </SocietyProvider>
+      }
+    >
+      <Route index element={<Navigate to="/user/dashboard" replace />} />
+
+      {/* Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <SocietyChecker authUser={authUser}>
+            <Outlet />
+          </SocietyChecker>
         }
       >
-        {/* Admin Routes */}
+        <Route path="dashboard" element={<DashboardWrapper />} />
+        {/* Wrap all feature routes in Suspense directly inside the element prop */}
         <Route
-          path="/admin"
+          path="announcements"
           element={
-            <SocietyChecker authUser={authUser}>
-              <Outlet />
-            </SocietyChecker>
+            <Suspense fallback={<PageLoader />}>
+              <AdminAnnouncementPage />
+            </Suspense>
           }
-        >
-          <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<AdminAnnouncementPage />} />
-          <Route path="buildings" element={<BuildingManagement />} />
-          <Route path="complaints" element={<ComplaintsPage />} />
-          <Route path="residents" element={<ResidentsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route
-            path="buildings/:buildingId/units"
-            element={<BuildingUnitsPage />}
-          />
-          <Route
-            path="buildings/:buildingId/units/:unitId"
-            element={<UnitDetailPage />}
-          />
-        </Route>
-
-        {/* User Routes */}
+        />
         <Route
-          path="/user"
+          path="buildings"
           element={
-            <SocietyChecker authUser={authUser}>
-              <Outlet />
-            </SocietyChecker>
+            <Suspense fallback={<PageLoader />}>
+              <BuildingManagement />
+            </Suspense>
           }
-        >
-          <Route path="dashboard" element={<DashboardWrapper />} />
-          <Route path="announcements" element={<UserAnnouncementPage />} />
-          <Route path="raise-complaint" element={<RaiseComplaintPage />} />
-          <Route path="residents" element={<ResidentsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-        </Route>
-
-        {/* Fallback: redirect to user dashboard */}
-        <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
+        />
+        <Route
+          path="complaints"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ComplaintsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="residents"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ResidentsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <NotificationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="buildings/:buildingId/units"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <BuildingUnitsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="buildings/:buildingId/units/:unitId"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UnitDetailPage />
+            </Suspense>
+          }
+        />
       </Route>
-    </>
+
+      {/* User/Resident Routes */}
+      <Route
+        path="/user"
+        element={
+          <SocietyChecker authUser={authUser}>
+            <Outlet />
+          </SocietyChecker>
+        }
+      >
+        <Route path="dashboard" element={<DashboardWrapper />} />
+        <Route
+          path="announcements"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UserAnnouncementPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="raise-complaint"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <RaiseComplaintPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="residents"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ResidentsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <NotificationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ProfilePage />
+            </Suspense>
+          }
+        />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
+    </Route>
   );
 };
 

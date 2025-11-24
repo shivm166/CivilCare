@@ -1,11 +1,19 @@
+// frontend/src/App.jsx (Corrected Implementation)
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import useAuthUser from "./hooks/api/auth/useAuthUser";
-import ActivateAccountPage from "./pages/auth/ActivateAccount/ActivateAccountPage";
+
+// 1. Static Imports: PublicRoutes and ProtectedRoutes return JSX elements, not components.
 import PublicRoutes from "./routes/PublicRoutes";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
-import SuperAdminRoutes from "./routes/SuperAdminRoutes";
-import PageLoader from "./pages/error/PageLoader";
+
+// 2. Lazy Imports: These return components and are used with <Suspense>.
+const ActivateAccountPage = lazy(() =>
+  import("./pages/auth/ActivateAccount/ActivateAccountPage")
+);
+const SuperAdminRoutes = lazy(() => import("./routes/SuperAdminRoutes"));
+const PageLoader = lazy(() => import("./pages/error/PageLoader"));
 
 const App = () => {
   const { isLoading, authUser } = useAuthUser();
@@ -13,6 +21,7 @@ const App = () => {
   const isSuperAdmin = authUser?.globalRole === "super_admin";
 
   if (isLoading) {
+    // Show static PageLoader component while fetching initial auth status
     return <PageLoader />;
   }
 
@@ -20,20 +29,39 @@ const App = () => {
     <>
       <div className="font-sans" data-theme="light">
         <Routes>
-          <Route path="/activate-account" element={<ActivateAccountPage />} />
+          {/* Lazy Loaded Component: Wrap in Suspense */}
+          <Route
+            path="/activate-account"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <ActivateAccountPage />
+              </Suspense>
+            }
+          />
 
-          {/* Public Routes - Pass authUser as prop */}
-          {PublicRoutes({ isAuthenticated, authUser })}
+          {/* Function Call: Returns <Route> element */}
+          {PublicRoutes({ isAuthenticated, authUser, isLoading })}
 
-          {/* Super Admin Routes - Completely Separate */}
+          {/* Conditional Protected Routes */}
           {isSuperAdmin ? (
             <>
-              <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
-              <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
+              {/* Lazy Loaded Component: Wrap in Suspense */}
+              <Route
+                path="/super-admin/*"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <SuperAdminRoutes />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="*"
+                element={<Navigate to="/super-admin/dashboard" replace />}
+              />
             </>
           ) : isAuthenticated ? (
             <>
-              {/* Regular User Routes */}
+              {/* Function Call: Returns <Route> element */}
               {ProtectedRoutes({ authUser })}
             </>
           ) : (

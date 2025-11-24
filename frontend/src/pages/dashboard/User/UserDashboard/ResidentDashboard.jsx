@@ -1,4 +1,4 @@
-// frontend/src/pages/dashboard/User/UserDashboard/ResidentDashboard.jsx - ADAPTED from AdminDashboard.jsx
+// frontend/src/pages/dashboard/User/UserDashboard/ResidentDashboard.jsx
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -7,9 +7,8 @@ import {
   Users,
   Wrench,
   Loader2,
-  CheckCircle,
+  CheckCircle2,
   Clock,
-  HelpCircle,
   Home,
   Phone,
   User,
@@ -27,6 +26,8 @@ import { useGetUserAnnouncements } from "../../../../hooks/api/useAnnouncements"
 import { useMyInvitations } from "../../../../hooks/api/useInvitations";
 import { useMembers } from "../../../../hooks/api/useMembers";
 import useProfile from "../../../../hooks/api/auth/useProfile";
+import Card from "../../../../components/common/Card/Card"; // 💡 NEW IMPORT
+import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge"; // 💡 NEW IMPORT
 
 // Animation Variants (from AdminDashboard.jsx)
 const anim = {
@@ -38,33 +39,7 @@ const fade = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
 };
 
-// Helper component for complaint status badges (Retained the original one for simplicity)
-const StatusBadge = ({ status }) => {
-  const statusMap = {
-    pending: { badge: "badge-warning", icon: <Clock className="w-4 h-4" /> },
-    in_progress: {
-      badge: "badge-info",
-      icon: <Loader2 className="w-4 h-4 animate-spin" />,
-    },
-    resolved: {
-      badge: "badge-success",
-      icon: <CheckCircle className="w-4 h-4" />,
-    },
-    closed: { badge: "badge-ghost", icon: <HelpCircle className="w-4 h-4" /> },
-  };
-  const { badge, icon } = statusMap[status] || {
-    badge: "badge-ghost",
-    icon: <HelpCircle className="w-4 h-4" />,
-  };
-  return (
-    <div className={`badge ${badge} badge-outline gap-2 p-3 text-xs`}>
-      {icon}
-      {status.replace("_", " ").toUpperCase()}
-    </div>
-  );
-};
-
-// StatCard adapted for Resident Dashboard (from AdminDashboard.jsx)
+// 💡 REFACTORED: StatCard now uses the generic Card component
 const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
   <motion.div variants={fade} whileHover={{ scale: 1.05, y: -5 }}>
     <Link
@@ -81,30 +56,29 @@ const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
   </motion.div>
 );
 
-// ActionCard adapted for Resident Dashboard (from AdminDashboard.jsx)
+// 💡 REFACTORED: ActionCard now uses the generic Card component
 const ActionCard = ({ title, desc, icon: Icon, link, color }) => (
   <motion.div variants={fade} whileHover={{ scale: 1.03, y: -3 }}>
-    <Link
-      to={link}
-      className="group block p-5 rounded-2xl bg-white hover:border-blue-200 shadow-sm hover:shadow-xl transition-all"
-    >
-      <div className="flex items-center gap-4">
-        <div
-          className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110`}
-        >
-          <Icon className="w-6 h-6 text-white" />
+    <Link to={link} className="group block">
+      <Card className="hover:border-blue-200 hover:shadow-xl">
+        <div className="flex items-center gap-4 p-0">
+          <div
+            className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110 transition-transform`}
+          >
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-base">{title}</h3>
+            <p className="text-xs text-gray-500">{desc}</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-base">{title}</h3>
-          <p className="text-xs text-gray-500">{desc}</p>
-        </div>
-        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-      </div>
+      </Card>
     </Link>
   </motion.div>
 );
 
-// MiniStat adapted for Resident Dashboard (from AdminDashboard.jsx)
+// 💡 REFACTORED: MiniStat now uses the generic Card component
 const MiniStat = ({ icon: Icon, label, value, color }) => (
   <motion.div
     variants={fade}
@@ -205,12 +179,6 @@ const ResidentDashboard = () => {
     );
   }
 
-  // Define itemVariants here (from AdminDashboard.jsx)
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
   return (
     // Adapted background from AdminDashboard.jsx
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
@@ -247,17 +215,19 @@ const ResidentDashboard = () => {
               </p>
             </div>
             {/* User/Unit Tag (Moved from old dash to here) */}
-            <div className="flex items-center gap-3 self-start lg:self-auto bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-md">
-              <User className="w-5 h-5 text-primary" />
-              <div className="text-xs">
-                <p className="font-semibold text-gray-900">
-                  {user?.name || "Resident User"}
-                </p>
-                <p className="text-gray-600">
-                  {myUnit ? `Unit ${myUnit.name}` : "No unit linked yet"}
-                </p>
+            <Card className="shadow-md bg-white border border-gray-200">
+              <div className="flex items-center gap-3 self-start lg:self-auto p-0">
+                <User className="w-5 h-5 text-indigo-600" />
+                <div className="text-xs">
+                  <p className="font-semibold text-gray-900">
+                    {user?.name || "Resident User"}
+                  </p>
+                  <p className="text-gray-600">
+                    {myUnit ? `Unit ${myUnit.name}` : "No unit linked yet"}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
           </motion.div>
 
           {/* TOP STATS (Adapted StatCard design) */}
@@ -301,7 +271,7 @@ const ResidentDashboard = () => {
               color="bg-gradient-to-r from-indigo-500 to-blue-500"
             />
             <MiniStat
-              icon={CheckCircle}
+              icon={CheckCircle2}
               label="Resolved"
               value={complaintStats.resolved}
               color="bg-gradient-to-r from-green-500 to-teal-500"
@@ -361,164 +331,169 @@ const ResidentDashboard = () => {
           {/* TWO COL - Complaints & Announcements */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* My Complaints */}
-            <motion.div
-              variants={fade}
-              className="bg-white/90 rounded-3xl p-6 shadow-xl border-2 border-orange-100"
-            >
-              <div className="flex justify-between mb-5">
-                <div className="flex gap-3 items-center">
-                  <div className="p-2 bg-orange-100 rounded-xl">
-                    <Wrench className="text-orange-600 w-5 h-5" />
-                  </div>
-                  <h3 className="font-black text-xl">My Recent Issues</h3>
-                </div>
-                <Link
-                  to="/user/raise-complaint"
-                  className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                >
-                  View All <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {recentComplaints.length > 0 ? (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                  {recentComplaints.map((c, i) => (
-                    <Link
-                      key={c._id || i}
-                      to="/user/raise-complaint"
-                      className="block bg-orange-50 p-4 rounded-2xl border-orange-100"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-bold text-sm line-clamp-1">
-                            {c.title}
-                          </p>
-                          <p className="text-xs text-gray-600 mt-1">
-                            Priority:{" "}
-                            <span
-                              className={`font-semibold capitalize text-${c.priority}-600`}
-                            >
-                              {c.priority}
-                            </span>
-                          </p>
-                        </div>
-                        <StatusBadge status={c.status} />
+            <motion.div variants={fade}>
+              <Card className="h-full border-2 border-orange-100 p-0">
+                <div className="p-6">
+                  <div className="flex justify-between mb-5">
+                    <div className="flex gap-3 items-center">
+                      <div className="p-2 bg-orange-100 rounded-xl">
+                        <Wrench className="text-orange-600 w-5 h-5" />
                       </div>
+                      <h3 className="font-black text-xl">My Recent Issues</h3>
+                    </div>
+                    <Link
+                      to="/user/raise-complaint"
+                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
+                    >
+                      View All <ChevronRight className="w-4 h-4" />
                     </Link>
-                  ))}
+                  </div>
+
+                  {recentComplaints.length > 0 ? (
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                      {recentComplaints.map((c, i) => (
+                        <Link
+                          key={c._id || i}
+                          to="/user/raise-complaint"
+                          className="block bg-orange-50 p-4 rounded-2xl border-orange-100 hover:bg-orange-100 transition-colors"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-bold text-sm line-clamp-1">
+                                {c.title}
+                              </p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                Priority:{" "}
+                                <StatusBadge
+                                  type={c.priority}
+                                  compact
+                                  className="ml-1"
+                                />
+                              </p>
+                            </div>
+                            <StatusBadge type={c.status} compact />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <Wrench className="w-16 h-16 text-orange-300 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 font-semibold">
+                        No complaints raised yet.
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Wrench className="w-16 h-16 text-orange-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 font-semibold">
-                    No complaints raised yet.
-                  </p>
-                </div>
-              )}
+              </Card>
             </motion.div>
 
             {/* Announcements */}
-            <motion.div
-              variants={fade}
-              className="bg-white/90 rounded-3xl p-6 shadow-xl border-2 border-purple-100"
-            >
-              <div className="flex justify-between mb-5">
-                <div className="flex gap-3 items-center">
-                  <div className="p-2 bg-purple-100 rounded-xl">
-                    <Megaphone className="text-purple-600 w-5 h-5" />
-                  </div>
-                  <h3 className="font-black text-xl">Latest News</h3>
-                </div>
-                <Link
-                  to="/user/announcements"
-                  className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                >
-                  View All <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {recentAnnouncements.length > 0 ? (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                  {recentAnnouncements.map((a) => (
-                    <Link
-                      key={a._id}
-                      to="/user/announcements"
-                      className="block bg-purple-50 p-4 rounded-2xl border-purple-100"
-                    >
-                      <div className="flex gap-3">
-                        <Megaphone className="text-purple-500 w-5 h-5 mt-1 flex-shrink-0" />
-                        <div>
-                          <p className="font-bold text-sm line-clamp-1">
-                            {a.title}
-                          </p>
-                          <p className="text-xs text-gray-600 line-clamp-2">
-                            {a.description}
-                          </p>
-                        </div>
+            <motion.div variants={fade}>
+              <Card className="h-full border-2 border-purple-100 p-0">
+                <div className="p-6">
+                  <div className="flex justify-between mb-5">
+                    <div className="flex gap-3 items-center">
+                      <div className="p-2 bg-purple-100 rounded-xl">
+                        <Megaphone className="text-purple-600 w-5 h-5" />
                       </div>
+                      <h3 className="font-black text-xl">Latest News</h3>
+                    </div>
+                    <Link
+                      to="/user/announcements"
+                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
+                    >
+                      View All <ChevronRight className="w-4 h-4" />
                     </Link>
-                  ))}
+                  </div>
+
+                  {recentAnnouncements.length > 0 ? (
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                      {recentAnnouncements.map((a) => (
+                        <Link
+                          key={a._id}
+                          to="/user/announcements"
+                          className="block bg-purple-50 p-4 rounded-2xl border-purple-100 hover:bg-purple-100 transition-colors"
+                        >
+                          <div className="flex gap-3">
+                            <Megaphone className="text-purple-500 w-5 h-5 mt-1 flex-shrink-0" />
+                            <div>
+                              <p className="font-bold text-sm line-clamp-1">
+                                {a.title}
+                              </p>
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {a.description}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 font-semibold">
+                        No announcements available.
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 font-semibold">
-                    No announcements available.
-                  </p>
-                </div>
-              )}
+              </Card>
             </motion.div>
           </div>
 
-          {/* HELPDESK (Adapted Overview/Quick Stats card design) */}
-          <motion.div
-            variants={fade}
-            className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 rounded-3xl p-8 shadow-xl border-2 border-white"
-          >
-            <div className="flex items-center gap-2 mb-6">
-              <Phone className="w-7 h-7 text-indigo-600" />
-              <h3 className="text-2xl font-black">Society Helpdesk</h3>
-            </div>
-            <p className="text-gray-700 mb-5">
-              Contact your society administrators or view the resident
-              directory.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {admins.map((admin) => (
-                <div
-                  key={admin._id}
-                  className="flex flex-col items-center gap-2 p-4 bg-white/50 rounded-xl border border-indigo-200 backdrop-blur-sm"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {admin.user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="text-center">
-                    <h4 className="font-bold text-gray-900 line-clamp-1">
-                      {admin.user?.name}
-                    </h4>
-                    <span className="text-xs font-semibold text-purple-600">
-                      ADMIN
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <Phone className="w-3 h-3" />
-                    <span>{admin.user?.phone || "N/A"}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <Mail className="w-3 h-3" />
-                    <span className="line-clamp-1">{admin.user?.email}</span>
-                  </div>
+          {/* HELPDESK */}
+          <motion.div variants={fade}>
+            <Card className="p-0 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 border-2 border-white">
+              <div className="p-8">
+                <div className="flex items-center gap-2 mb-6">
+                  <Phone className="w-7 h-7 text-indigo-600" />
+                  <h3 className="text-2xl font-black">Society Helpdesk</h3>
                 </div>
-              ))}
-            </div>
-            {admins.length === 0 && (
-              <div className="text-center py-5">
-                <p className="text-sm text-gray-600">
-                  No administrators found.
+                <p className="text-gray-700 mb-5">
+                  Contact your society administrators or view the resident
+                  directory.
                 </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {admins.map((admin) => (
+                    <div
+                      key={admin._id}
+                      className="flex flex-col items-center gap-2 p-4 bg-white/50 rounded-xl border border-indigo-200 backdrop-blur-sm"
+                    >
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {admin.user?.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="text-center">
+                        <h4 className="font-bold text-gray-900 line-clamp-1">
+                          {admin.user?.name}
+                        </h4>
+                        <span className="text-xs font-semibold text-purple-600">
+                          ADMIN
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <Phone className="w-3 h-3" />
+                        <span>{admin.user?.phone || "N/A"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <Mail className="w-3 h-3" />
+                        <span className="line-clamp-1">
+                          {admin.user?.email}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {admins.length === 0 && (
+                  <div className="text-center py-5">
+                    <p className="text-sm text-gray-600">
+                      No administrators found.
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
+            </Card>
           </motion.div>
         </motion.div>
       </Container>

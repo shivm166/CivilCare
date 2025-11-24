@@ -1,10 +1,13 @@
+// frontend/src/pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage.jsx
 import { useSocietyContext } from "../../../../contexts/SocietyContext.jsx";
 import {
   useGetMyComplaints,
   useUpdateComplaintStatus,
   useGetAllComplaints,
 } from "../../../../hooks/api/useComplaints.js";
-import { AlertCircle, CheckCircle2, Clock, Wrench, User } from "lucide-react";
+import { AlertCircle, Wrench, User, Loader2 } from "lucide-react"; // Removed: CheckCircle2, Clock
+import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge"; // 💡 NEW IMPORT
+import Button from "../../../../components/common/Button/Button"; // 💡 NEW IMPORT
 
 export default function ComplaintsPage() {
   const { activeRole, activeSocietyId } = useSocietyContext();
@@ -23,36 +26,6 @@ export default function ComplaintsPage() {
 
   const isLoading = isAdmin ? isLoadingAll : isLoadingMy;
   const complaints = isAdmin ? allComplaints : myComplaints;
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-amber-100 text-amber-800 border-amber-300";
-      case "in_progress":
-        return "bg-blue-100 text-blue-800 border-blue-300";
-      case "resolved":
-        return "bg-emerald-100 text-emerald-800 border-emerald-300";
-      case "closed":
-        return "bg-gray-100 text-gray-800 border-gray-300";
-      default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "in_progress":
-        return <Wrench className="w-4 h-4" />;
-      case "resolved":
-        return <CheckCircle2 className="w-4 h-4" />;
-      case "closed":
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Wrench className="w-4 h-4" />;
-    }
-  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -152,21 +125,19 @@ export default function ComplaintsPage() {
                     c.priority
                   )}`}
                 >
-                  {c.priority.toUpperCase()}
+                  <StatusBadge type={c.priority} compact />
                 </div>
 
                 {/* Reduced padding */}
                 <div className="p-4 sm:p-6 pl-4">
                   {/* Status Badge */}
                   <div className="flex items-center justify-between mb-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                        c.status
-                      )}`}
-                    >
-                      {getStatusIcon(c.status)}
-                      {c.status.replace("_", " ").toUpperCase()}
-                    </span>
+                    {/* 💡 REFACTORED: Use StatusBadge */}
+                    <StatusBadge
+                      type={c.status}
+                      compact
+                      isPulse={c.status === "pending"}
+                    />
                     <span className="text-xs text-gray-500">
                       {new Date(c.createdAt).toLocaleDateString("en-US", {
                         month: "short",
@@ -211,28 +182,30 @@ export default function ComplaintsPage() {
                       <div className="flex flex-wrap gap-1.5">
                         {["pending", "in_progress", "resolved", "closed"].map(
                           (s) => (
-                            <button
+                            // 💡 REFACTORED: Use Button component
+                            <Button
                               key={s}
                               onClick={() =>
                                 updateStatus({ id: c._id, status: s })
                               }
-                              disabled={isUpdating || c.status === s}
-                              className={`
-                              px-2 py-1 rounded-lg text-xs font-semibold
-                              transition-all duration-200 transform
-                              ${
-                                c.status === s
-                                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
+                              disabled={c.status === s}
+                              isLoading={isUpdating && c.status !== s}
+                              size="sm"
+                              variant={
+                                s === "pending" || s === "in_progress"
+                                  ? "secondary"
+                                  : s === "resolved"
+                                  ? "success"
+                                  : "ghost"
                               }
-                              disabled:opacity-50 disabled:cursor-not-allowed
-                            `}
+                              className={
+                                c.status === s
+                                  ? "bg-indigo-600 text-white" // Force primary style if active
+                                  : ""
+                              }
                             >
-                              {isUpdating && c.status !== s && (
-                                <span className="inline-block w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mr-1"></span>
-                              )}
                               {s.replace("_", " ")}
-                            </button>
+                            </Button>
                           )
                         )}
                       </div>
