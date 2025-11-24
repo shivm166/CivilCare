@@ -1,6 +1,16 @@
 import { Society } from "../../models/society.model.js";
 import { UserRequest } from "../../models/user_request.model.js";
 import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { sendErrorResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const {
+  BAD_REQUEST,
+  FORBIDDEN,
+  NOT_FOUND,
+  CONFLICT,
+  SERVER_ERROR,
+} = STATUS_CODES;
 
 // ==================== SEARCH SOCIETY BY JOINING CODE ====================
 export const searchSocietyByCode = async (req, res) => {
@@ -16,21 +26,26 @@ export const searchSocietyByCode = async (req, res) => {
       .lean();
 
     if (!society) {
-      return res.status(404).json({ message: "Society not found with this joining code" });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "Society not found with this joining code"
+      );
     }
 
+    // Keep original flat success response format
     res.status(200).json({
       message: "Society found successfully",
       society,
     });
   } catch (error) {
     console.error("Error searching society:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
 // ==================== SEND JOIN REQUEST ====================
-// Keep this function exactly as is - no changes needed
 export const sendJoinRequest = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -39,7 +54,7 @@ export const sendJoinRequest = async (req, res) => {
     // Check if society exists
     const society = await Society.findById(societyId);
     if (!society) {
-      return res.status(404).json({ message: "Society not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Society not found");
     }
 
     // Check if user is already a member
@@ -50,9 +65,12 @@ export const sendJoinRequest = async (req, res) => {
     });
 
     if (existingMember) {
-      return res
-        .status(409)
-        .json({ message: "You are already a member of this society" });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "You are already a member of this society"
+      );
     }
 
     // Check if request already exists
@@ -63,9 +81,12 @@ export const sendJoinRequest = async (req, res) => {
     });
 
     if (existingRequest) {
-      return res.status(409).json({
-        message: "You have already sent a request to this society",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "You have already sent a request to this society"
+      );
     }
 
     // Create new request
@@ -79,13 +100,14 @@ export const sendJoinRequest = async (req, res) => {
       .populate("society", "name city state JoiningCode")
       .populate("user", "name email");
 
+    // Keep original flat success response format
     res.status(201).json({
       message: "Join request sent successfully",
       request: populatedRequest,
     });
   } catch (error) {
     console.error("Error sending join request:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -98,13 +120,14 @@ export const getMyRequests = async (req, res) => {
       .populate("society", "name address city state")
       .sort({ createdAt: -1 });
 
+    // Keep original flat success response format
     res.status(200).json({
       message: "Requests fetched successfully",
       requests,
     });
   } catch (error) {
     console.error("Error fetching user requests:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -123,9 +146,12 @@ export const getAllRequestsForSociety = async (req, res) => {
     });
 
     if (!adminRel) {
-      return res.status(403).json({
-        message: "You are not authorized to view requests for this society",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You are not authorized to view requests for this society"
+      );
     }
 
     // Get all pending requests for this society
@@ -136,13 +162,14 @@ export const getAllRequestsForSociety = async (req, res) => {
       .populate("user", "name email phone")
       .sort({ createdAt: -1 });
 
+    // Keep original flat success response format
     res.status(200).json({
       message: "Requests fetched successfully",
       requests,
     });
   } catch (error) {
     console.error("Error fetching society requests:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -155,14 +182,17 @@ export const acceptRequest = async (req, res) => {
     // Find the request
     const request = await UserRequest.findById(requestId);
     if (!request) {
-      return res.status(404).json({ message: "Request not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Request not found");
     }
 
     // Check if already processed
     if (request.status !== "pending") {
-      return res.status(400).json({
-        message: `Request has already been ${request.status}`,
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        `Request has already been ${request.status}`
+      );
     }
 
     // Check if user is admin of this society
@@ -174,9 +204,12 @@ export const acceptRequest = async (req, res) => {
     });
 
     if (!adminRel) {
-      return res.status(403).json({
-        message: "You are not authorized to accept requests for this society",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You are not authorized to accept requests for this society"
+      );
     }
 
     // Update request status
@@ -194,13 +227,14 @@ export const acceptRequest = async (req, res) => {
       .populate("user", "name email")
       .populate("society", "name city state");
 
+    // Keep original flat success response format
     res.status(200).json({
       message: "Request accepted successfully",
       request: populatedRequest,
     });
   } catch (error) {
     console.error("Error accepting request:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -213,14 +247,17 @@ export const rejectRequest = async (req, res) => {
     // Find the request
     const request = await UserRequest.findById(requestId);
     if (!request) {
-      return res.status(404).json({ message: "Request not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Request not found");
     }
 
     // Check if already processed
     if (request.status !== "pending") {
-      return res.status(400).json({
-        message: `Request has already been ${request.status}`,
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        `Request has already been ${request.status}`
+      );
     }
 
     // Check if user is admin of this society
@@ -232,9 +269,12 @@ export const rejectRequest = async (req, res) => {
     });
 
     if (!adminRel) {
-      return res.status(403).json({
-        message: "You are not authorized to reject requests for this society",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You are not authorized to reject requests for this society"
+      );
     }
 
     // Update request status
@@ -245,12 +285,13 @@ export const rejectRequest = async (req, res) => {
       .populate("user", "name email")
       .populate("society", "name city state");
 
+    // Keep original flat success response format
     res.status(200).json({
       message: "Request rejected successfully",
       request: populatedRequest,
     });
   } catch (error) {
     console.error("Error rejecting request:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
