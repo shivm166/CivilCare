@@ -1,7 +1,12 @@
+// frontend/src/pages/auth/SIgnup/Signup.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useSignup from "../../../hooks/api/auth/useSignup";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, UserPlus } from "lucide-react";
+
+// 💡 NEW IMPORTS
+import Button from "../../../components/common/Button/Button";
+import Input from "../../../components/common/Input/Input";
 
 const Signup = () => {
   const [signUpData, setSignUpData] = useState({
@@ -11,6 +16,7 @@ const Signup = () => {
     phone: "",
   });
 
+  const [agreed, setAgreed] = useState(false);
   const { isPending, error, signupMutation } = useSignup();
 
   const handleChange = (e) => {
@@ -19,6 +25,10 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    if (!agreed) {
+      alert("Please agree to the Terms of Service and Privacy Policy.");
+      return;
+    }
     await signupMutation(signUpData);
   };
 
@@ -77,7 +87,7 @@ const Signup = () => {
         >
           {/* LOGO / TITLE */}
           <div className="mb-6">
-            <h1 className="text-3xl font-extrabold text-primary tracking-wide">
+            <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">
               Create Your Account
             </h1>
             <p className="text-sm text-gray-700 mt-1">
@@ -90,69 +100,49 @@ const Signup = () => {
 
           {/* FORM */}
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* FULL NAME */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">Full Name</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                name="name"
-                className="input input-bordered w-full rounded-lg"
-                value={signUpData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {/* FULL NAME (Using Input Component) */}
+            <Input
+              label="Full Name"
+              type="text"
+              name="name"
+              placeholder="Enter your full name"
+              value={signUpData.name}
+              onChange={handleChange}
+              required
+            />
 
-            {/* PHONE */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">Phone Number</span>
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                placeholder="123-456-7890"
-                className="input input-bordered w-full rounded-lg"
-                value={signUpData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {/* PHONE (Using Input Component) */}
+            <Input
+              label="Phone Number"
+              type="tel"
+              name="phone"
+              placeholder="123-456-7890"
+              value={signUpData.phone}
+              onChange={handleChange}
+              required
+            />
 
-            {/* EMAIL */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">Email</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                className="input input-bordered w-full rounded-lg"
-                value={signUpData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {/* EMAIL (Using Input Component) */}
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={signUpData.email}
+              onChange={handleChange}
+              required
+            />
 
-            {/* PASSWORD */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">Password</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="••••••••"
-                className="input input-bordered w-full rounded-lg"
-                value={signUpData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {/* PASSWORD (Using Input Component) */}
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              value={signUpData.password}
+              onChange={handleChange}
+              required
+            />
 
             {/* AGREEMENT */}
             <div className="form-control mt-2">
@@ -160,15 +150,16 @@ const Signup = () => {
                 <input
                   type="checkbox"
                   className="checkbox checkbox-sm"
-                  required
+                  checked={agreed}
+                  onChange={() => setAgreed(!agreed)}
                 />
                 <span className="text-xs leading-tight">
                   I agree to the{" "}
-                  <span className="text-primary hover:underline">
+                  <span className="text-indigo-600 hover:underline font-semibold">
                     Terms of Service
                   </span>{" "}
                   and{" "}
-                  <span className="text-primary hover:underline">
+                  <span className="text-indigo-600 hover:underline font-semibold">
                     Privacy Policy
                   </span>
                   .
@@ -176,27 +167,27 @@ const Signup = () => {
               </label>
             </div>
 
-            {/* SUBMIT BUTTON */}
-            <button
-              className="btn btn-primary w-full transition-all hover:scale-[1.02]"
+            {/* SUBMIT BUTTON (Using Button Component) */}
+            <Button
               type="submit"
-              disabled={isPending}
+              variant="primary"
+              size="lg"
+              icon={UserPlus}
+              isLoading={isPending}
+              disabled={!agreed || isPending}
+              className="w-full"
             >
-              {isPending ? (
-                <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  <span className="ml-2">Creating Account...</span>
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </button>
+              Create Account
+            </Button>
 
             {/* LOGIN LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link to="/login" className="text-primary hover:underline">
+                <Link
+                  to="/login"
+                  className="text-indigo-600 hover:underline font-semibold"
+                >
                   Sign in
                 </Link>
               </p>

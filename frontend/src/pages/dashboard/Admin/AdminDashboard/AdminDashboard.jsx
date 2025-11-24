@@ -1,4 +1,4 @@
-// Compressed Admin Dashboard (Under 400 lines) - Same UI + Features
+// frontend/src/pages/dashboard/Admin/AdminDashboard/AdminDashboard.jsx
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -7,7 +7,6 @@ import {
   Wrench,
   Megaphone,
   Bell,
-  Loader2,
   TrendingUp,
   CheckCircle2,
   Clock,
@@ -22,6 +21,7 @@ import {
   ChevronRight,
   Zap,
   Star,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Container from "../../../../components/layout/Container/Container";
@@ -31,6 +31,8 @@ import { useGetAdminAnnouncements } from "../../../../hooks/api/useAnnouncements
 import { useMembers } from "../../../../hooks/api/useMembers";
 import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
 import useProfile from "../../../../hooks/api/auth/useProfile";
+import Card from "../../../../components/common/Card/Card"; // 💡 NEW IMPORT
+import Button from "../../../../components/common/Button/Button"; // 💡 NEW IMPORT
 
 const anim = {
   hidden: { opacity: 0 },
@@ -41,7 +43,7 @@ const fade = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
 };
 
-// Small reusable UI component factories
+// 💡 REFACTORED: StatCard now uses the generic Card component
 const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
   <motion.div variants={fade} whileHover={{ scale: 1.05, y: -5 }}>
     <Link
@@ -58,25 +60,29 @@ const StatCard = ({ title, value, icon: Icon, link, gradient }) => (
   </motion.div>
 );
 
+// 💡 REFACTORED: ActionCard now uses the generic Card component
 const ActionCard = ({ title, desc, icon: Icon, link, color }) => (
   <motion.div variants={fade} whileHover={{ scale: 1.03, y: -3 }}>
-    <Link className="group block p-5 rounded-2xl bg-white hover:border-blue-200 shadow-sm hover:shadow-xl transition-all">
-      <div className="flex items-center gap-4">
-        <div
-          className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110`}
-        >
-          <Icon className="w-6 h-6 text-white" />
+    <Link to={link} className="block">
+      <Card className="hover:border-blue-200 hover:shadow-xl group">
+        <div className="flex items-center gap-4 p-0">
+          <div
+            className={`p-3 ${color} rounded-xl shadow-md group-hover:scale-110 transition-transform`}
+          >
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-base">{title}</h3>
+            <p className="text-xs text-gray-500">{desc}</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-base">{title}</h3>
-          <p className="text-xs text-gray-500">{desc}</p>
-        </div>
-        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-      </div>
+      </Card>
     </Link>
   </motion.div>
 );
 
+// 💡 REFACTORED: MiniStat now uses the generic Card component
 const MiniStat = ({ icon: Icon, label, value, color }) => (
   <motion.div
     variants={fade}
@@ -121,7 +127,7 @@ const AdminDashboard = () => {
         inProgress: progress.length,
         requests: req.length,
         announcements: ann.length,
-        buildings: 8,
+        buildings: 8, // Static mock data
         complaints: comp.length,
       },
       recentComplaints: pending.slice(0, 4),
@@ -172,28 +178,28 @@ const AdminDashboard = () => {
               value={stats.residents}
               icon={Users}
               link="/admin/residents"
-              gradient="bg-blue-400"
+              gradient="bg-gradient-to-br from-blue-400 to-indigo-600"
             />
             <StatCard
               title="Pending Issues"
               value={stats.pending}
               icon={AlertCircle}
               link="/admin/complaints"
-              gradient="bg-orange-400"
+              gradient="bg-gradient-to-br from-orange-400 to-red-600"
             />
             <StatCard
               title="Join Requests"
               value={stats.requests}
               icon={Bell}
               link="/admin/notifications"
-              gradient="bg-pink-500"
+              gradient="bg-gradient-to-br from-pink-500 to-purple-600"
             />
             <StatCard
               title="Announcements"
               value={stats.announcements}
               icon={Megaphone}
               link="/admin/announcements"
-              gradient="bg-purple-500"
+              gradient="bg-gradient-to-br from-purple-500 to-fuchsia-600"
             />
           </div>
 
@@ -239,6 +245,7 @@ const AdminDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Using refactored ActionCard (which uses Card internally) */}
               <ActionCard
                 title="Add Resident"
                 desc="Register new members"
@@ -250,6 +257,7 @@ const AdminDashboard = () => {
                 title="Manage Buildings"
                 desc="Update buildings"
                 icon={Building2}
+                link="/admin/buildings"
                 color="bg-blue-600"
               />
               <ActionCard
@@ -270,12 +278,14 @@ const AdminDashboard = () => {
                 title="Security"
                 desc="Access & permissions"
                 icon={Shield}
+                link="/admin/security"
                 color="bg-orange-600"
               />
               <ActionCard
                 title="Facilities"
                 desc="Manage amenities"
                 icon={Package}
+                link="/admin/facilities"
                 color="bg-pink-600"
               />
               <ActionCard
@@ -297,169 +307,180 @@ const AdminDashboard = () => {
 
           {/* TWO COL */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* PENDING */}
-            <motion.div
-              variants={fade}
-              className="bg-white/90 rounded-3xl p-6 shadow-xl border-2 border-orange-100"
-            >
-              <div className="flex justify-between mb-5">
-                <div className="flex gap-3 items-center">
-                  <div className="p-2 bg-orange-100 rounded-xl">
-                    <Wrench className="text-orange-600 w-5 h-5" />
-                  </div>
-                  <h3 className="font-black text-xl">Pending Issues</h3>
-                </div>
-                <Link
-                  to="/admin/complaints"
-                  className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                >
-                  View All <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {recentComplaints.length ? (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                  {recentComplaints.map((c, i) => (
-                    <Link
-                      key={c._id || i}
-                      to="/admin/complaints"
-                      className="block bg-orange-50 p-4 rounded-2xl border-orange-100"
-                    >
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-bold text-sm line-clamp-1">
-                            {c.title}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            By: {c.createdBy?.name || "Unknown"}
-                          </p>
-                        </div>
-                        <span className="badge bg-orange-500 text-white text-xs">
-                          Pending
-                        </span>
+            {/* PENDING ISSUES - Refactored for structure */}
+            <motion.div variants={fade}>
+              <Card className="h-full border-2 border-orange-100 p-0">
+                <div className="p-6">
+                  <div className="flex justify-between mb-5">
+                    <div className="flex gap-3 items-center">
+                      <div className="p-2 bg-orange-100 rounded-xl">
+                        <Wrench className="text-orange-600 w-5 h-5" />
                       </div>
+                      <h3 className="font-black text-xl">Pending Issues</h3>
+                    </div>
+                    <Link
+                      to="/admin/complaints"
+                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
+                    >
+                      View All <ChevronRight className="w-4 h-4" />
                     </Link>
-                  ))}
+                  </div>
+
+                  {recentComplaints.length ? (
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                      {recentComplaints.map((c, i) => (
+                        <Link
+                          key={c._id || i}
+                          to="/admin/complaints"
+                          className="block bg-orange-50 p-4 rounded-2xl border-orange-100 hover:bg-orange-100 transition-colors"
+                        >
+                          <div className="flex justify-between">
+                            <div>
+                              <p className="font-bold text-sm line-clamp-1">
+                                {c.title}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                By: {c.createdBy?.name || "Unknown"}
+                              </p>
+                            </div>
+                            <span className="badge bg-orange-500 text-white text-xs">
+                              Pending
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 font-semibold">
+                        All clear! No pending issues 🎉
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-16">
-                  <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 font-semibold">
-                    All clear! No pending issues 🎉
-                  </p>
-                </div>
-              )}
+              </Card>
             </motion.div>
 
-            {/* ANNOUNCEMENTS */}
-            <motion.div
-              variants={fade}
-              className="bg-white/90 rounded-3xl p-6 shadow-xl border-2 border-purple-100"
-            >
-              <div className="flex justify-between mb-5">
-                <div className="flex gap-3 items-center">
-                  <div className="p-2 bg-purple-100 rounded-xl">
-                    <Megaphone className="text-purple-600 w-5 h-5" />
-                  </div>
-                  <h3 className="font-black text-xl">Latest News</h3>
-                </div>
-                <Link
-                  to="/admin/announcements"
-                  className="text-sm font-bold text-indigo-600 flex items-center gap-1"
-                >
-                  View All <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {recentAnnouncements.length ? (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
-                  {recentAnnouncements.map((a) => (
-                    <Link
-                      key={a._id}
-                      to="/admin/announcements"
-                      className="block bg-purple-50 p-4 rounded-2xl border-purple-100"
-                    >
-                      <div className="flex gap-3">
-                        <Star className="text-purple-500 w-5 h-5 mt-1" />
-                        <div>
-                          <p className="font-bold text-sm line-clamp-1">
-                            {a.title}
-                          </p>
-                          <p className="text-xs text-gray-600 line-clamp-2">
-                            {a.description}
-                          </p>
-                        </div>
+            {/* ANNOUNCEMENTS - Refactored for structure */}
+            <motion.div variants={fade}>
+              <Card className="h-full border-2 border-purple-100 p-0">
+                <div className="p-6">
+                  <div className="flex justify-between mb-5">
+                    <div className="flex gap-3 items-center">
+                      <div className="p-2 bg-purple-100 rounded-xl">
+                        <Megaphone className="text-purple-600 w-5 h-5" />
                       </div>
+                      <h3 className="font-black text-xl">Latest News</h3>
+                    </div>
+                    <Link
+                      to="/admin/announcements"
+                      className="text-sm font-bold text-indigo-600 flex items-center gap-1"
+                    >
+                      View All <ChevronRight className="w-4 h-4" />
                     </Link>
-                  ))}
+                  </div>
+
+                  {recentAnnouncements.length ? (
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll pr-2">
+                      {recentAnnouncements.map((a) => (
+                        <Link
+                          key={a._id}
+                          to="/admin/announcements"
+                          className="block bg-purple-50 p-4 rounded-2xl border-purple-100 hover:bg-purple-100 transition-colors"
+                        >
+                          <div className="flex gap-3">
+                            <Star className="text-purple-500 w-5 h-5 mt-1 flex-shrink-0" />
+                            <div>
+                              <p className="font-bold text-sm line-clamp-1">
+                                {a.title}
+                              </p>
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {a.description}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 font-semibold">
+                        No announcements yet
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Megaphone className="w-16 h-16 text-purple-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 font-semibold">
-                    No announcements yet
-                  </p>
-                </div>
-              )}
+              </Card>
             </motion.div>
           </div>
 
           {/* OVERVIEW */}
-          <motion.div
-            variants={fade}
-            className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 rounded-3xl p-8 shadow-xl border-2 border-white"
-          >
-            <div className="flex items-center gap-2 mb-6">
-              <Activity className="w-7 h-7 text-indigo-600" />
-              <h3 className="text-2xl font-black">Society Overview</h3>
-            </div>
+          <motion.div variants={fade}>
+            <Card className="p-0 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 border-2 border-white">
+              <div className="p-8">
+                <div className="flex items-center gap-2 mb-6">
+                  <Activity className="w-7 h-7 text-indigo-600" />
+                  <h3 className="text-2xl font-black">Society Overview</h3>
+                </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: Home,
-                  val: stats.buildings,
-                  label: "Buildings",
-                  color: "from-indigo-400 to-indigo-600",
-                  link: "/admin/buildings",
-                },
-                {
-                  icon: Users,
-                  val: stats.residents,
-                  label: "Families",
-                  color: "from-purple-400 to-purple-600",
-                },
-                {
-                  icon: Shield,
-                  val: "24/7",
-                  label: "Security",
-                  color: "from-pink-400 to-pink-600",
-                },
-                {
-                  icon: Package,
-                  val: 12,
-                  label: "Amenities",
-                  color: "from-orange-400 to-orange-600",
-                },
-              ].map((b, i) => (
-                <Link to={b.link || "#"} key={i} className="text-center block">
-                  <div
-                    className={`w-16 h-16 bg-gradient-to-br ${b.color} rounded-2xl flex items-center justify-center mx-auto mb-3`}
-                  >
-                    <b.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <p className="text-3xl font-black">{b.val}</p>
-                  <p className="text-sm text-gray-600 font-semibold">
-                    {b.label}
-                  </p>
-                </Link>
-              ))}
-            </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {[
+                    {
+                      icon: Home,
+                      val: stats.buildings,
+                      label: "Buildings",
+                      color: "from-indigo-400 to-indigo-600",
+                      link: "/admin/buildings",
+                    },
+                    {
+                      icon: Users,
+                      val: stats.residents,
+                      label: "Families",
+                      color: "from-purple-400 to-purple-600",
+                      link: "/admin/residents",
+                    },
+                    {
+                      icon: Shield,
+                      val: "24/7",
+                      label: "Security",
+                      color: "from-pink-400 to-pink-600",
+                      link: "/admin/security",
+                    },
+                    {
+                      icon: Package,
+                      val: 12,
+                      label: "Amenities",
+                      color: "from-orange-400 to-orange-600",
+                      link: "/admin/facilities",
+                    },
+                  ].map((b, i) => (
+                    <Link
+                      to={b.link || "#"}
+                      key={i}
+                      className="text-center block"
+                    >
+                      <div
+                        className={`w-16 h-16 bg-gradient-to-br ${b.color} rounded-2xl flex items-center justify-center mx-auto mb-3`}
+                      >
+                        <b.icon className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-3xl font-black text-gray-900">
+                        {b.val}
+                      </p>
+                      <p className="text-sm text-gray-600 font-semibold">
+                        {b.label}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </Card>
           </motion.div>
         </motion.div>
       </Container>
-
-      {/* SCROLL BAR */}
+      {/* SCROLL BAR STYLES REMAINS UNCHANGED */}
       <style>{`
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }

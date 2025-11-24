@@ -1,18 +1,15 @@
+// frontend/src/pages/dashboard/User/Complaints/RaiseComplaintPage.jsx
 import { useState, useEffect } from "react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  FileText,
-  Send,
-  X,
-  Zap,
-} from "lucide-react";
+import { CheckCircle2, FileText, Send, X, AlertCircle } from "lucide-react";
 
 import {
   useCreateComplaint,
   useGetMyComplaints,
 } from "../../../../hooks/api/useComplaints";
+
+import Button from "../../../../components/common/Button/Button"; // 💡 NEW IMPORT
+import Input from "../../../../components/common/Input/Input"; // 💡 NEW IMPORT
+import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge"; // 💡 NEW IMPORT
 
 export default function RaiseComplaintPage() {
   const [form, setForm] = useState({
@@ -24,7 +21,7 @@ export default function RaiseComplaintPage() {
   const [showToast, setShowToast] = useState(false);
 
   const { createComplaint, isCreating } = useCreateComplaint();
-  const { data: complaints = [], isLoading, error } = useGetMyComplaints();
+  const { data: complaints = [] } = useGetMyComplaints();
 
   // Auto-hide toast
   useEffect(() => {
@@ -48,29 +45,9 @@ export default function RaiseComplaintPage() {
 
   // COLORS
   const priorityColors = {
-    high: "bg-red-100 text-red-700 border-red-200",
-    medium: "bg-amber-100 text-amber-700 border-amber-200",
-    low: "bg-green-100 text-green-700 border-green-200",
-  };
-
-  // Status configs
-  const statusConfigs = {
-    pending: {
-      color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-      icon: <Clock className="w-4 h-4" />,
-    },
-    in_progress: {
-      color: "bg-blue-100 text-blue-700 border-blue-200",
-      icon: <Zap className="w-4 h-4" />,
-    },
-    resolved: {
-      color: "bg-green-100 text-green-700 border-green-200",
-      icon: <CheckCircle2 className="w-4 h-4" />,
-    },
-    closed: {
-      color: "bg-gray-100 text-gray-700 border-gray-200",
-      icon: <X className="w-4 h-4" />,
-    },
+    high: "text-red-600",
+    medium: "text-amber-600",
+    low: "text-green-600",
   };
 
   return (
@@ -139,18 +116,15 @@ export default function RaiseComplaintPage() {
             {/* Reduced internal form padding */}
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Title */}
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                  Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="Brief summary..."
-                  className="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm transition-colors"
-                />
-              </div>
+              <Input
+                label="Title"
+                type="text"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Brief summary..."
+                required
+                className="bg-gray-50"
+              />
 
               {/* Description */}
               <div>
@@ -178,40 +152,31 @@ export default function RaiseComplaintPage() {
                   onChange={(e) =>
                     setForm({ ...form, priority: e.target.value })
                   }
-                  className={`w-full px-3 py-2 sm:py-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 text-sm transition-colors ${
-                    priorityColors[form.priority]
-                  }`}
+                  className={`w-full px-3 py-2 sm:py-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 text-sm transition-colors`}
                 >
-                  <option className="bg-white text-red-600" value="high">
+                  <option className={priorityColors.high} value="high">
                     🔴 High (Urgent)
                   </option>
-                  <option className="bg-white text-amber-600" value="medium">
+                  <option className={priorityColors.medium} value="medium">
                     🟡 Medium (Standard)
                   </option>
-                  <option className="bg-white text-green-600" value="low">
+                  <option className={priorityColors.low} value="low">
                     🟢 Low (Non-urgent)
                   </option>
                 </select>
               </div>
 
               {/* Submit Button - Reduced padding/font size */}
-              <button
+              <Button
                 onClick={handleSubmit}
-                disabled={isCreating || !form.title || !form.description}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl text-sm"
+                disabled={!form.title || !form.description}
+                isLoading={isCreating}
+                icon={Send}
+                size="lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/30 hover:shadow-xl"
               >
-                {isCreating ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Submit Complaint
-                  </>
-                )}
-              </button>
+                Submit Complaint
+              </Button>
             </div>
           </div>
 
@@ -231,64 +196,47 @@ export default function RaiseComplaintPage() {
 
             {/* Reduced overall padding */}
             <div className="p-4 sm:p-6">
-              {/* Loading/Error/No Data states remain similar */}
-
               {/* List */}
               <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                {complaints.map((c) => {
-                  const status = statusConfigs[c.status] || {
-                    color: "bg-gray-100 text-gray-700 border-gray-200",
-                    icon: <AlertCircle className="w-4 h-4" />,
-                  };
-                  const priorityClass =
-                    priorityColors[c.priority] ||
-                    "bg-gray-100 text-gray-700 border-gray-200";
+                {complaints.map((c) => (
+                  <div
+                    key={c._id}
+                    // Reduced padding for list items
+                    className="border-2 border-gray-100 rounded-xl p-3 sm:p-4 hover:shadow-md transition bg-white"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                      <h3 className="font-bold text-gray-900 text-base sm:text-lg flex-1">
+                        {c.title}
+                      </h3>
 
-                  return (
-                    <div
-                      key={c._id}
-                      // Reduced padding for list items
-                      className="border-2 border-gray-100 rounded-xl p-3 sm:p-4 hover:shadow-md transition bg-white"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg flex-1">
-                          {c.title}
-                        </h3>
+                      {/* Priority Tag - Smaller text */}
+                      <StatusBadge type={c.priority} compact />
+                    </div>
 
-                        {/* Priority Tag - Smaller text */}
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${priorityClass}`}
-                        >
-                          {c.priority?.toUpperCase()}
-                        </span>
-                      </div>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      {c.description}
+                    </p>
 
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {c.description}
-                      </p>
+                    {/* Status + Date - Reduced internal padding */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-gray-100">
+                      <StatusBadge
+                        type={c.status}
+                        compact
+                        isPulse={c.status === "pending"}
+                      />
 
-                      {/* Status + Date - Reduced internal padding */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-gray-100">
-                        <div
-                          className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-xs font-semibold ${status.color}`}
-                        >
-                          {status.icon}
-                          {c.status?.replace(/[_-]/g, " ").toUpperCase()}
-                        </div>
-
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {c.createdAt &&
-                            new Date(c.createdAt).toLocaleDateString("en-IN", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                        </div>
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        {c.createdAt &&
+                          new Date(c.createdAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

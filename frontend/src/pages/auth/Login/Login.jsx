@@ -1,7 +1,12 @@
+// frontend/src/pages/auth/Login/Login.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useLogin from "../../../hooks/api/auth/useLogin";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LogIn } from "lucide-react";
+
+// 💡 NEW IMPORTS
+import Button from "../../../components/common/Button/Button";
+import Input from "../../../components/common/Input/Input";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -75,13 +80,13 @@ const Login = () => {
         >
           {/* TITLE */}
           <div className="mb-6">
-            <h1 className="text-3xl font-extrabold text-primary tracking-wide">
+            <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">
               Sign In
             </h1>
             <p className="text-sm text-gray-700 mt-1">
               Welcome back to{" "}
-              <span className="font-semibold text-primary">Civil Care</span> —
-              manage your society smarter.
+              <span className="font-semibold text-indigo-600">Civil Care</span>{" "}
+              — manage your society smarter.
             </p>
           </div>
 
@@ -90,65 +95,56 @@ const Login = () => {
 
           {/* LOGIN FORM */}
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* EMAIL */}
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">Email Address</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                className="input input-bordered w-full rounded-lg"
-                value={loginData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {/* EMAIL (Using Input Component) */}
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={loginData.email}
+              onChange={handleChange}
+              required
+            />
 
-            {/* PASSWORD */}
-            <div className="form-control w-full">
-              <label className="label flex justify-between items-center">
-                <span className="label-text font-medium">Password</span>
-                {/* <Link
-                  to="/forgot-password"
-                  className="text-xs text-primary hover:underline"
-                >
-                  Forgot?
-                </Link> */}
-              </label>
-              <input
+            {/* PASSWORD (Using Input Component) */}
+            <div className="space-y-1">
+              <Input
+                label="Password"
                 type="password"
                 name="password"
                 placeholder="••••••••"
-                className="input input-bordered w-full rounded-lg"
                 value={loginData.password}
                 onChange={handleChange}
                 required
               />
+              <Link
+                to="/forgot-password"
+                className="text-xs text-indigo-600 hover:underline block text-right pt-1"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
-            {/* SUBMIT BUTTON */}
-            <button
+            {/* SUBMIT BUTTON (Using Button Component) */}
+            <Button
               type="submit"
-              className="btn btn-primary w-full transition-all hover:scale-[1.02]"
-              disabled={isPending}
+              variant="primary"
+              size="lg"
+              icon={LogIn}
+              isLoading={isPending}
+              className="w-full"
             >
-              {isPending ? (
-                <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  <span className="ml-2">Signing In...</span>
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
+              Sign In
+            </Button>
 
             {/* SIGNUP LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Don’t have an account?{" "}
-                <Link to="/signup" className="text-primary hover:underline">
+                <Link
+                  to="/signup"
+                  className="text-indigo-600 hover:underline font-semibold"
+                >
                   Create one
                 </Link>
               </p>
