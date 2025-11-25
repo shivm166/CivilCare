@@ -2,6 +2,16 @@ import { User } from "../../models/user.model.js";
 import { Society } from "../../models/society.model.js";
 import { UserSocietyRel } from "../../models/user_society_rel.model.js";
 import { MemberInvitation } from "../../models/member_invitation.model.js";
+import { sendErrorResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const {
+  BAD_REQUEST,
+  FORBIDDEN,
+  NOT_FOUND,
+  CONFLICT,
+  SERVER_ERROR,
+} = STATUS_CODES;
 
 // ==================== ADMIN: SEND INVITATION TO EXISTING USER ====================
 export const sendMemberInvitation = async (req, res) => {
@@ -11,13 +21,13 @@ export const sendMemberInvitation = async (req, res) => {
     const { userId, roleInSociety = "member", unitId, message } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
+      return sendErrorResponse(res, BAD_REQUEST, null, "User ID is required");
     }
 
     // Validate society exists
     const society = await Society.findById(societyId);
     if (!society) {
-      return res.status(404).json({ message: "Society not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Society not found");
     }
 
     // Check if requester is admin
@@ -29,15 +39,18 @@ export const sendMemberInvitation = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admins can send invitations",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admins can send invitations"
+      );
     }
 
     // Validate invited user exists
     const invitedUser = await User.findById(userId);
     if (!invitedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "User not found");
     }
 
     // Check if user is already a member
@@ -48,9 +61,12 @@ export const sendMemberInvitation = async (req, res) => {
     });
 
     if (existingMember) {
-      return res.status(409).json({
-        message: "User is already a member of this society",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "User is already a member of this society"
+      );
     }
 
     // Check if invitation already exists
@@ -61,9 +77,12 @@ export const sendMemberInvitation = async (req, res) => {
     });
 
     if (existingInvitation) {
-      return res.status(409).json({
-        message: "Invitation already sent to this user",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "Invitation already sent to this user"
+      );
     }
 
     // Create invitation
@@ -81,6 +100,7 @@ export const sendMemberInvitation = async (req, res) => {
       .populate("invitedBy", "name email")
       .populate("invitedUser", "name email");
 
+    // Keep original success response format
     return res.status(201).json({
       success: true,
       message: "Invitation sent successfully",
@@ -88,7 +108,7 @@ export const sendMemberInvitation = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in sendMemberInvitation:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -105,6 +125,7 @@ export const getMyInvitations = async (req, res) => {
       .populate("invitedBy", "name email")
       .sort({ createdAt: -1 });
 
+    // Keep original success response format
     return res.json({
       success: true,
       count: invitations.length,
@@ -112,7 +133,7 @@ export const getMyInvitations = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getMyInvitations:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -126,21 +147,27 @@ export const acceptInvitation = async (req, res) => {
     const invitation = await MemberInvitation.findById(invitationId);
 
     if (!invitation) {
-      return res.status(404).json({ message: "Invitation not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Invitation not found");
     }
 
     // Verify invitation is for this user
     if (invitation.invitedUser.toString() !== userId.toString()) {
-      return res.status(403).json({
-        message: "This invitation is not for you",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "This invitation is not for you"
+      );
     }
 
     // Check if already processed
     if (invitation.status !== "pending") {
-      return res.status(400).json({
-        message: `Invitation already ${invitation.status}`,
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        `Invitation already ${invitation.status}`
+      );
     }
 
     // Check if user is already a member
@@ -155,6 +182,7 @@ export const acceptInvitation = async (req, res) => {
       invitation.status = "accepted";
       await invitation.save();
 
+      // Keep original success response format
       return res.status(200).json({
         success: true,
         message: "You are already a member of this society",
@@ -178,6 +206,7 @@ export const acceptInvitation = async (req, res) => {
       .populate("society", "name city state")
       .populate("invitedBy", "name");
 
+    // Keep original success response format
     return res.json({
       success: true,
       message: `You've successfully joined ${populatedInvitation.society.name}`,
@@ -185,7 +214,7 @@ export const acceptInvitation = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in acceptInvitation:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -199,21 +228,27 @@ export const rejectInvitation = async (req, res) => {
     const invitation = await MemberInvitation.findById(invitationId);
 
     if (!invitation) {
-      return res.status(404).json({ message: "Invitation not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Invitation not found");
     }
 
     // Verify invitation is for this user
     if (invitation.invitedUser.toString() !== userId.toString()) {
-      return res.status(403).json({
-        message: "This invitation is not for you",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "This invitation is not for you"
+      );
     }
 
     // Check if already processed
     if (invitation.status !== "pending") {
-      return res.status(400).json({
-        message: `Invitation already ${invitation.status}`,
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        `Invitation already ${invitation.status}`
+      );
     }
 
     // Update invitation status
@@ -224,6 +259,7 @@ export const rejectInvitation = async (req, res) => {
       .populate("society", "name")
       .populate("invitedBy", "name");
 
+    // Keep original success response format
     return res.json({
       success: true,
       message: "Invitation rejected",
@@ -231,7 +267,7 @@ export const rejectInvitation = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in rejectInvitation:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
@@ -250,9 +286,12 @@ export const getSentInvitations = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admins can view sent invitations",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admins can view sent invitations"
+      );
     }
 
     const invitations = await MemberInvitation.find({
@@ -262,6 +301,7 @@ export const getSentInvitations = async (req, res) => {
       .populate("invitedBy", "name")
       .sort({ createdAt: -1 });
 
+    // Keep original success response format
     return res.json({
       success: true,
       count: invitations.length,
@@ -269,6 +309,6 @@ export const getSentInvitations = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getSentInvitations:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
