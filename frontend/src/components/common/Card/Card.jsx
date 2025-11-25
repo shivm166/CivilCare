@@ -2,16 +2,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-/**
- * Reusable Card Component.
- * @param {object} props
- * @param {string} [props.className] - Additional Tailwind classes for the card body.
- * @param {boolean} [props.noPadding=false] - Remove default padding.
- * @param {React.ReactNode} [props.header] - Optional header content (e.g., title and icon).
- * @param {boolean} [props.animate=false] - Apply motion variants.
- * @param {object} [props.variants] - Framer Motion variants.
- * @param {React.ReactNode} [props.children]
- */
 const Card = ({
   children,
   className = "",
