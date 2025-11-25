@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Building2, Plus, Search } from "lucide-react";
+import { Building2, Loader2, Plus, Search } from "lucide-react";
 import { useBuildings, useDeleteBuilding } from "../../../../hooks/api/useBuildings";
 import BuildingCard from "../../../../components/features/building/BuildingCard";
 import CreateBuildingModal from "../../../../components/features/building/CreateBuildingModal";
@@ -26,7 +26,13 @@ function BuildingManagement() {
   };
 
   if (isLoading) {
-    return <PageLoader />;
+    return(
+      <div className="h-full bg-white max-h-fit flex items-center justify-center z-50">
+        <div className="text-centerflex flex h-full items-center justify-center">
+          <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-500 animate-spin mx-auto mb-4" />
+        </div>
+      </div>
+    )
   }
 
   if (error) {
