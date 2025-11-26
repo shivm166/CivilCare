@@ -9,7 +9,9 @@ import {
   addComment,
 } from "../../api/services/announcement.api";
 
+
 // ==================== ADMIN HOOKS ====================
+
 
 export const useCreateAnnouncement = () => {
   const queryClient = useQueryClient();
@@ -29,14 +31,20 @@ export const useCreateAnnouncement = () => {
   };
 };
 
+
 export const useGetAdminAnnouncements = (societyId) => {
   return useQuery({
     queryKey: ["adminAnnouncements", societyId],
     queryFn: getAllAnnouncementsAdmin,
     select: (data) => data.data,
     enabled: !!societyId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
+
 
 export const useUpdateAnnouncement = () => {
   const queryClient = useQueryClient();
@@ -56,6 +64,7 @@ export const useUpdateAnnouncement = () => {
   };
 };
 
+
 export const useDeleteAnnouncement = () => {
   const queryClient = useQueryClient();
 
@@ -73,6 +82,7 @@ export const useDeleteAnnouncement = () => {
     deleteError: mutation.error,
   };
 };
+
 
 export const useReplyToComment = () => {
   const queryClient = useQueryClient();
@@ -93,7 +103,9 @@ export const useReplyToComment = () => {
   };
 };
 
+
 // ==================== USER HOOKS ====================
+
 
 export const useGetUserAnnouncements = (societyId) => {
   return useQuery({
@@ -101,8 +113,13 @@ export const useGetUserAnnouncements = (societyId) => {
     queryFn: getUserAnnouncements,
     select: (data) => data.data,
     enabled: !!societyId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - keeps data fresh
+    gcTime: 10 * 60 * 1000, // 10 minutes - cache retention
+    refetchOnMount: false, // ✅ Prevents refetch if data exists in cache
+    refetchOnWindowFocus: false, // ✅ Prevents refetch on window focus
   });
 };
+
 
 export const useAddComment = () => {
   const queryClient = useQueryClient();

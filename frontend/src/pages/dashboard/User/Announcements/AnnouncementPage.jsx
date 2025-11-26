@@ -6,20 +6,21 @@ import {
 } from "../../../../hooks/api/useAnnouncements";
 import AnnouncementList from "../../../../components/features/announcement/userView/AnnouncementList";
 
+
 export default function AnnouncementPage() {
   const { activeSocietyId } = useSocietyContext();
 
-  const { data: announcements = [], isLoading } = useGetUserAnnouncements(activeSocietyId);
+  const { data: announcements = [], isLoading, isFetching } = useGetUserAnnouncements(activeSocietyId);
   const { addComment, isCommenting } = useAddComment();
 
-  // Mark announcements as read
+  // Mark announcements as read - FIXED: removed announcements from dependencies
   useEffect(() => {
     if (announcements && announcements.length > 0 && activeSocietyId) {
       const storageKey = `lastSeenAnnouncements_${activeSocietyId}`;
       localStorage.setItem(storageKey, new Date().toISOString());
       window.dispatchEvent(new Event("announcementsRead"));
     }
-  }, [announcements, activeSocietyId]);
+  }, [activeSocietyId]); // ✅ ONLY activeSocietyId now
 
   // Fix mobile viewport height
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function AnnouncementPage() {
     addComment({ id: announcementId, comment });
   };
 
+  // Show loading only on initial fetch, not on background refetch
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
