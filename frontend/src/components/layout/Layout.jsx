@@ -12,7 +12,15 @@ const Layout = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
+        <header
+        //  className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm"
+
+
+        className="w-full h-16 bg-white border-b border-gray-200 
+flex items-center justify-between px-6 pl-16 sticky top-0 z-20 shadow-sm"   // ---- css to gape between header and sidebar ----
+
+
+        >
           <h1 className="text-xl font-bold text-gray-800">
             {activeRole === "admin" ? "" : ""}
           </h1>
