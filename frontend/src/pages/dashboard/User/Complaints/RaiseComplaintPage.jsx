@@ -127,7 +127,7 @@ export default function RaiseComplaintPage() {
         {/* COLUMN LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* COLUMN 1: NEW COMPLAINT FORM (Sticky Left Column on Desktop) */}
-          <div className="lg:col-span-1 h-fit sticky top-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="lg:col-span-1 h-fit lg:sticky lg:top-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
               <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
                 <FileText className="w-6 h-6" />
@@ -306,16 +306,6 @@ export default function RaiseComplaintPage() {
                     </div>
                   );
                 })}
-                {/* Link to Admin page for full details/actions */}
-                <div className="p-4 pt-6 text-center">
-                  <Link
-                    to="/user/raise-complaint"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-purple-600 transition-colors"
-                  >
-                    View All My Complaints
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
