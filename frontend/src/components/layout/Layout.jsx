@@ -38,7 +38,7 @@ flex items-center justify-between px-6 pl-16 sticky top-0 z-20 shadow-sm"   // -
         </header>
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="p-6">
+          <div className="p-6 h-full">
             <Outlet />
           </div>
         </main>

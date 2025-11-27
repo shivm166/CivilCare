@@ -9,6 +9,7 @@ import {
   Mail,
   User,
   Building2,
+  Car, // ✨ ADD THIS IMPORT
   Menu,
   X,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const adminMenu = [
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
+  { name: "Parking", path: "/admin/parking", icon: Car }, // ✨ ADD THIS LINE
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -31,6 +33,7 @@ const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
   { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
+  { name: "Parking", path: "/user/parking", icon: Car }, // ✨ ADD THIS LINE
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },

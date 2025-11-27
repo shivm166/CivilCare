@@ -46,6 +46,13 @@ const BuildingUnitsPage = lazy(() =>
 const UnitDetailPage = lazy(() =>
   import("../pages/dashboard/Admin/UnitManagement/UnitDetailPage")
 );
+// ✨ ADD THESE PARKING IMPORTS
+const ParkingManagement = lazy(() =>
+  import("../pages/dashboard/Admin/ParkingManagement/ParkingManagement")
+);
+const UserParkingPage = lazy(() =>
+  import("../pages/dashboard/User/Parking/UserParkingPage")
+);
 
 // 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
 const DashboardWrapper = () => {
@@ -176,6 +183,15 @@ const ProtectedRoutes = ({ authUser }) => {
             </Suspense>
           }
         />
+        {/* ✨ ADD THIS PARKING ROUTE */}
+        <Route
+          path="parking"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ParkingManagement />
+            </Suspense>
+          }
+        />
         <Route
           path="notifications"
           element={
@@ -233,6 +249,15 @@ const ProtectedRoutes = ({ authUser }) => {
           element={
             <Suspense fallback={<PageLoader />}>
               <RaiseComplaintPage />
+            </Suspense>
+          }
+        />
+        {/* ✨ ADD THIS PARKING ROUTE */}
+        <Route
+          path="parking"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UserParkingPage />
             </Suspense>
           }
         />

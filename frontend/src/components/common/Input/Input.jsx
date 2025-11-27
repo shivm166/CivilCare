@@ -2,14 +2,6 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 
-/**
- * Reusable Input Component with Label and Error handling.
- * @param {object} props
- * @param {string} props.label
- * @param {string} [props.error] - Error message string.
- * @param {boolean} [props.required=false]
- * @param {string} [props.className] - Additional classes for the input element.
- */
 const Input = ({
   label,
   error,

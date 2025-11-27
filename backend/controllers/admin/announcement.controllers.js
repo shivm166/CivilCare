@@ -1,4 +1,19 @@
 import { Announcement } from "../../models/announcement.model.js";
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  sendSuccessResponseWithPagination,
+} from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const {
+  SUCCESS,
+  CREATED,
+  BAD_REQUEST,
+  FORBIDDEN,
+  NOT_FOUND,
+  SERVER_ERROR,
+} = STATUS_CODES;
 
 // ==================== ADMIN CONTROLLERS ====================
 
@@ -9,19 +24,23 @@ export const createAnnouncement = async (req, res) => {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(400).json({
-        success: false,
-        message: "You must be part of an active society to create an announcement.",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "You must be part of an active society to create an announcement."
+      );
     }
 
     const { title, description } = req.body;
 
     if (!title || !description) {
-      return res.status(400).json({
-        success: false,
-        message: "Title and description are required",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Title and description are required"
+      );
     }
 
     const announcement = new Announcement({
@@ -34,50 +53,70 @@ export const createAnnouncement = async (req, res) => {
     await announcement.save();
     await announcement.populate("createdBy", "name email");
 
-    res.status(201).json({
-      success: true,
-      message: "Announcement created successfully",
-      data: announcement,
-    });
+    return sendSuccessResponse(
+      res,
+      CREATED,
+      announcement,
+      "Announcement created successfully"
+    );
   } catch (error) {
     console.error("Error in createAnnouncement:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
-// Get All Announcements (Admin)
+// Get All Announcements (Admin) - WITH PAGINATION
 export const getAllAnnouncementsAdmin = async (req, res) => {
   try {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(400).json({
-        success: false,
-        message: "No active society context found.",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "No active society context found."
+      );
     }
+
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalAnnouncements = await Announcement.countDocuments({
+      society: societyId,
+    });
 
     const announcements = await Announcement.find({ society: societyId })
       .populate("createdBy", "name email")
       .populate("comments.user", "name email")
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .exec();
 
-    res.status(200).json({
-      success: true,
-      data: announcements,
-    });
+    // Pagination metadata
+    const pagination = {
+      currentPage: page,
+      totalPages: Math.ceil(totalAnnouncements / limit),
+      totalItems: totalAnnouncements,
+      itemsPerPage: limit,
+      hasNextPage: page < Math.ceil(totalAnnouncements / limit),
+      hasPreviousPage: page > 1,
+    };
+
+    return sendSuccessResponseWithPagination(
+      res,
+      SUCCESS,
+      announcements,
+      "Announcements fetched successfully",
+      pagination
+    );
   } catch (error) {
     console.error("Error in getAllAnnouncementsAdmin:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
@@ -89,27 +128,27 @@ export const updateAnnouncement = async (req, res) => {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. No active society context.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Access denied. No active society context."
+      );
     }
 
     const announcement = await Announcement.findById(id);
 
     if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: "Announcement not found",
-      });
+      return sendErrorResponse(res, NOT_FOUND, null, "Announcement not found");
     }
 
-    // Check if announcement belongs to the same society
     if (announcement.society.toString() !== societyId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only update announcements in your society.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You can only update announcements in your society."
+      );
     }
 
     if (title) announcement.title = title;
@@ -118,18 +157,15 @@ export const updateAnnouncement = async (req, res) => {
     await announcement.save();
     await announcement.populate("createdBy", "name email");
 
-    res.status(200).json({
-      success: true,
-      message: "Announcement updated successfully",
-      data: announcement,
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      announcement,
+      "Announcement updated successfully"
+    );
   } catch (error) {
     console.error("Error in updateAnnouncement:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
@@ -140,42 +176,40 @@ export const deleteAnnouncement = async (req, res) => {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. No active society context.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Access denied. No active society context."
+      );
     }
 
     const announcement = await Announcement.findById(id);
 
     if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: "Announcement not found",
-      });
+      return sendErrorResponse(res, NOT_FOUND, null, "Announcement not found");
     }
 
-    // Check if announcement belongs to the same society
     if (announcement.society.toString() !== societyId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only delete announcements in your society.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You can only delete announcements in your society."
+      );
     }
 
     await Announcement.findByIdAndDelete(id);
 
-    res.status(200).json({
-      success: true,
-      message: "Announcement deleted successfully",
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      null,
+      "Announcement deleted successfully"
+    );
   } catch (error) {
     console.error("Error in deleteAnnouncement:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
@@ -187,43 +221,37 @@ export const replyToComment = async (req, res) => {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. No active society context.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Access denied. No active society context."
+      );
     }
 
     if (!reply || reply.trim() === "") {
-      return res.status(400).json({
-        success: false,
-        message: "Reply text is required",
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Reply text is required");
     }
 
     const announcement = await Announcement.findById(announcementId);
 
     if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: "Announcement not found",
-      });
+      return sendErrorResponse(res, NOT_FOUND, null, "Announcement not found");
     }
 
-    // Check if announcement belongs to the same society
     if (announcement.society.toString() !== societyId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only reply to comments in your society.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You can only reply to comments in your society."
+      );
     }
 
     const comment = announcement.comments.id(commentId);
 
     if (!comment) {
-      return res.status(404).json({
-        success: false,
-        message: "Comment not found",
-      });
+      return sendErrorResponse(res, NOT_FOUND, null, "Comment not found");
     }
 
     comment.adminReply = reply;
@@ -233,34 +261,39 @@ export const replyToComment = async (req, res) => {
     await announcement.populate("createdBy", "name email");
     await announcement.populate("comments.user", "name email");
 
-    res.status(200).json({
-      success: true,
-      message: "Reply added successfully",
-      data: announcement,
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      announcement,
+      "Reply added successfully"
+    );
   } catch (error) {
     console.error("Error in replyToComment:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
 // ==================== USER/MEMBER CONTROLLERS ====================
 
-// Get All Announcements (User/Member)
+// Get All Announcements (User/Member) - WITH PAGINATION
 export const getAllAnnouncementsUser = async (req, res) => {
   try {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-      });
+      return sendSuccessResponse(res, SUCCESS, []);
     }
+
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalAnnouncements = await Announcement.countDocuments({
+      society: societyId,
+      isActive: true,
+    });
 
     const announcements = await Announcement.find({
       society: societyId,
@@ -269,19 +302,30 @@ export const getAllAnnouncementsUser = async (req, res) => {
       .populate("createdBy", "name email")
       .populate("comments.user", "name email")
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .exec();
 
-    res.status(200).json({
-      success: true,
-      data: announcements,
-    });
+    // Pagination metadata
+    const pagination = {
+      currentPage: page,
+      totalPages: Math.ceil(totalAnnouncements / limit),
+      totalItems: totalAnnouncements,
+      itemsPerPage: limit,
+      hasNextPage: page < Math.ceil(totalAnnouncements / limit),
+      hasPreviousPage: page > 1,
+    };
+
+    return sendSuccessResponseWithPagination(
+      res,
+      SUCCESS,
+      announcements,
+      "Announcements fetched successfully",
+      pagination
+    );
   } catch (error) {
     console.error("Error in getAllAnnouncementsUser:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };
 
@@ -294,34 +338,31 @@ export const addComment = async (req, res) => {
     const societyId = req.society?._id;
 
     if (!societyId) {
-      return res.status(400).json({
-        success: false,
-        message: "You must be part of an active society to comment.",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "You must be part of an active society to comment."
+      );
     }
 
     if (!comment || comment.trim() === "") {
-      return res.status(400).json({
-        success: false,
-        message: "Comment text is required",
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Comment text is required");
     }
 
     const announcement = await Announcement.findById(id);
 
     if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: "Announcement not found",
-      });
+      return sendErrorResponse(res, NOT_FOUND, null, "Announcement not found");
     }
 
-    // Check if announcement belongs to the same society
     if (announcement.society.toString() !== societyId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only comment on announcements in your society.",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "You can only comment on announcements in your society."
+      );
     }
 
     announcement.comments.push({
@@ -333,17 +374,14 @@ export const addComment = async (req, res) => {
     await announcement.populate("createdBy", "name email");
     await announcement.populate("comments.user", "name email");
 
-    res.status(201).json({
-      success: true,
-      message: "Comment added successfully",
-      data: announcement,
-    });
+    return sendSuccessResponse(
+      res,
+      CREATED,
+      announcement,
+      "Comment added successfully"
+    );
   } catch (error) {
     console.error("Error in addComment:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server error");
   }
 };

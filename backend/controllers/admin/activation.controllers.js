@@ -1,5 +1,17 @@
 import { User } from "../../models/user.model.js";
 import { generateTokenAndSetCookie } from "../../utils/jwtToken.js";
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+} from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const {
+  SUCCESS,
+  BAD_REQUEST,
+  NOT_FOUND,
+  SERVER_ERROR,
+} = STATUS_CODES;
 
 // ==================== USER ACTIVATION CONTROLLERS ====================
 
@@ -9,15 +21,21 @@ export const activateAccount = async (req, res) => {
     const { token, password } = req.body;
 
     if (!token || !password) {
-      return res.status(400).json({ 
-        message: "Token and password are required" 
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Token and password are required"
+      );
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ 
-        message: "Password must be at least 6 characters" 
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Password must be at least 6 characters"
+      );
     }
 
     // Find user by token
@@ -29,9 +47,12 @@ export const activateAccount = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        message: "Invalid or expired invitation token" 
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Invalid or expired invitation token"
+      );
     }
 
     // Set password and activate account
@@ -44,21 +65,22 @@ export const activateAccount = async (req, res) => {
     // Generate JWT and login
     const jwt = generateTokenAndSetCookie(res, user._id, user.globalRole);
 
-    return res.status(200).json({
-      success: true,
-      message: "Account activated successfully",
-      user: {
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
         _id: user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
         globalRole: user.globalRole,
+        jwt,
       },
-      jwt,
-    });
+      "Account activated successfully"
+    );
   } catch (error) {
     console.error("Error in activateAccount controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
@@ -68,10 +90,7 @@ export const verifyInvitationToken = async (req, res) => {
     const { token } = req.params;
 
     if (!token) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Token is required" 
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Token is required");
     }
 
     const user = await User.findOne({
@@ -82,26 +101,27 @@ export const verifyInvitationToken = async (req, res) => {
     }).select("name email phone");
 
     if (!user) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Invalid or expired invitation token" 
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Invalid or expired invitation token"
+      );
     }
 
-    return res.json({
-      success: true,
-      user: {
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      {
         name: user.name,
         email: user.email,
         phone: user.phone,
       },
-    });
+      "Token verified successfully"
+    );
   } catch (error) {
     console.error("Error in verifyInvitationToken controller", error);
-    res.status(500).json({ 
-      success: false,
-      message: "Something went wrong" 
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
@@ -111,7 +131,7 @@ export const resendInvitation = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Email is required");
     }
 
     const user = await User.findOne({
@@ -121,9 +141,12 @@ export const resendInvitation = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ 
-        message: "No pending invitation found for this email" 
-      });
+      return sendErrorResponse(
+        res,
+        NOT_FOUND,
+        null,
+        "No pending invitation found for this email"
+      );
     }
 
     // Check if token expired
@@ -135,18 +158,21 @@ export const resendInvitation = async (req, res) => {
       await user.save();
     }
 
-    const invitationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/activate-account?token=${user.invitationToken}`;
-    
+    const invitationLink = `${
+      process.env.FRONTEND_URL || "http://localhost:5173"
+    }/activate-account?token=${user.invitationToken}`;
+
     console.log(`📧 Resending invitation email to ${email}`);
     console.log(`Invitation link: ${invitationLink}`);
 
-    return res.json({
-      success: true,
-      message: "Invitation resent successfully",
-      invitationLink, // Remove in production
-    });
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      { invitationLink }, // Remove invitationLink in production
+      "Invitation resent successfully"
+    );
   } catch (error) {
     console.error("Error in resendInvitation controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };

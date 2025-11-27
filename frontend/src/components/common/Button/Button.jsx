@@ -3,18 +3,6 @@ import React from "react";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-/**
- * Reusable Button Component leveraging Tailwind CSS and Lucide Icons.
- * @param {object} props
- * @param {string} [props.variant='primary'] - 'primary', 'secondary', 'ghost', 'danger', 'success'.
- * @param {boolean} [props.isLoading=false]
- * @param {string} [props.className] - Additional Tailwind classes.
- * @param {React.ElementType} [props.icon: Icon] - Lucide icon component to display.
- * @param {string} [props.size='md'] - 'sm', 'md', 'lg'.
- * @param {boolean} [props.animate=true] - Apply subtle hover animation.
- * @param {boolean} [props.disabled]
- * @param {React.ReactNode} [props.children]
- */
 const Button = ({
   children,
   variant = "primary",
