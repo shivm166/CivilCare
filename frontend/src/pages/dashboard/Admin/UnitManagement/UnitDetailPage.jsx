@@ -22,7 +22,6 @@ function UnitDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
-  // Use your existing hooks
   const { data, isLoading, error } = useUnitById(unitId);
   const { mutate: deleteUnitMutation, isPending: isDeleting } = useDeleteUnit();
 
@@ -42,8 +41,8 @@ function UnitDetailPage() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+      <div className="p-4 sm:p-6">
+        <div className="bg-red-50 text-red-600 p-3 sm:p-4 rounded-lg text-sm sm:text-base">
           Error loading unit: {error.message}
         </div>
       </div>
@@ -54,135 +53,133 @@ function UnitDetailPage() {
   const building = data?.building;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={() => navigate(`/admin/buildings/${buildingId}/units`)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3 sm:mb-4 transition-colors text-sm sm:text-base"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Back to Units</span>
           </button>
 
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-3 bg-indigo-100 rounded-lg">
-                  <Home className="w-6 h-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{unit?.name}</h1>
-                  <p className="text-gray-600">{building?.name} - Floor {unit?.floor}</p>
-                  <p className="text-sm text-gray-600 mb-2">Unit Type - {unit.bhkType.toUpperCase()}</p>
-                </div>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="p-2 sm:p-3 bg-indigo-100 rounded-lg shrink-0">
+                <Home className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">{unit?.name}</h1>
+                <p className="text-xs sm:text-sm md:text-base text-gray-600 truncate">
+                  {building?.name} - Floor {unit?.floor}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600">{unit.bhkType.toUpperCase()}</p>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Edit
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 text-xs sm:text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Unit Details Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                 Unit Details
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Unit Name</p>
-                  <p className="font-medium text-gray-900">{unit?.name}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Unit Name</p>
+                  <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{unit?.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Floor</p>
-                  <p className="font-medium text-gray-900">Floor {unit?.floor}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Floor</p>
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">Floor {unit?.floor}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Unit Type</p>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700`}
-                  >
+                  <p className="text-xs sm:text-sm text-gray-600">Unit Type</p>
+                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                     {unit.bhkType.toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Building</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Building</p>
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-gray-400" />
-                    <p className="font-medium text-gray-900">{building?.name}</p>
+                    <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{building?.name}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Resident Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                   Resident Information
                 </h2>
                 <button
                   onClick={() => setIsAssignModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
                 >
-                  <UserPlus className="w-4 h-4" />
-                  Assign Resident
+                  <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  Assign
                 </button>
               </div>
 
               {unit?.owner || unit?.primaryResident ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {unit.owner && (
-                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                      <div className="p-2 bg-indigo-100 rounded-lg">
-                        <User className="w-5 h-5 text-indigo-600" />
+                    <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="p-1.5 sm:p-2 bg-indigo-100 rounded-lg shrink-0">
+                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">Owner</p>
-                        <p className="font-medium text-gray-900">{unit.owner.name}</p>
-                        <p className="text-sm text-gray-600">{unit.owner.email}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-600">Owner</p>
+                        <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{unit.owner.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">{unit.owner.email}</p>
                         {unit.owner.phone && (
-                          <p className="text-sm text-gray-600">{unit.owner.phone}</p>
+                          <p className="text-xs sm:text-sm text-gray-600">{unit.owner.phone}</p>
                         )}
                       </div>
                     </div>
                   )}
 
                   {unit.primaryResident && (
-                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <Users className="w-5 h-5 text-green-600" />
+                    <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg shrink-0">
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">Primary Resident</p>
-                        <p className="font-medium text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-600">Primary Resident</p>
+                        <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
                           {unit.primaryResident.name}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">
                           {unit.primaryResident.email}
                         </p>
                         {unit.primaryResident.phone && (
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {unit.primaryResident.phone}
                           </p>
                         )}
@@ -191,12 +188,12 @@ function UnitDetailPage() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-600 mb-4">No residents assigned yet</p>
+                <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg">
+                  <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">No residents assigned yet</p>
                   <button
                     onClick={() => setIsAssignModalOpen(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-4 py-2 text-sm sm:text-base bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                   >
                     Assign First Resident
                   </button>
@@ -206,14 +203,14 @@ function UnitDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Quick Stats */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                 Quick Stats
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Status</span>
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -225,7 +222,7 @@ function UnitDetailPage() {
                     {unit?.type === "vacant" ? "Vacant" : "Occupied"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Occupancy Type</span>
                   <span className="font-medium text-gray-900">
                     {unit?.type === "owner_occupied"
@@ -239,23 +236,23 @@ function UnitDetailPage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                 Quick Actions
               </h3>
               <div className="space-y-2">
                 <button
                   onClick={() => setIsAssignModalOpen(true)}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
                 >
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Assign Resident
                 </button>
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Edit Unit
                 </button>
               </div>
