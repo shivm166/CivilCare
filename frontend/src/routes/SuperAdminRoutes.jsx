@@ -1,23 +1,77 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import SuperAdminLayout from "../components/layout/SuperAdminLayout/SuperAdminLayout";
-import SuperAdminDashboard from "../pages/dashboard/SuperAdmin/SuperAdminDashboard/SuperAdminDashboard";
-import SuperAdminSocieties from "../pages/dashboard/SuperAdmin/SuperAdminSocieties/SuperAdminSocieties";
-import SuperAdminUsers from "../pages/dashboard/SuperAdmin/SuperAdminUsers/SuperAdminUsers";
+// frontend/src/routes/SuperAdminRoutes.jsx (MODIFIED FOR LAZY LOADING)
+
+import { Navigate, Route, Routes, lazy, Suspense } from "react-router-dom";
+import PageLoader from "../pages/error/PageLoader";
+
+// Lazy loading all Super Admin components
+const SuperAdminLayout = lazy(() =>
+  import("../components/layout/SuperAdminLayout/SuperAdminLayout")
+);
+const SuperAdminDashboard = lazy(() =>
+  import(
+    "../pages/dashboard/SuperAdmin/SuperAdminDashboard/SuperAdminDashboard"
+  )
+);
+const SuperAdminSocieties = lazy(() =>
+  import(
+    "../pages/dashboard/SuperAdmin/SuperAdminSocieties/SuperAdminSocieties"
+  )
+);
+const SuperAdminUsers = lazy(() =>
+  import("../pages/dashboard/SuperAdmin/SuperAdminUsers/SuperAdminUsers")
+);
+
+// Define a consistent fallback component for cleaner code
+const SuspenseFallback = (
+  <div className="p-6 h-full flex justify-center items-center">
+    <PageLoader />
+  </div>
+);
 
 function SuperAdminRoutes() {
   return (
     <Routes>
       {/* Root redirect */}
       <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
-      
-      {/* Super Admin Layout with nested routes */}
-      <Route element={<SuperAdminLayout />}>
-        <Route path="dashboard" element={<SuperAdminDashboard />} />
-        <Route path="societies" element={<SuperAdminSocieties />} />
-        <Route path="users" element={<SuperAdminUsers />} />
-        
+
+      {/* Super Admin Layout is lazy-loaded */}
+      <Route
+        element={
+          <Suspense fallback={SuspenseFallback}>
+            <SuperAdminLayout />
+          </Suspense>
+        }
+      >
+        <Route
+          path="dashboard"
+          element={
+            <Suspense fallback={SuspenseFallback}>
+              <SuperAdminDashboard />
+            </Suspense>
+          }
+        />
+        <Route
+          path="societies"
+          element={
+            <Suspense fallback={SuspenseFallback}>
+              <SuperAdminSocieties />
+            </Suspense>
+          }
+        />
+        <Route
+          path="users"
+          element={
+            <Suspense fallback={SuspenseFallback}>
+              <SuperAdminUsers />
+            </Suspense>
+          }
+        />
+
         {/* Catch-all redirect for super admin */}
-        <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/super-admin/dashboard" replace />}
+        />
       </Route>
     </Routes>
   );
