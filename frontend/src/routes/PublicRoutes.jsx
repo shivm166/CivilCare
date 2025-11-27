@@ -1,5 +1,3 @@
-// frontend/src/routes/PublicRoutes.jsx
-
 import { Route, Navigate } from "react-router-dom";
 import LandingPage from "../pages/public/Landing/LandingPage";
 import Login from "../pages/auth/Login/Login";
@@ -7,9 +5,7 @@ import Signup from "../pages/auth/SIgnup/Signup";
 import PublicLayout from "../components/layout/PublicLayout/PublicLayout";
 import PageLoader from "../pages/error/PageLoader"; // New Import
 
-// [FIXED LINE]: Accept isLoading as a prop
 const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
-  // Determine redirect based on user role
   const getRedirectPath = () => {
     if (!authUser) return "/login";
     return authUser.globalRole === "super_admin"
@@ -19,15 +15,17 @@ const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
 
   const redirectPath = getRedirectPath();
 
+  // if (isLoading) {
+  //   return <PageLoader />;
+  // }
+
   return (
     <Route path="/" element={<PublicLayout />}>
-      {/* Landing Page renders immediately (unblocked) */}
       <Route index element={<LandingPage />} />
 
       <Route
         path="/login"
         element={
-          // [FIXED LOGIC]: Show loader while loading OR redirect if authenticated
           isLoading ? (
             <PageLoader />
           ) : !isAuthenticated ? (
@@ -40,7 +38,6 @@ const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
       <Route
         path="/signup"
         element={
-          // [FIXED LOGIC]: Show loader while loading OR redirect if authenticated
           isLoading ? (
             <PageLoader />
           ) : !isAuthenticated ? (

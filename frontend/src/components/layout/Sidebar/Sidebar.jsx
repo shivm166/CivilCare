@@ -119,21 +119,9 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        // className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
-        // aria-label="Toggle menu"
-
-
-        className="lg:hidden fixed top-0 left-0 z-50 m-2 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
-        // -----this css to gap between header and sidebar ----
-
-
+        className="lg:hidden fixed top-0 left-0 z-50 m-2 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition-colors"
+        name="Toggle menu"
       >
-      {/* <button
-  onClick={() => setIsMobileOpen(!isMobileOpen)}
-  className="lg:hidden fixed top-1 left-3 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
-  aria-label="Toggle menu"
-> */}
-
         {isMobileOpen ? (
           <X className="w-6 h-6" />
         ) : (
