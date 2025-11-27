@@ -1,6 +1,7 @@
 // frontend/src/routes/SuperAdminRoutes.jsx (MODIFIED FOR LAZY LOADING)
 
-import { Navigate, Route, Routes, lazy, Suspense } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import PageLoader from "../pages/error/PageLoader";
 
 // Lazy loading all Super Admin components
