@@ -1,4 +1,4 @@
-// frontend/src/pages/dashboard/User/Complaints/RaiseComplaintPage.jsx (MODIFIED)
+// frontend/src/pages/dashboard/User/Complaints/RaiseComplaintPage.jsx (REDESIGNED)
 
 import { useState, useEffect } from "react";
 import {
@@ -9,16 +9,39 @@ import {
   Send,
   X,
   Zap,
-  Wrench,
-  ChevronRight,
+  ListTodo, // New Icon for List
+  Flame, // For High Priority
+  Triangle, // For Medium Priority
+  Droplet, // For Low Priority
 } from "lucide-react";
 
 import {
   useCreateComplaint,
   useGetMyComplaints,
 } from "../../../../hooks/api/useComplaints";
-import { Link } from "react-router-dom";
-import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge";
+// import { Link } from "react-router-dom"; // Assuming Complaint list items should eventually link somewhere
+import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge"; // Reusing StatusBadge
+
+const priorityOptions = [
+  {
+    level: "high",
+    label: "High (Urgent)",
+    icon: Flame,
+    color: "text-red-600 bg-red-100 border-red-500",
+  },
+  {
+    level: "medium",
+    label: "Medium (Standard)",
+    icon: Triangle,
+    color: "text-amber-600 bg-amber-100 border-amber-500",
+  },
+  {
+    level: "low",
+    label: "Low (Non-urgent)",
+    icon: Droplet,
+    color: "text-green-600 bg-green-100 border-green-500",
+  },
+];
 
 export default function RaiseComplaintPage() {
   const [form, setForm] = useState({
@@ -52,29 +75,27 @@ export default function RaiseComplaintPage() {
     });
   };
 
-  // COLORS (Kept minimal for select border/text, main styling handled by StatusBadge)
-  const prioritySelectColors = {
-    high: "text-red-700 border-red-400",
-    medium: "text-amber-700 border-amber-400",
-    low: "text-green-700 border-green-400",
-  };
-
-  const getPriorityBorder = (priority) => {
+  // Helper function to map priority level to styling for the list item
+  const getPriorityAccentClass = (priority) => {
     switch (priority) {
       case "high":
-        return "border-red-500";
+        return "border-red-500 hover:shadow-red-200/50";
       case "medium":
-        return "border-amber-500";
+        return "border-amber-500 hover:shadow-amber-200/50";
       case "low":
-        return "border-green-500";
+        return "border-green-500 hover:shadow-green-200/50";
       default:
-        return "border-gray-500";
+        return "border-gray-300 hover:shadow-gray-200/50";
     }
   };
 
+  const selectedPriority =
+    priorityOptions.find((p) => p.level === form.priority) ||
+    priorityOptions[1];
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* TOAST MESSAGE (Existing implementation retained) */}
+      {/* TOAST MESSAGE - Retained existing clean implementation */}
       {showToast && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
           <div className="bg-white rounded-xl shadow-2xl border-2 border-green-400 p-4 pr-12 min-w-[320px] relative overflow-hidden">
@@ -103,7 +124,7 @@ export default function RaiseComplaintPage() {
         </div>
       )}
 
-      {/* Custom Animations (Existing implementation retained) */}
+      {/* Custom Animations - Retained existing */}
       <style>{`
         @keyframes slide-in { 
           from { transform: translateX(400px); opacity: 0; } 
@@ -114,9 +135,9 @@ export default function RaiseComplaintPage() {
 
       {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* HEADER */}
+        {/* HEADER - Updated colors and font styling for a modern look */}
         <div className="mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold text-gray-900 mb-2">
             Raise & Track Issues
           </h1>
           <p className="text-base sm:text-lg text-gray-600">
@@ -124,188 +145,234 @@ export default function RaiseComplaintPage() {
           </p>
         </div>
 
-        {/* COLUMN LAYOUT */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* COLUMN 1: NEW COMPLAINT FORM (Sticky Left Column on Desktop) */}
-          <div className="lg:col-span-1 h-fit lg:sticky lg:top-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                <FileText className="w-6 h-6" />
-                New Complaint
-              </h2>
-            </div>
+        {/* COLUMN LAYOUT: Switched to a responsive 2/5 and 3/5 split on desktop (lg) */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+          {/* COLUMN 1: NEW COMPLAINT FORM (Sticky on Desktop, lg:col-span-2) */}
+          <div className="lg:col-span-2 h-fit lg:sticky lg:top-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-indigo-600 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  New Complaint
+                </h2>
+              </div>
 
-            <div className="p-6 sm:p-8 space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) =>
-                      setForm({ ...form, title: e.target.value })
-                    }
-                    placeholder="Brief summary of the issue"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-colors outline-none"
-                  />
-                </div>
+              <div className="p-6 sm:p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Title */}
+                  <div>
+                    <label
+                      htmlFor="title"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="title"
+                      type="text"
+                      value={form.title}
+                      onChange={(e) =>
+                        setForm({ ...form, title: e.target.value })
+                      }
+                      placeholder="Brief summary of the issue"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 focus:ring-1 bg-white shadow-sm transition-shadow outline-none"
+                    />
+                  </div>
 
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    rows={5}
-                    value={form.description}
-                    onChange={(e) =>
-                      setForm({ ...form, description: e.target.value })
-                    }
-                    placeholder="Detailed information and location"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 resize-none transition-colors outline-none"
-                  ></textarea>
-                </div>
+                  {/* Description */}
+                  <div>
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      id="description"
+                      rows={5}
+                      value={form.description}
+                      onChange={(e) =>
+                        setForm({ ...form, description: e.target.value })
+                      }
+                      placeholder="Detailed information and location"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 focus:ring-1 bg-white resize-none shadow-sm transition-shadow outline-none"
+                    ></textarea>
+                  </div>
 
-                {/* Priority */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Priority Level
-                  </label>
-                  <select
-                    value={form.priority}
-                    onChange={(e) =>
-                      setForm({ ...form, priority: e.target.value })
-                    }
-                    // Use the modified style for the select input itself
-                    className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-colors outline-none font-semibold ${
-                      prioritySelectColors[form.priority]
-                    } border-2`}
+                  {/* Priority - Redesigned as a group of button-like selections */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Priority Level
+                    </label>
+                    <div className="flex gap-3 flex-wrap">
+                      {priorityOptions.map(
+                        ({ level, label, icon: Icon, color }) => (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() =>
+                              setForm({ ...form, priority: level })
+                            }
+                            className={`
+                            flex items-center gap-2 px-4 py-2 text-sm rounded-full font-medium transition-all
+                            ${
+                              form.priority === level
+                                ? `${color} border-2 shadow-md ring-2 ring-offset-2 ring-indigo-500`
+                                : "text-gray-600 bg-gray-100 border border-gray-300 hover:bg-gray-200"
+                            }
+                          `}
+                          >
+                            <Icon className="w-4 h-4" />
+                            {label.split(" ")[0]}{" "}
+                            {/* Display only High/Medium/Low */}
+                          </button>
+                        )
+                      )}
+                    </div>
+                    {/* Visual feedback for selected priority */}
+                    <p
+                      className={`mt-2 text-xs font-medium ${
+                        selectedPriority.color.split(" ")[0]
+                      } flex items-center gap-1`}
+                    >
+                      <selectedPriority.icon className="w-3 h-3" />
+                      Selected: {selectedPriority.label}
+                    </p>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isCreating || !form.title || !form.description}
+                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30"
                   >
-                    <option className="text-red-600" value="high">
-                      🔴 High (Urgent)
-                    </option>
-                    <option className="text-amber-600" value="medium">
-                      🟡 Medium (Standard)
-                    </option>
-                    <option className="text-green-600" value="low">
-                      🟢 Low (Non-urgent)
-                    </option>
-                  </select>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isCreating || !form.title || !form.description}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 sm:py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl"
-                >
-                  {isCreating ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Submit Complaint
-                    </>
-                  )}
-                </button>
-              </form>
+                    {isCreating ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        Submit New Complaint
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
-          {/* COLUMN 2: COMPLAINT LIST (Right Column on Desktop) */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                <Wrench className="w-6 h-6" />
-                My Submitted Issues
-              </h2>
-              <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium text-white">
-                {complaints.length} Total
-              </span>
-            </div>
+          {/* COLUMN 2: COMPLAINT LIST (Right Column on Desktop, lg:col-span-3) */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-purple-600 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ListTodo className="w-5 h-5" />
+                  My Submitted Issues
+                </h2>
+                <span className="text-sm bg-white/20 px-3 py-1 rounded-full font-medium text-white">
+                  {complaints.length} Total
+                </span>
+              </div>
 
-            <div className="p-4 sm:p-6">
-              {/* Loading & Error */}
-              {(isLoading || error) && (
-                <div className="text-center py-12">
-                  {isLoading ? (
-                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  ) : (
-                    <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-4" />
-                  )}
-                  <p className="text-gray-600 font-medium">
-                    {isLoading ? "Loading..." : "Failed to load complaints."}
-                  </p>
-                </div>
-              )}
+              <div className="p-4 sm:p-6">
+                {/* Loading & Error */}
+                {(isLoading || error) && (
+                  <div className="text-center py-12">
+                    {isLoading ? (
+                      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    ) : (
+                      <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-4" />
+                    )}
+                    <p className="text-gray-600 font-medium">
+                      {isLoading
+                        ? "Loading your complaints..."
+                        : "Failed to load complaints."}
+                    </p>
+                  </div>
+                )}
 
-              {/* No Data */}
-              {!isLoading && !error && complaints.length === 0 && (
-                <div className="text-center py-12">
-                  <Wrench className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">No complaints raised yet</p>
-                </div>
-              )}
+                {/* No Data */}
+                {!isLoading && !error && complaints.length === 0 && (
+                  <div className="text-center py-12">
+                    <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600">
+                      You haven't raised any complaints yet.
+                    </p>
+                  </div>
+                )}
 
-              {/* List (Uses new row structure) */}
-              <div className="space-y-3 lg:space-y-0 lg:divide-y lg:divide-gray-100">
-                {complaints.map((c) => {
-                  const priorityClass = getPriorityBorder(c.priority);
+                {/* List (Redesigned as clean, responsive cards) */}
+                <div className="space-y-4">
+                  {complaints.map((c) => {
+                    const accentClass = getPriorityAccentClass(c.priority);
+                    const PriorityIcon =
+                      priorityOptions.find((p) => p.level === c.priority)
+                        ?.icon || Zap;
 
-                  return (
-                    // Complaint Row (Desktop: grid, Mobile: stacked with border)
-                    <div
-                      key={c._id}
-                      className={`relative flex flex-col lg:grid lg:grid-cols-[1fr_200px_100px] lg:gap-4 p-3 sm:p-4 bg-gray-50 lg:bg-white rounded-lg lg:rounded-none border-l-4 ${priorityClass} lg:border-l-0 lg:border-r-0 lg:border-t-0 border-r border-b border-gray-200 lg:border-none hover:bg-gray-100 transition-colors`}
-                    >
-                      {/* Mobile Top Bar / Priority Color Bar */}
+                    return (
+                      // Complaint Card - Responsive layout
                       <div
-                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${priorityClass} lg:hidden rounded-l-lg`}
-                      ></div>
+                        key={c._id}
+                        // Using a border-l-4 for accent color, shadow for visual depth
+                        className={`block p-4 bg-white border-l-4 rounded-lg shadow-sm transition-all hover:shadow-lg hover:border-l-8 ${accentClass} cursor-pointer`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          {/* Title and Description */}
+                          <div className="flex-1 min-w-0 pr-4">
+                            <p className="font-bold text-gray-900 text-base line-clamp-1">
+                              {c.title}
+                            </p>
+                            <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                              {c.description}
+                            </p>
+                          </div>
 
-                      {/* Column 1: Title & Description */}
-                      <div className="flex-1 min-w-0 pr-4">
-                        <p className="font-semibold text-gray-900 text-sm sm:text-base mb-1 line-clamp-1">
-                          {c.title}
-                        </p>
-                        <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">
-                          {c.description}
-                        </p>
-                      </div>
+                          {/* Status Badge (aligned top right) */}
+                          <div className="flex-shrink-0">
+                            <StatusBadge
+                              type={c.status}
+                              compact
+                              isPulse={
+                                c.status === "pending" ||
+                                c.status === "in_progress"
+                              }
+                            />
+                          </div>
+                        </div>
 
-                      {/* Column 2: Status & Date */}
-                      <div className="flex flex-col gap-1 mt-2 lg:mt-0 lg:items-end">
-                        {/* Status Badge (using new component) */}
-                        <StatusBadge
-                          type={c.status}
-                          compact
-                          isPulse={
-                            c.status === "pending" || c.status === "in_progress"
-                          }
-                        />
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(c.createdAt).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                          })}
+                        {/* Footer / Meta Info (Always visible, responsive alignment) */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 border-t border-gray-100 mt-2">
+                          {/* Priority Indicator */}
+                          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium capitalize">
+                            <PriorityIcon
+                              className={`w-4 h-4 ${
+                                c.priority === "high"
+                                  ? "text-red-500"
+                                  : c.priority === "medium"
+                                  ? "text-amber-500"
+                                  : "text-green-500"
+                              }`}
+                            />
+                            {c.priority} Priority
+                          </div>
+
+                          {/* Date */}
+                          <div className="text-xs text-gray-500 flex items-center gap-1 mt-1 sm:mt-0">
+                            <Clock className="w-3 h-3" />
+                            Filed on:{" "}
+                            {new Date(c.createdAt).toLocaleDateString("en-IN", {
+                              year: "numeric",
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Column 3 (Hidden on Mobile): Priority */}
-                      <div className="hidden lg:flex flex-col justify-center items-end">
-                        {/* Priority Badge (using new component) */}
-                        <StatusBadge type={c.priority} compact />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
