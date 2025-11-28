@@ -27,7 +27,7 @@ function BuildingManagement() {
   if (isLoading) {
     return(
       <div className="h-full bg-white max-h-fit flex items-center justify-center z-50">
-        <div className="text-center flex flex h-full items-center justify-center">
+        <div className="text-center flex h-full items-center justify-center">
           <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-500 animate-spin mx-auto mb-4" />
         </div>
       </div>
