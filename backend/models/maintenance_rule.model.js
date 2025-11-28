@@ -8,11 +8,6 @@ const maintenanceRuleSchema = new mongoose.Schema(
             ref: "Society",
             required: true,
         },
-        building: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Building",
-            required: true,
-        },
         bhkType: {
             type: String,
             enum: UNIT_BHK_TYPES,
