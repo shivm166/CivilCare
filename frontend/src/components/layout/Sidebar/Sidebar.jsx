@@ -116,7 +116,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
+
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         className="lg:hidden fixed top-0 left-0 z-50 m-2 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition-colors"
@@ -129,7 +129,7 @@ const Sidebar = () => {
         )}
       </button>
 
-      {/* Overlay for mobile */}
+
       {isMobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity"

@@ -1,5 +1,6 @@
 import { axiosInstance } from "../axios";
 
+//user post/get complaints
 export const createComplaint = async (formdata) => {
   try {
     const res = await axiosInstance.post(
@@ -24,7 +25,7 @@ export const getMyComplaint = async () => {
     throw error;
   }
 };
-
+//admin getAll and update complaint status
 export const getAllComplaints = async () => {
   try {
     const res = await axiosInstance.get("/complaint/getAllComplaints");
@@ -39,7 +40,6 @@ export const getAllComplaints = async () => {
   }
 };
 
-// 4. UPDATE COMPLAINT STATUS (Admin)
 export const updateComplaintStatus = async (id, status) => {
   try {
     const res = await axiosInstance.patch(

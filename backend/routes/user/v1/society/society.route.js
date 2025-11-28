@@ -1,8 +1,14 @@
 import { Router } from "express";
 import protectRoute from "../../../../middleware/isProtected.js";
-import { validateSocietyCreate } from "../../../../middleware/validation.society.js";
-import { createSociety, deleteSociety, getMySocieties, getSocietyById, updateSociety } from "../../../../controllers/user/society.controllers.js";
-import { validateRequest } from "../../../../middleware/validateMiddleware.js";
+import { validateSocietyCreate } from "../../../../validatores/validation.society.js";
+import {
+  createSociety,
+  deleteSociety,
+  getMySocieties,
+  getSocietyById,
+  updateSociety,
+} from "../../../../controllers/user/society.controllers.js";
+import { validateRequest } from "../../../../validatores/validateMiddleware.js";
 
 const router = Router();
 

@@ -5,11 +5,11 @@ import {
   getUnitById,
   updateUnit,
 } from "../../../../controllers/admin/unit.controllers.js";
-import { validateRequest } from "../../../../middleware/validateMiddleware.js";
+import { validateRequest } from "../../../../validatores/validateMiddleware.js";
 import {
   validateAssignResident,
   validateUnitUpdate,
-} from "../../../../middleware/validation.unit.js";
+} from "../../../../validatores/validation.unit.js";
 
 const router = Router();
 

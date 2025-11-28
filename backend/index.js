@@ -12,12 +12,12 @@ import adminRoutes from "./routes/admin.routes.js";
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Database connect karein
 connDB();
 
 // Middleware
 app.use(express.json());
 app.use(bodyParser.json());
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://civilcare.vercel.app"],
@@ -27,6 +27,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+//routes
 app.use("/api/user", userRouter);
 app.use("/api", routes);
 app.use("/api/complaint", complaintRouter);
