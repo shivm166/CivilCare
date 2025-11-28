@@ -181,7 +181,7 @@ const ComplaintCard = ({
                 isUpdatingThisComplaint && isUpdating.statusKey === key;
 
               const buttonVariant =
-                action.variant === "red" ? "red" : action.variant;
+                action.variant === "info " ? "indigo" : action.variant;
 
               if (isActive) return null;
 
@@ -194,7 +194,7 @@ const ComplaintCard = ({
                   onClick={() =>
                     onUpdateStatus({ id: complaint._id, status: key })
                   }
-                  className="min-w-[15px] justify-center"
+                  className="min-w-[15px] justify-center "
                 >
                   {isStatusUpdatingThisButton ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
