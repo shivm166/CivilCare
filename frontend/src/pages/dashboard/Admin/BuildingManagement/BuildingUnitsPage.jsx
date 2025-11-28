@@ -18,7 +18,6 @@ function BuildingUnitsPage() {
   const building = data?.building;
   const units = data?.units || [];
 
-  // Filter units based on search
   const filteredUnits = units.filter((unit) =>
     unit.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -38,83 +37,83 @@ function BuildingUnitsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
         <button
           onClick={() => navigate("/admin/buildings")}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           Back to Buildings
         </button>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Home className="w-8 h-8 text-indigo-600" />
-              {building?.name} - Units
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Home className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
+              <span className="line-clamp-1">{building?.name} - Units</span>
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1">
               Manage units in this building
             </p>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg hover:bg-indigo-700 transition-colors w-full sm:w-auto"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Unit
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm text-gray-600">Total Units</p>
-          <p className="text-2xl font-bold text-gray-900">{units.length}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-600">Total Units</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">{units.length}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm text-gray-600">Occupied</p>
-          <p className="text-2xl font-bold text-green-600">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-600">Occupied</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-600">
             {units.filter(u => u.type !== 'vacant').length}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm text-gray-600">Vacant</p>
-          <p className="text-2xl font-bold text-gray-600">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-600">Vacant</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-600">
             {units.filter(u => u.type === 'vacant').length}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm text-gray-600">Floors</p>
-          <p className="text-2xl font-bold text-indigo-600">{building?.numberOfFloors}</p>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-600">Floors</p>
+          <p className="text-xl sm:text-2xl font-bold text-indigo-600">{building?.numberOfFloors}</p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
           <input
             type="text"
             placeholder="Search units..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </div>
 
       {/* Units Grid */}
       {filteredUnits.length === 0 ? (
-        <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center">
-          <Home className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <div className="bg-white p-8 sm:p-12 rounded-lg shadow-sm border border-gray-200 text-center">
+          <Home className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
             {searchQuery ? "No units found" : "No units yet"}
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             {searchQuery
               ? "Try adjusting your search"
               : "Get started by adding your first unit"}
@@ -122,27 +121,27 @@ function BuildingUnitsPage() {
           {!searchQuery && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+              className="bg-indigo-600 text-white px-4 py-2 text-sm sm:text-base rounded-lg hover:bg-indigo-700"
             >
               Add Unit
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredUnits.map((unit) => (
             <div
               key={unit._id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors"
+              className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-indigo-300 transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4 className="font-semibold text-gray-900">{unit.name}</h4>
-                  <p className="text-sm text-gray-600">Floor {unit.floor}</p>
-                  <p className="text-sm text-gray-600">Unit Type - {unit.bhkType}</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{unit.name}</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Floor {unit.floor}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">{unit.bhkType}</p>
                 </div>
                 <span
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
                     unit.type === "owner_occupied"
                       ? "bg-green-100 text-green-700"
                       : unit.type === "tenant_occupied"
@@ -159,33 +158,33 @@ function BuildingUnitsPage() {
               </div>
 
               {unit.owner && (
-                <div className="text-sm mb-2">
+                <div className="text-xs sm:text-sm mb-2">
                   <span className="text-gray-600">Owner: </span>
-                  <span className="text-gray-900">{unit.owner.name}</span>
+                  <span className="text-gray-900 truncate">{unit.owner.name}</span>
                 </div>
               )}
 
               {unit.primaryResident && (
-                <div className="text-sm mb-3">
+                <div className="text-xs sm:text-sm mb-3">
                   <span className="text-gray-600">Resident: </span>
-                  <span className="text-gray-900">{unit.primaryResident.name}</span>
+                  <span className="text-gray-900 truncate">{unit.primaryResident.name}</span>
                 </div>
               )}
 
               <div className="flex gap-2">
                 <button
                   onClick={() => handleViewUnit(unit._id)}
-                  className="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 px-3 py-1.5 text-xs sm:text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1"
                 >
-                  <Home className="w-4 h-4" />
+                  <Home className="w-3 h-3 sm:w-4 sm:h-4" />
                   View Details
                 </button>
                 <button
                   onClick={() => handleDeleteUnit(unit._id)}
                   disabled={isDeleting}
-                  className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs sm:text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
