@@ -33,9 +33,11 @@ const RoleSocietySwitcher = () => {
   // Available roles will be ['admin', 'member'] if the highest role is 'admin', otherwise it's just ['member']
   const availableRoles = activeSociety?.availableRoles || [activeSociety?.role];
   const highestRole = activeSociety?.role;
-
+  
   return (
-    <div className="dropdown dropdown-end">
+    // <div className="dropdown dropdown-end">
+    <div className="dropdown md:dropdown-end dropdown-center">  {/* centerely dropdown */}
+
       {/* Dropdown Toggle */}
       <div
         tabIndex={0}
@@ -57,10 +59,17 @@ const RoleSocietySwitcher = () => {
       </div>
 
       {/* Dropdown Menu */}
-      <ul
+      {/* <ul
         tabIndex={0}
-        className="dropdown-content mt-2  bg-white shadow-xl border border-gray-200 rounded-xl w-72 p-2"
-      >
+        className="dropdown-content mt-2  bg-white shadow-xl border border-gray-200 rounded-xl w-72 p-2 "
+      > */}
+
+            {/* replace this ul to centered dropdown */}
+      <ul
+  tabIndex={0}
+  className="dropdown-content mt-2 bg-white shadow-xl border border-gray-200 rounded-xl w-72 p-2 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0"
+>
+
         {/* --- Role Switcher Section (if multiple roles available: admin to member view) --- */}
         {availableRoles.length > 1 && (
           <>
@@ -131,7 +140,7 @@ const RoleSocietySwitcher = () => {
             </li>
           );
         })}
-      </ul>
+      </ul> 
     </div>
   );
 };

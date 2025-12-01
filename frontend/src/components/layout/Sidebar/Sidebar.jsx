@@ -167,7 +167,7 @@ const Sidebar = () => {
         <div className="p-6">
           {/* Logo */}
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent ml-10" >
               CivilCare
             </h2>
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
