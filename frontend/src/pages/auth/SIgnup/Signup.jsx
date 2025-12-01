@@ -3,8 +3,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useSignup from "../../../hooks/api/auth/useSignup";
 import { AlertCircle, UserPlus } from "lucide-react";
-
-// 💡 NEW IMPORTS
 import Button from "../../../components/common/Button/Button";
 import Input from "../../../components/common/Input/Input";
 
@@ -32,28 +30,24 @@ const Signup = () => {
     await signupMutation(signUpData);
   };
 
-  // 💥 FIX: Updated Error Rendering Logic to handle nested API response structure
   const renderErrors = () => {
     if (!error) return null;
     const responseData = error.response?.data;
 
     let errorMessages = [];
 
-    // 1. Check for deeply nested API message (e.g., from 401 with meta structure)
+    // 1. Check for  API m
     const metaMessage =
       responseData?.meta?.message || responseData?.data?.meta?.message;
     if (metaMessage) {
       errorMessages = [metaMessage];
     }
-    // 2. Check for Joi validation errors (array of strings)
     else if (responseData?.errors && Array.isArray(responseData.errors)) {
       errorMessages = responseData.errors;
     }
-    // 3. Check for general controller errors (single string in data root)
     else if (responseData?.message) {
       errorMessages = [responseData.message];
     }
-    // 4. Fallback for network/Axios errors
     else {
       errorMessages = [error.message];
     }
@@ -63,7 +57,6 @@ const Signup = () => {
         <AlertCircle className="w-5 h-5" />
         <div className="flex flex-col text-sm">
           {errorMessages.map((msg, index) => (
-            // Clean up Joi's surrounding quotes
             <span key={index}>
               {msg.startsWith('"') ? msg.slice(1, -1).replace(/"/g, "") : msg}
             </span>
@@ -85,7 +78,7 @@ const Signup = () => {
             backdropFilter: "blur(10px)",
           }}
         >
-          {/* LOGO / TITLE */}
+          {/* logo  */}
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">
               Create Your Account
@@ -100,7 +93,6 @@ const Signup = () => {
 
           {/* FORM */}
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* FULL NAME (Using Input Component) */}
             <Input
               label="Full Name"
               type="text"
@@ -111,7 +103,6 @@ const Signup = () => {
               required
             />
 
-            {/* PHONE (Using Input Component) */}
             <Input
               label="Phone Number"
               type="tel"
@@ -122,7 +113,6 @@ const Signup = () => {
               required
             />
 
-            {/* EMAIL (Using Input Component) */}
             <Input
               label="Email"
               type="email"
@@ -133,7 +123,6 @@ const Signup = () => {
               required
             />
 
-            {/* PASSWORD (Using Input Component) */}
             <Input
               label="Password"
               type="password"
@@ -144,7 +133,6 @@ const Signup = () => {
               required
             />
 
-            {/* AGREEMENT */}
             <div className="form-control mt-2">
               <label className="label cursor-pointer justify-start gap-2">
                 <input
@@ -167,7 +155,6 @@ const Signup = () => {
               </label>
             </div>
 
-            {/* SUBMIT BUTTON (Using Button Component) */}
             <Button
               type="submit"
               variant="primary"
@@ -180,7 +167,6 @@ const Signup = () => {
               Create Account
             </Button>
 
-            {/* LOGIN LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}

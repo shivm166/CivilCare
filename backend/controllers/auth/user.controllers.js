@@ -82,16 +82,6 @@ export const login = async (req, res) => {
       );
     }
 
-    // Check if the user's account is activated (only for invited users)
-    if (user.isInvited && !user.isActivated) {
-      return sendErrorResponse(
-        res,
-        FORBIDDEN,
-        null,
-        "Account not activated. Please check your email for the activation link."
-      );
-    }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return sendErrorResponse(
@@ -99,6 +89,15 @@ export const login = async (req, res) => {
         UNAUTHORIZED,
         null,
         "Credential details are incorrect"
+      );
+    }
+    // Check if the user's account is activated
+    if (user.isInvited && !user.isActivated) {
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Account not activated. Please check your email for the activation link."
       );
     }
 
@@ -113,7 +112,6 @@ export const login = async (req, res) => {
 
 export const getprofile = async (req, res) => {
   try {
-    // 💡 FIX: Safely retrieve userId, prioritizing the Mongoose object's _id, then the plain object's id.
     const userId = req.user._id || req.user.id;
 
     if (!userId) {
@@ -181,8 +179,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("jwt", {
       httpOnly: true,
-      secure: isProduction, // Must match the value used in jwtToken.js
-      sameSite: isProduction ? "none" : "lax", // Must match the value used in jwtToken.js
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
 
     return sendSuccessResponse(res, SUCCESS, null, "Logout successfully");

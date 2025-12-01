@@ -3,10 +3,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useLogin from "../../../hooks/api/auth/useLogin";
 import { AlertCircle, LogIn } from "lucide-react";
-
-// 💡 NEW IMPORTS
 import Button from "../../../components/common/Button/Button";
 import Input from "../../../components/common/Input/Input";
+import ErrorAlert from "./ErrorAlert";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({
@@ -25,51 +24,10 @@ const Login = () => {
     await loginMutation(loginData);
   };
 
-  // 💥 FIX: Updated Error Rendering Logic to handle nested API response structure
-  const renderErrors = () => {
-    if (!error) return null;
-    const responseData = error.response?.data;
-
-    let errorMessages = [];
-
-    // 1. Check for deeply nested API message (e.g., from 401 with meta structure)
-    const metaMessage =
-      responseData?.meta?.message || responseData?.data?.meta?.message;
-    if (metaMessage) {
-      errorMessages = [metaMessage];
-    }
-    // 2. Check for Joi validation errors (array of strings)
-    else if (responseData?.errors && Array.isArray(responseData.errors)) {
-      errorMessages = responseData.errors;
-    }
-    // 3. Check for general controller errors (single string in data root)
-    else if (responseData?.message) {
-      errorMessages = [responseData.message];
-    }
-    // 4. Fallback for network/Axios errors
-    else {
-      errorMessages = [error.message];
-    }
-
-    return (
-      <div className="alert alert-error mb-4 shadow-md">
-        <AlertCircle className="w-5 h-5" />
-        <div className="flex flex-col text-sm">
-          {errorMessages.map((msg, index) => (
-            // Clean up Joi's surrounding quotes
-            <span key={index}>
-              {msg.startsWith('"') ? msg.slice(1, -1).replace(/"/g, "") : msg}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4  from-blue-100 via-white to-blue-200">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto rounded-2xl shadow-2xl overflow-hidden border border-gray-200 bg-white/10 backdrop-blur-md">
-        {/* LEFT SIDE - LOGIN FORM */}
+        {/* left side */}
         <div
           className="w-full lg:w-1/2 p-8 flex flex-col justify-center"
           style={{
@@ -78,7 +36,6 @@ const Login = () => {
             backdropFilter: "blur(10px)",
           }}
         >
-          {/* TITLE */}
           <div className="mb-6">
             <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">
               Sign In
@@ -90,12 +47,10 @@ const Login = () => {
             </p>
           </div>
 
-          {/* ERROR MESSAGE (Using new renderErrors function) */}
-          {renderErrors()}
+          {error && <ErrorAlert error={error} />}
 
           {/* LOGIN FORM */}
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* EMAIL (Using Input Component) */}
             <Input
               label="Email Address"
               type="email"
@@ -106,7 +61,6 @@ const Login = () => {
               required
             />
 
-            {/* PASSWORD (Using Input Component) */}
             <div className="space-y-1">
               <Input
                 label="Password"
@@ -125,7 +79,6 @@ const Login = () => {
               </Link>
             </div>
 
-            {/* SUBMIT BUTTON (Using Button Component) */}
             <Button
               type="submit"
               variant="primary"
@@ -137,7 +90,6 @@ const Login = () => {
               Sign In
             </Button>
 
-            {/* SIGNUP LINK */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Don’t have an account?{" "}
@@ -152,7 +104,7 @@ const Login = () => {
           </form>
         </div>
 
-        {/* RIGHT SIDE - VIDEO SECTION */}
+        {/* right side -  */}
         <div className="hidden lg:flex w-full lg:w-1/2 bg-gray-100 items-center justify-center relative overflow-hidden">
           <video
             autoPlay

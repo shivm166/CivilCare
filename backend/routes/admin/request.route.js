@@ -7,8 +7,8 @@ import {
   acceptRequest,
   rejectRequest,
 } from "../../controllers/admin/request.controllers.js";
-import { validateSendRequest } from "../../middleware/validation.request.js";
-import { validateRequest } from "../../middleware/validateMiddleware.js";
+import { validateSendRequest } from "../../validatores/validation.request.js";
+import { validateRequest } from "../../validatores/validateMiddleware.js";
 import protectRoute from "../../middleware/isProtected.js";
 
 const router = Router();

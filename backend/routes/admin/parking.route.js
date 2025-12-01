@@ -12,7 +12,7 @@ import {
   validateUnitParkingAllocation,
   validateGeneralParkingAllocation,
   validateParkingUpdate,
-} from "../../middleware/validation.parking.js";
+} from "../../validatores/validation.parking.js";
 import protectRoute, { requireAdmin } from "../../middleware/isProtected.js"; // ✅ CHANGED: Use protectRoute instead of authenticateToken
 import attachSocietyContext from "../../middleware/attachSocietyContext.js";
 

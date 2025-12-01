@@ -10,14 +10,12 @@ const useProfile = () => {
     queryKey: ["profile"],
     queryFn: async () => {
       const res = await getProfile();
-      // FIX: Safely access res.data.user based on the backend's standardized response
       return res.data?.user ?? null;
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (payload) => {
-      // updateProfile now returns the full API response object: { success, data, meta }
       const res = await updateProfile(payload);
       return res;
     },
@@ -28,7 +26,7 @@ const useProfile = () => {
 
   return {
     user: data,
-    loading: isLoading, // This is now stable (boolean)
+    loading: isLoading,
     error: isError,
     refetch,
     updateProfileMutation: mutation.mutate,

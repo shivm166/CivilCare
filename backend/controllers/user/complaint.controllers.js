@@ -226,7 +226,6 @@ export const updateComplaintStatus = async (req, res) => {
 
 export const getTotalComplaints = async (req, res) => {
   try {
-    // Note: This function calculates global stats, not society-specific ones.
     const total = await Complaint.countDocuments();
     const resolved = await Complaint.countDocuments({ status: "resolved" });
     const pending = await Complaint.countDocuments({ status: "pending" });

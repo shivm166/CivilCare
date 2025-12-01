@@ -120,9 +120,12 @@ const SocietyChecker = ({ children, authUser }) => {
   return children;
 };
 
-const ProtectedRoutes = ({ authUser }) => {
+const ProtectedRoutes = ({ authUser, isLoading }) => {
   if (!authUser) {
     return <Route path="*" element={<Navigate to="/login" replace />} />;
+  }
+  if (isLoading) {
+    return <PageLoader />;
   }
 
   return (

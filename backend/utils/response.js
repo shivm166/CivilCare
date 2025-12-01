@@ -1,4 +1,4 @@
-// Simplified/Stubbed COMMON_STATUS_MESSAGES for implementation purposes
+// sommon status message for implementation purposes
 const COMMON_STATUS_MESSAGES = {
   SERVER_ERROR: "Internal Server Error",
 };

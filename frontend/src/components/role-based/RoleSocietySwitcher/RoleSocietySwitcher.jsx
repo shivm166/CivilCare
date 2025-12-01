@@ -30,7 +30,6 @@ const RoleSocietySwitcher = () => {
     );
   }
 
-  // Available roles will be ['admin', 'member'] if the highest role is 'admin', otherwise it's just ['member']
   const availableRoles = activeSociety?.availableRoles || [activeSociety?.role];
   const highestRole = activeSociety?.role;
   
@@ -43,7 +42,7 @@ const RoleSocietySwitcher = () => {
         tabIndex={0}
         role="button"
         className="btn btn-ghost m-1 flex items-center gap-2 bg-white hover:bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 cursor-pointer transition-all"
-         >
+      >
         <Building2 className="w-5 h-5 text-emerald-600" />
         <span className="font-medium text-gray-800 text-sm">
           {activeSociety?.societyName || "Select Society"}
@@ -100,11 +99,9 @@ const RoleSocietySwitcher = () => {
             <div className="divider my-1"></div>
           </>
         )}
-
         {/* --- Society Switcher Section --- */}
         <li className="px-3 py-2 text-xs text-gray-500">Switch Society</li>
         {societies.map((society) => {
-          // The fix allows activeSocietyId to be referenced correctly.
           const isActiveSociety = society.societyId === activeSocietyId;
           const isHighestRoleAdmin = society.role === "admin";
           return (

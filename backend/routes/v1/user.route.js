@@ -12,8 +12,8 @@ import {
 import {
   validateUser,
   validateLogin,
-} from "../../middleware/validation.user.js";
-import { validateRequest } from "../../middleware/validateMiddleware.js";
+} from "../../validatores/validation.user.js";
+import { validateRequest } from "../../validatores/validateMiddleware.js";
 import protectRoute from "../../middleware/isProtected.js";
 
 const router = express.Router();
@@ -22,7 +22,7 @@ const router = express.Router();
 router.post("/signup", validateRequest(validateUser), signup);
 router.post("/login", validateRequest(validateLogin), login);
 
-// Protected User Routes (applies to routes below)
+// Protected User Routes
 router.use(protectRoute);
 
 router.get("/profile", getprofile);
@@ -30,7 +30,6 @@ router.put("/profile", updateProfile);
 router.post("/logout", logout);
 router.get("/societies", getSocieties);
 router.get("/me", (req, res) => {
-  // Note: This endpoint should also use the new response functions
   res.status(200).json({ success: true, user: req.user });
 });
 
