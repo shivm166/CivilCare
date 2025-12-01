@@ -1,8 +1,6 @@
-// frontend/src/routes/SuperAdminRoutes.jsx (MODIFIED FOR LAZY LOADING)
-
 import { Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import PageLoader from "../pages/error/PageLoader";
+import { Loader2 } from "lucide-react";
 
 // Lazy loading all Super Admin components
 const SuperAdminLayout = lazy(() =>
@@ -22,10 +20,13 @@ const SuperAdminUsers = lazy(() =>
   import("../pages/dashboard/SuperAdmin/SuperAdminUsers/SuperAdminUsers")
 );
 
-// Define a consistent fallback component for cleaner code
 const SuspenseFallback = (
   <div className="p-6 h-full flex justify-center items-center">
-    <PageLoader />
+    <div className="bg-white flex items-center justify-center z-50">
+      <div className="text-center">
+        <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-500 animate-spin mx-auto mb-4" />
+      </div>
+    </div>
   </div>
 );
 
