@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// let baseURL = "http://localhost:4001/api"
-// if (import.meta.env.VITE_ENVIRONMENT == "production"){
-//   baseURL = import.meta.env.VITE_BACKEND_URL+"/api"
+// let baseURL = "http://localhost:4001/api";
+// if (import.meta.env.VITE_ENVIRONMENT == "production") {
+//   baseURL = import.meta.env.VITE_BACKEND_URL + "/api";
 // }
 
 const baseURL =

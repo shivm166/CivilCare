@@ -9,10 +9,14 @@ import {
   Mail,
   User,
   Building2,
+  Wallet, // ✨ ADD THIS IMPORT
   Menu,
   X,
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
+import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
+import { useMyInvitations } from "../../../hooks/api/useInvitations";
+import { useGetUserAnnouncements } from "../../../hooks/api/useAnnouncements";
 
 const adminMenu = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
@@ -20,6 +24,7 @@ const adminMenu = [
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
+  { name: "Maintenance Rules", path: "/admin/maintenance-rules", icon: Wallet }, // ✨ ADD THIS LINE
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
