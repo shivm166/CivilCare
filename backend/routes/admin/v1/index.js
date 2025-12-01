@@ -12,7 +12,6 @@ router.use(checkAdmin);
 
 router.use("/building", buildingRoutes);
 router.use("/maintenance", maintenanceRoutes);
-
 router.use("/unit", unitRoutes);
 
 export default router;
