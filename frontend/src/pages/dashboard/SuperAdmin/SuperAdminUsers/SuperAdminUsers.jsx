@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Edit, Trash2, Shield, Users as UsersIcon } from "lucide-react";
 import { useUsers, useDeleteUser } from "../../../../hooks/api/useSuperAdmin";
-import EditUserModal from "../../../../components/features/superadmin/EditUserModal";
 import PageLoader from "../../../error/PageLoader";
+import EditUserModal from "../../../../components/features/superAdmin/EditUserModal";
 
 function UserCard({ user, onEdit, onDelete, isDeleting }) {
   return (
@@ -68,12 +68,15 @@ function UserCard({ user, onEdit, onDelete, isDeleting }) {
               <UsersIcon className="w-4 h-4" />
               Societies:
             </span>
-            <span className="font-medium text-gray-900">{user.societyCount}</span>
+            <span className="font-medium text-gray-900">
+              {user.societyCount}
+            </span>
           </div>
         )}
 
         <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-          Joined: {user.createdAt && new Date(user.createdAt).toLocaleDateString()}
+          Joined:{" "}
+          {user.createdAt && new Date(user.createdAt).toLocaleDateString()}
         </div>
       </div>
     </div>
@@ -95,7 +98,11 @@ function SuperAdminUsers() {
   };
 
   const handleDelete = (userId) => {
-    if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
       deleteUser(userId);
     }
   };

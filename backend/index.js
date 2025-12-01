@@ -6,19 +6,19 @@ import cors from "cors";
 import "dotenv/config";
 import routes from "./routes/index.js";
 import userRouter from "./routes/v1/user.route.js";
-import societyRouter from "./routes/society.route.js";
 import complaintRouter from "./routes/v1/complaint.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import maintenanceRuleRoutes from "./routes/maintenance_rule.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Database connect karein
 connDB();
 
 // Middleware
 app.use(express.json());
 app.use(bodyParser.json());
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://civilcare.vercel.app"],
@@ -28,10 +28,11 @@ app.use(
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+//routes
 app.use("/api/user", userRouter);
 app.use("/api", routes);
-app.use("/api/society", societyRouter);
 app.use("/api/complaint", complaintRouter);
+app.use("/api/maintenance-rules", maintenanceRuleRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

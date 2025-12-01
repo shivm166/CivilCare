@@ -1,6 +1,10 @@
 import { isValidObjectId } from "mongoose";
 import { Building } from "../../models/building.model.js";
 import { Unit } from "../../models/unit.model.js";
+import { sendErrorResponse, sendSuccessResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "./../../utils/status.js"
+
+const { SUCCESS, CREATED, DELETED, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, SERVER_ERROR } = STATUS_CODES
 
 export const createBuilding = async (req, res) => {
     try {
@@ -9,9 +13,12 @@ export const createBuilding = async (req, res) => {
         const userId = req.user._id;
 
         if(!societyId){
-            return res.status(400).json({
-                message: "Society context is required"
-            })
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Please Select a Society First"
+            )
         }
 
         // Check if building with same name exists in this society
@@ -21,9 +28,12 @@ export const createBuilding = async (req, res) => {
         });
 
         if (existingBuilding) {
-            return res.status(409).json({
-                message: "Building with this name already exists in this society",
-            });
+            return sendErrorResponse(
+                res,
+                CONFLICT,
+                null,
+                "Building with this name already exists in this society"
+            )
         }
 
         const building = await Building.create({
@@ -34,14 +44,18 @@ export const createBuilding = async (req, res) => {
             createdBy: userId,
         })
 
-        return res.status(201).json({
-            message: "Building Created Successfully",
-            building,
-        })
+        return sendSuccessResponse(
+            res,
+            CREATED,
+            {
+                building,
+            },
+            "Building Created Successfully"
+        )
 
     } catch (error) {
         console.log("Error in createBuilding controller:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -50,7 +64,12 @@ export const getAllBuildings = async (req, res) => {
         const societyId = req.society?._id
 
         if(!societyId){
-            return res.status(400).json()
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Please Select a Society First"
+            )
         }
 
         const building = await Building.find({society: societyId})
@@ -68,14 +87,18 @@ export const getAllBuildings = async (req, res) => {
             })
         )
 
-        return res.status(200).json({
-            message: "Building fetched Successfully",
-            buildingWithUnitCount,
-            building,
-        })
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                buildingWithUnitCount,
+                building,
+            },
+            "Building fetched Successfully"
+        ) 
     } catch (error) {
         console.log("Error in getAllBuildings controller:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -85,9 +108,12 @@ export const getBuildingById = async (req, res) => {
         const societyId = req.society?._id
 
         if(!isValidObjectId(id)){
-            return res.status(400).json({
-                message: "Invalid Object Id"
-            })
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid Building Id"
+            )
         }
 
         const building = await Building.findOne({
@@ -96,24 +122,31 @@ export const getBuildingById = async (req, res) => {
         })
 
         if(!building){
-            res.status(404).json({
-                message: "Building Not Found"
-            })
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Building Not Found"
+            )
         }
 
         const units = await Unit.find({building: id})
             .populate("owner", "name email phone")
             .populate("primaryResident", "name email phone")
 
-        return res.status(200).json({
-            message: "Building Details fetched succesfully",
-            building,
-            units,
-        })
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                building,
+                units,
+            },
+            "Building Details fetched succesfully"
+        )
         
     } catch (error) {
         console.log("Error in getBuildingById controller:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -124,7 +157,12 @@ export const updateBuilding = async (req, res) => {
         const societyId = req.society?._id
 
         if(!isValidObjectId(id)){
-            return res.status(400).json({message: "Invalid building id" })
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid Building Id"
+            )
         }
 
         const building = await Building.findOne({
@@ -133,7 +171,12 @@ export const updateBuilding = async (req, res) => {
         });
 
         if (!building) {
-            return res.status(404).json({ message: "Building not found" });
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Building Not Found"
+            )
         }
 
         const existingBuilding = await Building.findOne({
@@ -143,20 +186,27 @@ export const updateBuilding = async (req, res) => {
         })
 
         if(existingBuilding){
-            return res.status(409).json({
-                message: "Building with this name already exists in this society",
-            })
+            return sendErrorResponse(
+                res,
+                CONFLICT,
+                null,
+                "Building with this name already exists in this society",
+            )
         }
 
         const updatedBuilding = await Building.findByIdAndUpdate(id, {name, numberOfFloors, description}, {new: true})
         
-        return res.status(200).json({
-            message: "Building updated successfully",
-            building,
-        });
+        return sendSuccessResponse(
+            res,
+            SUCCESS,
+            {
+                building,
+            },
+            "Building updated successfully"
+        )
     } catch (error) {
         console.log("Error in updateBuilding:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 
@@ -166,17 +216,23 @@ export const deleteBuilding = async (req, res) => {
         const societyId = req.society?._id
 
         if(!isValidObjectId(id)){
-            return res.status(400).json({
-                message: "Invalid building id"
-            })
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                "Invalid Building Id"
+            )
         }
 
         const unitCount = await Unit.countDocuments({building: id})
 
         if(unitCount > 0){
-            return res.status(400).json({
-                message: `Cannot delete building. It has ${unitCount} unit(s) associated with it. Please delete or reassign the units first.`,
-            });
+            return sendErrorResponse(
+                res,
+                BAD_REQUEST,
+                null,
+                `Cannot delete building. It has ${unitCount} unit(s) associated with it. Please delete or reassign the units first.`,
+            )
         }
 
         const building = await Building.findOneAndDelete({
@@ -185,18 +241,24 @@ export const deleteBuilding = async (req, res) => {
         })
 
         if(!building){
-            return res.status(404).json({
-                message: "building not found"
-            })
+            return sendErrorResponse(
+                res,
+                NOT_FOUND,
+                null,
+                "Building Not Found"
+            )
         }
 
-        return res.status(200).json({
-            message: "building deleted successfully"
-        })
+        return sendErrorResponse(
+            res,
+            DELETED,
+            null,
+            "building deleted successfully"
+        )
 
     } catch (error) {
         console.log("Error in deleteBuilding:", error)
-        return res.status(500).json({ message: "Internal server error" });
+        return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error")
     }
 }
 

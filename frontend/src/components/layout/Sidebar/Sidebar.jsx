@@ -10,6 +10,7 @@ import {
   User,
   Building2,
   Wallet, // ✨ ADD THIS IMPORT
+  Car, // ✨ ADD THIS IMPORT
   Menu,
   X,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const adminMenu = [
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Maintenance Rules", path: "/admin/maintenance-rules", icon: Wallet }, // ✨ ADD THIS LINE
+  { name: "Parking", path: "/admin/parking", icon: Car }, // ✨ ADD THIS LINE
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -33,6 +35,7 @@ const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
   { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
+  { name: "Parking", path: "/user/parking", icon: Car }, // 
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
@@ -115,11 +118,11 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
+
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
-        aria-label="Toggle menu"
+        className="lg:hidden fixed top-0 left-0 z-50 m-2 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition-colors"
+        name="Toggle menu"
       >
         {isMobileOpen ? (
           <X className="w-6 h-6" />
@@ -128,7 +131,7 @@ const Sidebar = () => {
         )}
       </button>
 
-      {/* Overlay for mobile */}
+
       {isMobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity"

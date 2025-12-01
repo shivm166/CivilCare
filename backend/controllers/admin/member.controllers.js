@@ -1,10 +1,20 @@
-import { User } from "../models/user.model.js";
-import { Society } from "../models/society.model.js";
-import { UserSocietyRel } from "../models/user_society_rel.model.js";
-import { Unit } from "../models/unit.model.js";
-import { sendInvitationEmail } from "../utils/sendEmail.js";
-import { MemberInvitation } from "../models/member_invitation.model.js";
-import { isValidObjectId } from "mongoose"; // 🔥 ADDED THIS IMPORT
+import { User } from "../../models/user.model.js";
+import { Society } from "../../models/society.model.js";
+import { UserSocietyRel } from "../../models/user_society_rel.model.js";
+import { Unit } from "../../models/unit.model.js";
+import { sendInvitationEmail } from "../../utils/sendEmail.js";
+import { MemberInvitation } from "../../models/member_invitation.model.js";
+import { isValidObjectId } from "mongoose";
+import { sendErrorResponse } from "../../utils/response.js";
+import { STATUS_CODES } from "../../utils/status.js";
+
+const {
+  BAD_REQUEST,
+  FORBIDDEN,
+  NOT_FOUND,
+  CONFLICT,
+  SERVER_ERROR,
+} = STATUS_CODES;
 
 // ==================== MEMBER MANAGEMENT CONTROLLERS ====================
 
@@ -14,19 +24,13 @@ export const searchUserByEmail = async (req, res) => {
     const { email } = req.query;
 
     if (!email || email.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required",
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Email is required");
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email format",
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Invalid email format");
     }
 
     // Search for exact email match (case-insensitive)
@@ -35,14 +39,16 @@ export const searchUserByEmail = async (req, res) => {
     }).select("name email phone isActivated isInvited");
 
     if (!user) {
+      // Keep original flat success response format
       return res.json({
         success: false,
         found: false,
         message: "User not found with this email",
-        email: email.toLowerCase().trim(), // Return searched email for auto-fill
+        email: email.toLowerCase().trim(),
       });
     }
 
+    // Keep original flat success response format
     return res.json({
       success: true,
       found: true,
@@ -57,28 +63,24 @@ export const searchUserByEmail = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in searchUserByEmail controller", error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
-// ✅ Add existing (registered) user to society
-// ✅ UPDATED: Send invitation instead of direct add
+// ✅ Add existing (registered) user to society - send invitation
 export const addExistingMember = async (req, res) => {
   try {
     const { societyId } = req.params;
     const { userId, roleInSociety = "member", unitId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
+      return sendErrorResponse(res, BAD_REQUEST, null, "User ID is required");
     }
 
     // Validate society exists
     const society = await Society.findById(societyId);
     if (!society) {
-      return res.status(404).json({ message: "Society not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Society not found");
     }
 
     // Check admin permission
@@ -89,15 +91,18 @@ export const addExistingMember = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admin can send invitations",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admin can send invitations"
+      );
     }
 
     // Validate user exists
     const userToAdd = await User.findById(userId);
     if (!userToAdd) {
-      return res.status(404).json({ message: "User not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "User not found");
     }
 
     // Check if user already in society
@@ -107,9 +112,12 @@ export const addExistingMember = async (req, res) => {
     });
 
     if (existingRel) {
-      return res.status(409).json({
-        message: "User is already a member of this society",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "User is already a member of this society"
+      );
     }
 
     // Check if invitation already exists
@@ -120,9 +128,12 @@ export const addExistingMember = async (req, res) => {
     });
 
     if (existingInvitation) {
-      return res.status(409).json({
-        message: "Invitation already sent to this user",
-      });
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "Invitation already sent to this user"
+      );
     }
 
     // Create invitation instead of direct add
@@ -139,6 +150,7 @@ export const addExistingMember = async (req, res) => {
       .populate("invitedUser", "name email phone")
       .populate("society", "name");
 
+    // Keep original flat success response format
     return res.status(201).json({
       success: true,
       message: "Invitation sent to user",
@@ -146,7 +158,7 @@ export const addExistingMember = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in addExistingMember controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
@@ -158,15 +170,18 @@ export const inviteNewMember = async (req, res) => {
 
     // Validate required fields
     if (!name || !email || !phone) {
-      return res.status(400).json({
-        message: "Name, email, and phone are required",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "Name, email, and phone are required"
+      );
     }
 
     // Validate society exists
     const society = await Society.findById(societyId);
     if (!society) {
-      return res.status(404).json({ message: "Society not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Society not found");
     }
 
     // Check admin permission
@@ -177,9 +192,12 @@ export const inviteNewMember = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admin can invite members",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admin can invite members"
+      );
     }
 
     // Check if user already exists
@@ -193,9 +211,12 @@ export const inviteNewMember = async (req, res) => {
       });
 
       if (existingRel) {
-        return res.status(409).json({
-          message: "User is already a member of this society",
-        });
+        return sendErrorResponse(
+          res,
+          CONFLICT,
+          null,
+          "User is already a member of this society"
+        );
       }
 
       // Add existing user to society
@@ -211,6 +232,7 @@ export const inviteNewMember = async (req, res) => {
         .populate("user", "name email phone")
         .populate("unit", "unitNumber");
 
+      // Keep original flat success response format
       return res.status(200).json({
         success: true,
         message: "Existing user added to society",
@@ -222,7 +244,7 @@ export const inviteNewMember = async (req, res) => {
     // Create placeholder user with invitation token
     const crypto = await import("crypto");
     const invitationToken = crypto.randomBytes(32).toString("hex");
-    const invitationExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const invitationExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const temporaryPassword = crypto.randomBytes(16).toString("hex");
 
     const newUser = await User.create({
@@ -260,10 +282,9 @@ export const inviteNewMember = async (req, res) => {
       console.log(`✅ Invitation email sent to ${email}`);
     } catch (emailError) {
       console.error("❌ Failed to send invitation email:", emailError);
-      // Don't fail the whole request if email fails
-      // User is still created, admin can resend later
     }
 
+    // Keep original flat success response format
     return res.status(201).json({
       success: true,
       message: "Invitation sent successfully",
@@ -277,7 +298,7 @@ export const inviteNewMember = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in inviteNewMember controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
@@ -286,12 +307,8 @@ export const getSocietyMembers = async (req, res) => {
   try {
     const { societyId } = req.params;
 
-    // 🔥 FIXED: Now isValidObjectId is imported
     if (!isValidObjectId(societyId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid society ID",
-      });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Invalid society ID");
     }
 
     const members = await UserSocietyRel.find({
@@ -299,22 +316,20 @@ export const getSocietyMembers = async (req, res) => {
       isActive: true,
     })
       .populate("user", "name email phone isActivated isInvited")
-      .populate("unit", "name floor type") // 🔥 Added unit population
-      .populate("building", "name") // 🔥 Added building population
-      .select("roleInSociety unitRole joinedAt") // 🔥 Include unitRole
+      .populate("unit", "name floor type")
+      .populate("building", "name")
+      .select("roleInSociety unitRole joinedAt")
       .sort({ joinedAt: -1 });
 
+    // Keep original flat success response format
     return res.status(200).json({
       success: true,
       members,
       count: members.length,
     });
   } catch (error) {
-    console.log("Error in getSocietyMembers:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    console.error("Error in getSocietyMembers:", error);
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal Server Error");
   }
 };
 
@@ -331,9 +346,12 @@ export const removeMember = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admin can remove members",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admin can remove members"
+      );
     }
 
     // Find member
@@ -343,25 +361,29 @@ export const removeMember = async (req, res) => {
     });
 
     if (!memberRel) {
-      return res.status(404).json({ message: "Member not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Member not found");
     }
 
     // Prevent admin from removing themselves
     if (memberRel.user.toString() === req.user._id.toString()) {
-      return res.status(400).json({
-        message: "You cannot remove yourself",
-      });
+      return sendErrorResponse(
+        res,
+        BAD_REQUEST,
+        null,
+        "You cannot remove yourself"
+      );
     }
 
     await UserSocietyRel.findByIdAndDelete(memberId);
 
+    // Keep original flat success response format
     return res.json({
       success: true,
       message: "Member removed successfully",
     });
   } catch (error) {
     console.error("Error in removeMember controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };
 
@@ -372,7 +394,7 @@ export const updateMemberRole = async (req, res) => {
     const { roleInSociety } = req.body;
 
     if (!roleInSociety) {
-      return res.status(400).json({ message: "Role is required" });
+      return sendErrorResponse(res, BAD_REQUEST, null, "Role is required");
     }
 
     // Check admin permission
@@ -383,9 +405,12 @@ export const updateMemberRole = async (req, res) => {
     });
 
     if (!adminRel && req.user.globalRole !== "super_admin") {
-      return res.status(403).json({
-        message: "Only admin can update member roles",
-      });
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Only admin can update member roles"
+      );
     }
 
     const memberRel = await UserSocietyRel.findOneAndUpdate(
@@ -395,9 +420,10 @@ export const updateMemberRole = async (req, res) => {
     ).populate("user", "name email phone");
 
     if (!memberRel) {
-      return res.status(404).json({ message: "Member not found" });
+      return sendErrorResponse(res, NOT_FOUND, null, "Member not found");
     }
 
+    // Keep original flat success response format
     return res.json({
       success: true,
       message: "Member role updated successfully",
@@ -405,6 +431,6 @@ export const updateMemberRole = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in updateMemberRole controller", error);
-    res.status(500).json({ message: "Something went wrong" });
+    return sendErrorResponse(res, SERVER_ERROR, error, "Something went wrong");
   }
 };

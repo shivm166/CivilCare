@@ -82,16 +82,6 @@ export const login = async (req, res) => {
       );
     }
 
-    // Check if the user's account is activated (only for invited users)
-    if (user.isInvited && !user.isActivated) {
-      return sendErrorResponse(
-        res,
-        FORBIDDEN,
-        null,
-        "Account not activated. Please check your email for the activation link."
-      );
-    }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return sendErrorResponse(
@@ -99,6 +89,15 @@ export const login = async (req, res) => {
         UNAUTHORIZED,
         null,
         "Credential details are incorrect"
+      );
+    }
+    // Check if the user's account is activated
+    if (user.isInvited && !user.isActivated) {
+      return sendErrorResponse(
+        res,
+        FORBIDDEN,
+        null,
+        "Account not activated. Please check your email for the activation link."
       );
     }
 
@@ -113,15 +112,23 @@ export const login = async (req, res) => {
 
 export const getprofile = async (req, res) => {
   try {
-    const userId = req.user._id;
-    // console.log(req); // Removed debug line
+    const userId = req.user._id || req.user.id;
+
+    if (!userId) {
+      return sendErrorResponse(
+        res,
+        UNAUTHORIZED,
+        null,
+        "User not authenticated."
+      );
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
       return sendErrorResponse(res, NOT_FOUND, null, "User not found");
     }
 
-    // console.log(user); // Removed debug line
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -168,7 +175,14 @@ export const updateProfile = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("jwt");
+    const isProduction = process.env.NODE_ENV === "production";
+
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+
     return sendSuccessResponse(res, SUCCESS, null, "Logout successfully");
   } catch (error) {
     console.error(error);

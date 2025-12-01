@@ -4,7 +4,7 @@ import { UserSocietyRel } from "../models/user_society_rel.model.js";
 
 const protectRoute = async (req, res, next) => {
   try {
-    // 1️⃣ Get token from cookie OR header
+    //  Get token from cookie OR header
     const token = req.cookies?.jwt || req.headers?.authorization?.split(" ")[1];
 
     if (!token) {
@@ -13,14 +13,14 @@ const protectRoute = async (req, res, next) => {
         .json({ message: "unauthorized - no token provided" });
     }
 
-    // 2️⃣ Verify token
+    //  Verify token
     const decode = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decode) {
       return res.status(401).json({ message: "unauthorized - invalid token" });
     }
 
-    // 3️⃣ Get user from DB
+    //  Get user from DB
     const user = await User.findById(decode._id || decode.userId).select(
       "-password"
     );
@@ -28,7 +28,7 @@ const protectRoute = async (req, res, next) => {
       return res.status(401).json({ message: "unauthorized - user not found" });
     }
 
-    // 4️⃣ Attach user to request
+    //  Attach user to request
     req.user = user;
 
     next();
@@ -46,7 +46,7 @@ export const requireAdmin = (req, res, next) => {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  // ✅ FIX: Check req.role (from society context) not req.user.role (global role)
+  // Check req.role (from society context) not req.user.role (global role)
   if (req.role !== "admin") {
     return res.status(403).json({
       success: false,

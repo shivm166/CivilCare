@@ -6,7 +6,7 @@ import {
   getSocietyMembers,
   removeMember,
   updateMemberRole,
-} from "../../controllers/member.controllers.js";
+} from "../../controllers/admin/member.controllers.js";
 import protectRoute from "../../middleware/isProtected.js";
 
 const router = Router();

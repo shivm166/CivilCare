@@ -3,7 +3,7 @@ import { axiosInstance } from "../axios";
 export const getAllBuildings = async () => {
   try {
     const response = await axiosInstance.get("/admin/v1/building");
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching buildings:", error);
     throw error;
@@ -16,7 +16,7 @@ export const getBuildingById = async (buildingId) => {
     const response = await axiosInstance.get(
       `/admin/v1/building/${buildingId}`
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching building:", error);
     throw error;
@@ -30,7 +30,7 @@ export const createBuilding = async (buildingData) => {
       "/admin/v1/building",
       buildingData
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error creating building:", error);
     throw error;
@@ -44,7 +44,7 @@ export const updateBuilding = async (buildingId, buildingData) => {
       `/admin/v1/building/${buildingId}`,
       buildingData
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error updating building:", error);
     throw error;
@@ -57,7 +57,7 @@ export const deleteBuilding = async (buildingId) => {
     const response = await axiosInstance.delete(
       `/admin/v1/building/${buildingId}`
     );
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error deleting building:", error);
     throw error;

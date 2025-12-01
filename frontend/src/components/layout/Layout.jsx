@@ -54,27 +54,31 @@ const Layout = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        {/* HEADER */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header
+          className="w-full h-16 bg-white border-b border-gray-200 
+flex items-center justify-between px-6 pl-16 sticky top-0 z-20 shadow-sm"
+        >
           <h1 className="text-xl font-bold text-gray-800">
-            {activeRole === "admin" ? "Admin Panel" : "User Panel"}
+            {activeRole === "admin" ? "" : ""}
           </h1>
 
           <div className="flex items-center space-x-4">
             <RoleSocietySwitcher />
-            <a
+
+            {/* <a
               href={`/${activeRole === "admin" ? "admin" : "user"}/profile`}
               className="btn btn-ghost btn-circle bg-gray-100"
             >
-              <User className="w-5 h-5" />
-            </a>
+              <User className="w-5 h-5 text-gray-600" />
+            </a> */}
           </div>
         </header>
 
-        {/* MAIN */}
-        <main className="flex-1 overflow-y-auto p-4">
-          <Outlet />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="p-6 h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

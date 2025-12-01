@@ -10,7 +10,16 @@ import {
   Check,
   X,
   IndianRupee,
+  Loader,
 } from "lucide-react";
+import { useSocietyContext } from "../../contexts/SocietyContext";
+import {
+  useGetMaintenanceRules,
+  useCreateMaintenanceRule,
+  useUpdateMaintenanceRule,
+  useDeleteMaintenanceRule,
+} from "../../hooks/api/useMaintenanceRules";
+import toast from "react-hot-toast";
 
 const UNIT_BHK_TYPES = [
   "1BHK",
@@ -21,36 +30,15 @@ const UNIT_BHK_TYPES = [
   "Studio",
   "Penthouse",
 ];
+
 const PENALTY_TYPES = [
   { value: "fixed_amount", label: "Fixed Amount" },
   { value: "percentage_of_maintenance", label: "Percentage of Maintenance" },
   { value: "daily_rate", label: "Daily Rate" },
 ];
 
-const MaintenanceRulesUI = () => {
-  const [rules, setRules] = useState([
-    {
-      _id: "1",
-      bhkType: "2BHK",
-      amount: 3500,
-      dueDay: 5,
-      gracePeriod: 3,
-      penaltyType: "percentage_of_maintenance",
-      penaltyValue: 5,
-      active: true,
-    },
-    {
-      _id: "2",
-      bhkType: "3BHK",
-      amount: 5000,
-      dueDay: 5,
-      gracePeriod: 3,
-      penaltyType: "fixed_amount",
-      penaltyValue: 200,
-      active: true,
-    },
-  ]);
-
+const MaintenanceRules = () => {
+  const { activeSociety } = useSocietyContext();
   const [showModal, setShowModal] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [formData, setFormData] = useState({
@@ -63,6 +51,16 @@ const MaintenanceRulesUI = () => {
     active: true,
   });
 
+  // React Query hooks
+  const { data: rulesData, isLoading } = useGetMaintenanceRules(
+    activeSociety?.societyId
+  );
+  const createMutation = useCreateMaintenanceRule();
+  const updateMutation = useUpdateMaintenanceRule();
+  const deleteMutation = useDeleteMaintenanceRule();
+
+  const rules = rulesData?.maintenanceRules || [];
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -71,23 +69,32 @@ const MaintenanceRulesUI = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    if (editingRule) {
-      setRules((prev) =>
-        prev.map((rule) =>
-          rule._id === editingRule._id
-            ? { ...formData, _id: editingRule._id }
-            : rule
-        )
-      );
-    } else {
-      setRules((prev) => [
-        ...prev,
-        { ...formData, _id: Date.now().toString() },
-      ]);
-    }
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        ...formData,
+        amount: Number(formData.amount),
+        dueDay: Number(formData.dueDay),
+        gracePeriod: Number(formData.gracePeriod),
+        penaltyValue: Number(formData.penaltyValue),
+      };
 
-    resetForm();
+      if (editingRule) {
+        await updateMutation.mutateAsync({
+          id: editingRule._id,
+          ...payload,
+        });
+        toast.success("Maintenance rule updated successfully!");
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast.success("Maintenance rule created successfully!");
+      }
+
+      resetForm();
+    } catch (error) {
+      console.error("Error saving rule:", error);
+      toast.error(error.response?.data?.message || "Failed to save rule");
+    }
   };
 
   const resetForm = () => {
@@ -106,22 +113,49 @@ const MaintenanceRulesUI = () => {
 
   const handleEdit = (rule) => {
     setEditingRule(rule);
-    setFormData(rule);
+    setFormData({
+      bhkType: rule.bhkType,
+      amount: rule.amount,
+      dueDay: rule.dueDay,
+      gracePeriod: rule.gracePeriod,
+      penaltyType: rule.penaltyType,
+      penaltyValue: rule.penaltyValue,
+      active: rule.active,
+    });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this rule?")) {
-      setRules((prev) => prev.filter((rule) => rule._id !== id));
+      try {
+        await deleteMutation.mutateAsync(id);
+        toast.success("Maintenance rule deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting rule:", error);
+        toast.error("Failed to delete rule");
+      }
     }
   };
 
-  const toggleStatus = (id) => {
-    setRules((prev) =>
-      prev.map((rule) =>
-        rule._id === id ? { ...rule, active: !rule.active } : rule
-      )
-    );
+  const toggleStatus = async (rule) => {
+    try {
+      await updateMutation.mutateAsync({
+        id: rule._id,
+        bhkType: rule.bhkType,
+        amount: rule.amount,
+        dueDay: rule.dueDay,
+        gracePeriod: rule.gracePeriod,
+        penaltyType: rule.penaltyType,
+        penaltyValue: rule.penaltyValue,
+        active: !rule.active,
+      });
+      toast.success(
+        `Rule ${!rule.active ? "activated" : "deactivated"} successfully!`
+      );
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      toast.error("Failed to update status");
+    }
   };
 
   const getPenaltyDisplay = (rule) => {
@@ -137,12 +171,20 @@ const MaintenanceRulesUI = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Maintenance Rules
@@ -184,7 +226,8 @@ const MaintenanceRulesUI = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => toggleStatus(rule._id)}
+                  onClick={() => toggleStatus(rule)}
+                  disabled={updateMutation.isPending}
                   className={`p-2 rounded-lg transition-all ${
                     rule.active
                       ? "bg-green-100 text-green-600 hover:bg-green-200"
@@ -256,6 +299,7 @@ const MaintenanceRulesUI = () => {
                 </button>
                 <button
                   onClick={() => handleDelete(rule._id)}
+                  disabled={deleteMutation.isPending}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -430,14 +474,23 @@ const MaintenanceRulesUI = () => {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={resetForm}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold"
+                    disabled={
+                      createMutation.isPending || updateMutation.isPending
+                    }
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSubmit}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+                    disabled={
+                      createMutation.isPending || updateMutation.isPending
+                    }
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                   >
+                    {(createMutation.isPending || updateMutation.isPending) && (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    )}
                     {editingRule ? "Update Rule" : "Create Rule"}
                   </button>
                 </div>
@@ -450,4 +503,4 @@ const MaintenanceRulesUI = () => {
   );
 };
 
-export default MaintenanceRulesUI;
+export default MaintenanceRules;
