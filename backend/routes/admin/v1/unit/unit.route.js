@@ -10,9 +10,12 @@ import {
   validateAssignResident,
   validateUnitUpdate,
 } from "../../../../validatores/validation.unit.js";
+import { getUnitsBySocietyForAdmin } from "../../../../controllers/maintenance/maintenance.js";
 
 const router = Router();
 
+router.route("/")
+    .get(getUnitsBySocietyForAdmin);
 router
   .route("/:unitId")
   .get(getUnitById)

@@ -54,6 +54,13 @@ const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
 
+const AdminMaintenancePage = lazy(() =>
+  import("../pages/dashboard/Admin/MaintenanceManagement/MaintenancePage")
+);
+const UserMaintenancePage = lazy(() =>
+  import("../pages/dashboard/User/Maintenance/MaintenancePage")
+);
+
 // 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
 const DashboardWrapper = () => {
   const { societies, activeRole, isSocietiesLoading } = useSocietyContext();
@@ -196,6 +203,14 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
         <Route
+          path="maintenance"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminMaintenancePage />
+            </Suspense>
+          }
+        />
+        <Route
           path="notifications"
           element={
             <Suspense fallback={<PageLoader />}>
@@ -261,6 +276,14 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           element={
             <Suspense fallback={<PageLoader />}>
               <UserParkingPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="maintenance"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UserMaintenancePage />
             </Suspense>
           }
         />

@@ -9,9 +9,10 @@ import {
   Mail,
   User,
   Building2,
-  Car, // ✨ ADD THIS IMPORT
+  Car,
   Menu,
   X,
+  Wallet, // ADDED: Icon for Maintenance
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
@@ -24,7 +25,8 @@ const adminMenu = [
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
-  { name: "Parking", path: "/admin/parking", icon: Car }, // ✨ ADD THIS LINE
+  { name: "Parking", path: "/admin/parking", icon: Car },
+  { name: "Maintenance", path: "/admin/maintenance", icon: Wallet },
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -32,9 +34,10 @@ const adminMenu = [
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
-  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
-  { name: "Parking", path: "/user/parking", icon: Car }, // ✨ ADD THIS LINE
+  { name: "Raise Complaint", path: "/user/complaints", icon: Mail },
+  { name: "Parking", path: "/user/parking", icon: Car },
   { name: "Residents", path: "/user/residents", icon: Users },
+  { name: "Maintenance", path: "/user/maintenance", icon: Wallet },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
 ];
@@ -102,11 +105,15 @@ const Sidebar = () => {
     menu = adminMenu;
   }
 
+  // Adjusted logic since role is 'member' in context if not 'admin'
+  const isMemberRole = activeRole === "member" || activeRole === "resident";
+
   const getBadgeCount = (itemName) => {
     if (itemName === "Notifications") {
       return activeRole === "admin" ? unreadCount : invitationCount;
     }
-    if (itemName === "Announcements" && activeRole === "member") {
+    // Check if the current user is a member/resident of a society
+    if (itemName === "Announcements" && isMemberRole) {
       return unreadAnnouncementsCount;
     }
     return 0;
@@ -116,7 +123,6 @@ const Sidebar = () => {
 
   return (
     <>
-
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         className="lg:hidden fixed top-0 left-0 z-50 m-2 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition-colors"
@@ -128,7 +134,6 @@ const Sidebar = () => {
           <Menu className="w-6 h-6" />
         )}
       </button>
-
 
       {isMobileOpen && (
         <div
