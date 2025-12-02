@@ -237,6 +237,7 @@ export const getMaintenancePaymentById = async (req, res) => {
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
+
 export const deleteMaintenancePayment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -292,6 +293,7 @@ export const getMaintenanceBills = async (req, res) => {
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
+
 export const getMaintenanceBillById = async (req, res) => {
   try {
     const { id } = req.params;
