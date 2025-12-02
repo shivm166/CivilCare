@@ -1,15 +1,12 @@
-import express from "express";
 import { maintenanceBill } from "../../models/Maintenance/maintenance_bill.model.js";
-import { MaintenanceRule } from '../../models/Maintenance/maintenance_rule.model.js';
 import { Unit } from "../../models/unit.model.js";
-
 import { STATUS_CODES } from "../../utils/status.js";
 import {
   sendSuccessResponse,
   sendErrorResponse,
 } from "../../utils/response.js";
-
 import { maintenancePayment } from "../../models/Maintenance/maintenance_payment.model.js";
+import { MaintenanceRule } from "../../models/Maintenance/maintenance_rule.model.js";
 
 const {
   SUCCESS,
@@ -30,10 +27,7 @@ const calculateLateFee = (bill, rule) => {
   gracePeriodEnd.setHours(23, 59, 59, 999);
 
   const currentDate = new Date();
-
-  if (currentDate <= gracePeriodEnd) {
-    return 0;
-  }
+  if (currentDate <= gracePeriodEnd) return 0;
 
   let lateFee = 0;
 
@@ -85,6 +79,8 @@ const updateBillLateFeeAndStatus = async (bill) => {
 
   return bill;
 };
+
+// ADMIN
 export const postMaintanenceRule = async (req, res) => {
   try {
     const {
@@ -108,6 +104,7 @@ export const postMaintanenceRule = async (req, res) => {
       active,
       createdBy: req.user._id,
     });
+
     return sendSuccessResponse(
       res,
       CREATED,
@@ -115,11 +112,12 @@ export const postMaintanenceRule = async (req, res) => {
       "Maintenance rule created successfully"
     );
   } catch (error) {
-    console.error("Error creating maintenance rule :", error);
+    console.log("Error creating maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getMaintanenceRules = async (req, res) => {
   try {
     const maintenanceRules = await MaintenanceRule.find({
@@ -132,11 +130,12 @@ export const getMaintanenceRules = async (req, res) => {
       "Maintenance rules fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance rules :", error);
+    console.log("Error fetching maintenance rules:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const updateMaintenanceRule = async (req, res) => {
   try {
     const { id } = req.params;
@@ -149,6 +148,7 @@ export const updateMaintenanceRule = async (req, res) => {
       penaltyValue,
       active,
     } = req.body;
+
     const updatedRule = await MaintenanceRule.findByIdAndUpdate(
       id,
       {
@@ -162,6 +162,7 @@ export const updateMaintenanceRule = async (req, res) => {
       },
       { new: true }
     );
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -169,15 +170,17 @@ export const updateMaintenanceRule = async (req, res) => {
       "Maintenance rule updated successfully"
     );
   } catch (error) {
-    console.error("Error updating maintenance rule :", error);
+    console.log("Error updating maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const deleteMaintenanceRule = async (req, res) => {
   try {
     const { id } = req.params;
     await MaintenanceRule.findByIdAndDelete(id);
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -185,15 +188,17 @@ export const deleteMaintenanceRule = async (req, res) => {
       "Maintenance rule deleted successfully"
     );
   } catch (error) {
-    console.error("Error deleting maintenance rule :", error);
+    console.log("Error deleting maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getMaintenanceRuleById = async (req, res) => {
   try {
     const { id } = req.params;
     const rule = await MaintenanceRule.findById(id);
+
     if (!rule) {
       return sendErrorResponse(
         res,
@@ -202,6 +207,7 @@ export const getMaintenanceRuleById = async (req, res) => {
         "Maintenance rule not found"
       );
     }
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -209,17 +215,19 @@ export const getMaintenanceRuleById = async (req, res) => {
       "Maintenance rule fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance rule by ID :", error);
+    console.log("Error fetching maintenance rule by ID:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// USER
 export const recordMaintenancePayment = async (req, res) => {
   try {
-    const { billId, amount, method, transactionId, paidAt } = req.body; // paidAt is optional
+    const { billId, amount, method, transactionId, paidAt } = req.body;
     const userId = req.user._id;
 
     let bill = await maintenanceBill.findById(billId).populate("rule");
+
     if (!bill) {
       return sendErrorResponse(
         res,
@@ -232,16 +240,10 @@ export const recordMaintenancePayment = async (req, res) => {
       return sendErrorResponse(res, CONFLICT, null, "Bill is already paid.");
     }
     if (bill.resident.toString() !== userId.toString()) {
-      return sendErrorResponse(
-        res,
-        UNAUTHORIZED,
-        null,
-        "You are not authorized to pay this bill."
-      );
+      return sendErrorResponse(res, UNAUTHORIZED, null, "Not authorized.");
     }
 
     const rule = bill.rule;
-
     const finalLateFee = calculateLateFee(bill, rule);
     const finalTotalAmountDue = bill.amount + finalLateFee;
 
@@ -250,7 +252,7 @@ export const recordMaintenancePayment = async (req, res) => {
         res,
         BAD_REQUEST,
         null,
-        `Payment amount is less than the total due amount of ${finalTotalAmountDue}.`
+        `Payment amount is less than ${finalTotalAmountDue}.`
       );
     }
 
@@ -274,20 +276,22 @@ export const recordMaintenancePayment = async (req, res) => {
       res,
       CREATED,
       { newPayment, updatedBill: bill },
-      "Maintenance payment recorded successfully and bill marked as paid."
+      "Maintenance payment recorded successfully"
     );
   } catch (error) {
-    console.error("Error recording maintenance payment :", error);
+    console.log("Error recording maintenance payment:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getMaintenanceRecord = async (req, res) => {
   try {
     const { billId } = req.params;
     const payments = await maintenancePayment
       .find({ bill: billId })
       .populate("paidBy", "name email");
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -295,17 +299,19 @@ export const getMaintenanceRecord = async (req, res) => {
       "Maintenance payments fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance payments :", error);
+    console.log("Error fetching maintenance record:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getAllMaintenancePayments = async (req, res) => {
   try {
     const payments = await maintenancePayment
       .find({})
       .populate("bill")
       .populate("paidBy", "name email");
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -313,11 +319,12 @@ export const getAllMaintenancePayments = async (req, res) => {
       "All maintenance payments fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching all maintenance payments :", error);
+    console.log("Error fetching all maintenance payments:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getMaintenancePaymentById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -325,6 +332,7 @@ export const getMaintenancePaymentById = async (req, res) => {
       .findById(id)
       .populate("bill")
       .populate("paidBy", "name email");
+
     if (!payment) {
       return sendErrorResponse(
         res,
@@ -333,6 +341,7 @@ export const getMaintenancePaymentById = async (req, res) => {
         "Maintenance payment not found"
       );
     }
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -340,15 +349,17 @@ export const getMaintenancePaymentById = async (req, res) => {
       "Maintenance payment fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance payment by ID :", error);
+    console.log("Error fetching maintenance payment by ID:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const deleteMaintenancePayment = async (req, res) => {
   try {
     const { id } = req.params;
     await maintenancePayment.findByIdAndDelete(id);
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -356,11 +367,12 @@ export const deleteMaintenancePayment = async (req, res) => {
       "Maintenance payment deleted successfully"
     );
   } catch (error) {
-    console.error("Error deleting maintenance payment :", error);
+    console.log("Error deleting maintenance payment:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const generateMaintenanceBill = async (req, res) => {
   try {
     const { unitId, ruleId, forMonth } = req.body;
@@ -371,35 +383,25 @@ export const generateMaintenanceBill = async (req, res) => {
         res,
         NOT_FOUND,
         null,
-        "Maintenance rule not found or not in this society."
+        "Maintenance rule not found"
       );
     }
 
     const unit = await Unit.findById(unitId).populate("resident");
     if (!unit || unit.society.toString() !== req.society._id.toString()) {
-      return sendErrorResponse(
-        res,
-        NOT_FOUND,
-        null,
-        "Unit not found or not in this society."
-      );
+      return sendErrorResponse(res, NOT_FOUND, null, "Unit not found");
     }
 
-    // Enforce required resident
     if (!unit.resident || !unit.resident._id) {
-      return sendErrorResponse(
-        res,
-        BAD_REQUEST,
-        null,
-        "Unit must have an assigned resident to generate a bill."
-      );
+      return sendErrorResponse(res, BAD_REQUEST, null, "Unit has no resident");
     }
+
     if (unit.bhkType !== rule.bhkType) {
       return sendErrorResponse(
         res,
         FORBIDDEN,
         null,
-        `Maintenance rule for ${rule.bhkType} cannot be applied to unit with ${unit.bhkType} configuration.`
+        `Rule for ${rule.bhkType} cannot apply to ${unit.bhkType}`
       );
     }
 
@@ -409,7 +411,7 @@ export const generateMaintenanceBill = async (req, res) => {
 
     const existingBill = await maintenanceBill.findOne({
       unit: unitId,
-      forMonth: forMonth,
+      forMonth,
     });
 
     if (existingBill) {
@@ -417,7 +419,7 @@ export const generateMaintenanceBill = async (req, res) => {
         res,
         CONFLICT,
         null,
-        `Maintenance bill already generated for unit ${unit.unitNumber} (${unit.bhkType}) for month ${forMonth}.`
+        `Bill already generated for ${forMonth}`
       );
     }
 
@@ -427,8 +429,8 @@ export const generateMaintenanceBill = async (req, res) => {
       resident: unit.resident._id,
       rule: ruleId,
       amount: rule.amount,
-      dueDate: dueDate,
-      forMonth: forMonth,
+      dueDate,
+      forMonth,
       totalAmount: rule.amount,
     });
 
@@ -439,12 +441,12 @@ export const generateMaintenanceBill = async (req, res) => {
       "Maintenance bill generated successfully"
     );
   } catch (error) {
-    console.error("Error generating maintenance bill :", error);
+    console.log("Error generating maintenance bill:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
-// Admin fetches all bills
+// ADMIN
 export const getMaintenanceBills = async (req, res) => {
   try {
     let bills = await maintenanceBill
@@ -469,14 +471,16 @@ export const getMaintenanceBills = async (req, res) => {
       "Maintenance bills fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance bills :", error);
+    console.log("Error fetching maintenance bills:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getMaintenanceBillById = async (req, res) => {
   try {
     const { id } = req.params;
+
     let bill = await maintenanceBill
       .findById(id)
       .populate("unit")
@@ -502,15 +506,17 @@ export const getMaintenanceBillById = async (req, res) => {
       "Maintenance bill fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance bill by ID :", error);
+    console.log("Error fetching maintenance bill by ID:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const deleteMaintenanceBill = async (req, res) => {
   try {
     const { id } = req.params;
     await maintenanceBill.findByIdAndDelete(id);
+
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -518,11 +524,12 @@ export const deleteMaintenanceBill = async (req, res) => {
       "Maintenance bill deleted successfully"
     );
   } catch (error) {
-    console.error("Error deleting maintenance bill :", error);
+    console.log("Error deleting maintenance bill:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// USER
 export const getUserMaintenanceBills = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -534,9 +541,8 @@ export const getUserMaintenanceBills = async (req, res) => {
 
     const updatedBills = await Promise.all(
       bills.map(async (bill) => {
-        if (bill.status !== "paid") {
+        if (bill.status !== "paid")
           return await updateBillLateFeeAndStatus(bill);
-        }
         return bill;
       })
     );
@@ -545,31 +551,30 @@ export const getUserMaintenanceBills = async (req, res) => {
       res,
       SUCCESS,
       { bills: updatedBills },
-      "Your maintenance bills fetched successfully"
+      "User maintenance bills fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching user's maintenance bills :", error);
+    console.log("Error fetching user maintenance bills:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
 
+// ADMIN
 export const getUnitsBySocietyForAdmin = async (req, res) => {
-    try {
-        // req.society._id નો ઉપયોગ કરીને વર્તમાન સોસાયટીના તમામ યુનિટ્સ ફિલ્ટર કરો
-        const units = await Unit.find({ society: req.society._id })
-            .populate("resident", "name email"); // ફ્રન્ટએન્ડ માટે રહેવાસીનું નામ અને ઇમેઇલ પોપ્યુલેટ કરો
-            
-        return sendSuccessResponse(res, STATUS_CODES.SUCCESS, { units }, "Units fetched successfully");
-    } catch (error) {
-        console.error("Error fetching units by society for admin:", error);
-        return sendErrorResponse(res, STATUS_CODES.SERVER_ERROR, error, "Internal server error");
-    }
+  try {
+    const units = await Unit.find({ society: req.society._id }).populate(
+      "resident",
+      "name email"
+    );
+
+    return sendSuccessResponse(
+      res,
+      SUCCESS,
+      { units },
+      "Units fetched successfully"
+    );
+  } catch (error) {
+    console.log("Error fetching units by society for admin:", error);
+    return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
+  }
 };
-// export {
-//   getMaintenanceRuleById,
-//   generateMaintenanceBill,
-//   getMaintenanceBills,
-//   getMaintenanceBillById,
-//   deleteMaintenanceBill,
-//   getUserMaintenanceBills,
-// };

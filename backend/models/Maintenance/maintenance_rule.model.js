@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { UNIT_BHK_TYPES } from "../../config/unit.config.js";
+import { UNIT_BHK_TYPES } from "../../config/unit.config.js"; // Corrected/Confirmed import path
 
 const maintenanceRuleSchema = new mongoose.Schema(
   {

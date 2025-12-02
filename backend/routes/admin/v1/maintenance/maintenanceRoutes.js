@@ -1,50 +1,61 @@
 import express from "express";
+
 import {
-  deleteMaintenanceRule,
-  getAllMaintenancePayments,
-  getMaintanenceRules,
-  getMaintenanceRecord,
   postMaintanenceRule,
-  recordMaintenancePayment,
+  getMaintanenceRules,
+  getMaintenanceRuleById,
   updateMaintenanceRule,
+  deleteMaintenanceRule,
   generateMaintenanceBill,
   getMaintenanceBills,
   getMaintenanceBillById,
   deleteMaintenanceBill,
-  getMaintenanceRuleById,
+  recordMaintenancePayment,
+  getAllMaintenancePayments,
+  getMaintenanceRecord,
+  getMaintenancePaymentById,
+  deleteMaintenancePayment,
+  getUserMaintenanceBills,
+  getUnitsBySocietyForAdmin,
 } from "../../../../controllers/maintenance/maintenance.js";
-// ✨ નોંધ: getUnitsBySocietyForAdmin અહીંથી દૂર કરવામાં આવ્યું છે
 
 const router = express.Router();
 
-// =================================================================
-// 1. RULE ROUTES (CRUD) - /admin/v1/maintenance/rule
-// =================================================================
+// ADMIN: RULE ROUTES
+
 router.route("/rule").post(postMaintanenceRule).get(getMaintanenceRules);
+
 router
   .route("/rule/:id")
-  .get(getMaintenanceRuleById) // Admin: Search/Get Rule by ID
+  .get(getMaintenanceRuleById)
   .put(updateMaintenanceRule)
   .delete(deleteMaintenanceRule);
 
-// =================================================================
-// 2. BILL ROUTES (Generate, Get All, Get By ID, Delete) - /admin/v1/maintenance/bill
-// =================================================================
+// ADMIN: BILL ROUTES
+
 router.route("/bill").post(generateMaintenanceBill).get(getMaintenanceBills);
+
 router
   .route("/bill/:id")
-  .get(getMaintenanceBillById) // Admin: Search/Get Bill by ID
+  .get(getMaintenanceBillById)
   .delete(deleteMaintenanceBill);
 
-// =================================================================
-// 3. PAYMENT ROUTES (Record Payment, Get All Payments, Get Payments for a Bill)
-// /admin/v1/maintenance/payment
-// =================================================================
+//USER: BILL ROUTES
+router.get("/user/bills", getUserMaintenanceBills);
+
+//  ADMIN + USER: PAYMENT ROUTES
+
 router
   .route("/payment")
-  .post(recordMaintenancePayment) // Admin: Manually record payment
-  .get(getAllMaintenancePayments); // Admin: Get all payment records
+  .post(recordMaintenancePayment)
+  .get(getAllMaintenancePayments);
 
-router.route("/payment/:billId").get(getMaintenanceRecord); // Admin: Get payments for a specific bill
+router.get("/payment/:billId", getMaintenanceRecord);
+router.get("/payment/view/:id", getMaintenancePaymentById);
+router.delete("/payment/delete/:id", deleteMaintenancePayment);
+
+// ADMIN: UNIT ROUTES
+
+router.get("/units", getUnitsBySocietyForAdmin);
 
 export default router;
