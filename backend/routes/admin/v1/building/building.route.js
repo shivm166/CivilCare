@@ -6,16 +6,16 @@ import {
   getBuildingById,
   updateBuilding,
 } from "../../../../controllers/admin/building.controllers.js";
-import { validateRequest } from "../../../../middleware/validateMiddleware.js";
+import { validateRequest } from "../../../../validatores/validateMiddleware.js";
 import {
   validateBuildingCreate,
   validateBuildingUpdate,
-} from "../../../../middleware/validation.building.js";
+} from "../../../../validatores/validation.building.js";
 import {
   createUnit,
   getUnitsInBuilding,
 } from "../../../../controllers/admin/unit.controllers.js";
-import { validateUnitCreate } from "../../../../middleware/validation.unit.js";
+import { validateUnitCreate } from "../../../../validatores/validation.unit.js";
 
 const router = Router();
 

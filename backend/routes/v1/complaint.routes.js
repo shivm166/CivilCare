@@ -13,12 +13,11 @@ const router = express.Router();
 
 router.use(protectRoute);
 router.use(attachSocietyContext);
-
-// User Routes (Uses context for societyId)
+//user routes
 router.post("/createComplaint", createComplaint);
 router.get("/getMyComplaints", getComplaints);
 
-// Admin Routes (Uses context for societyId and requires admin role)
+// Admin Routes
 router.get("/getAllComplaints", requireAdmin, getAllComplaints);
 router.patch(
   "/updateComplaint/:id/status",
@@ -27,6 +26,6 @@ router.patch(
 );
 
 // Global Stats Route
-router.get("/complaints", getTotalComplaints); // Retained original endpoint name for consistency
+router.get("/complaints", getTotalComplaints);
 
 export default router;

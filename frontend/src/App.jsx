@@ -1,14 +1,10 @@
-// frontend/src/App.jsx (Corrected Implementation)
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import useAuthUser from "./hooks/api/auth/useAuthUser";
-
-// 1. Static Imports: PublicRoutes and ProtectedRoutes return JSX elements, not components.
 import PublicRoutes from "./routes/PublicRoutes";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 
-// 2. Lazy Imports: These return components and are used with <Suspense>.
 const ActivateAccountPage = lazy(() =>
   import("./pages/auth/ActivateAccount/ActivateAccountPage")
 );
@@ -20,10 +16,9 @@ const App = () => {
   const isAuthenticated = Boolean(authUser);
   const isSuperAdmin = authUser?.globalRole === "super_admin";
 
-  if (isLoading) {
-    // Show static PageLoader component while fetching initial auth status
-    return <PageLoader />;
-  }
+  // if (isLoading) {
+  //   return <PageLoader />;
+  // }
 
   return (
     <>
@@ -39,13 +34,10 @@ const App = () => {
             }
           />
 
-          {/* Function Call: Returns <Route> element */}
           {PublicRoutes({ isAuthenticated, authUser, isLoading })}
 
-          {/* Conditional Protected Routes */}
           {isSuperAdmin ? (
             <>
-              {/* Lazy Loaded Component: Wrap in Suspense */}
               <Route
                 path="/super-admin/*"
                 element={
@@ -62,7 +54,7 @@ const App = () => {
           ) : isAuthenticated ? (
             <>
               {/* Function Call: Returns <Route> element */}
-              {ProtectedRoutes({ authUser })}
+              {ProtectedRoutes({ authUser, isLoading })}
             </>
           ) : (
             <Route path="*" element={<Navigate to="/login" replace />} />

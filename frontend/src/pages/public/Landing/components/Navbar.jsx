@@ -14,42 +14,42 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'FAQ', href: '#faq' },
+    { name: "Home", href: "#home" },
+    { name: "Features", href: "#features" },
+    { name: "How It Works", href: "#how-it-works" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "FAQ", href: "#faq" },
   ];
 
   const handleSmoothScroll = (e, href) => {
     e.preventDefault();
-    
-    const targetId = href.replace('#', '');
+
+    const targetId = href.replace("#", "");
     const targetElement = document.getElementById(targetId);
-    
+
     if (targetElement) {
       const navbarHeight = 80;
       const targetPosition = targetElement.offsetTop - navbarHeight;
-      
+
       window.scrollTo({
         top: targetPosition,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
       
       setMobileMenuOpen(false);
@@ -61,7 +61,7 @@ const Navbar = () => {
   };
 
   const handleLoginClick = () => {
-    navigate('/login');
+    navigate("/login");
     setMobileMenuOpen(false);
   };
 
@@ -78,7 +78,13 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/98 backdrop-blur-lg shadow-lg' : 'bg-white/80 backdrop-blur-md'}`}>
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-white/98 backdrop-blur-lg shadow-lg"
+            : "bg-white/80 backdrop-blur-md"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -87,8 +93,8 @@ const Navbar = () => {
               onClick={(e) => handleSmoothScroll(e, '#home')}
               className="flex items-center group"
             >
-              <img 
-                src="/assets/logo.png" 
+              <img
+                src="/assets/logo.png"
                 alt="CivilCare Logo"
                 className="h-30 w-auto object-contain transition-transform transform group-hover:scale-105"
               />
@@ -96,9 +102,9 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-8">
-              {navLinks.map(link => (
-                <a 
-                  key={link.name} 
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
                   href={link.href}
                   onClick={(e) => handleLinkClick(e, link.href)}
                   className="px-4 py-2 text-slate-700 hover:text-emerald-600 transition-colors font-medium text-md rounded-lg hover:bg-emerald-50 cursor-pointer"
@@ -132,12 +138,16 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-slate-700 hover:bg-emerald-50 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+              {mobileMenuOpen ? (
+                <X className="w-7 h-7" />
+              ) : (
+                <Menu className="w-7 h-7" />
+              )}
             </button>
           </div>
         </div>
@@ -146,8 +156,8 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div 
-            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" 
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           ></div>
@@ -155,9 +165,9 @@ const Navbar = () => {
             <div className="p-6 space-y-6">
               {/* Mobile Navigation Links */}
               <div className="space-y-2">
-                {navLinks.map(link => (
-                  <a 
-                    key={link.name} 
+                {navLinks.map((link) => (
+                  <a
+                    key={link.name}
                     href={link.href}
                     onClick={(e) => handleLinkClick(e, link.href)}
                     className="block py-3 px-4 text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-colors font-medium rounded-lg cursor-pointer"
@@ -197,11 +207,17 @@ const Navbar = () => {
 
               {/* Contact Information */}
               <div className="pt-4 border-t border-slate-200 space-y-3">
-                <a href="tel:+919876543210" className="flex items-center gap-3 text-slate-600 hover:text-emerald-600 transition-colors">
+                <a
+                  href="tel:+919876543210"
+                  className="flex items-center gap-3 text-slate-600 hover:text-emerald-600 transition-colors"
+                >
                   <Phone className="w-5 h-5 text-emerald-600" />
                   <span className="text-sm">+91 98765 43210</span>
                 </a>
-                <a href="mailto:contact@societyhub.com" className="flex items-center gap-3 text-slate-600 hover:text-emerald-600 transition-colors">
+                <a
+                  href="mailto:contact@societyhub.com"
+                  className="flex items-center gap-3 text-slate-600 hover:text-emerald-600 transition-colors"
+                >
                   <Mail className="w-5 h-5 text-emerald-600" />
                   <span className="text-sm">contact@societyhub.com</span>
                 </a>

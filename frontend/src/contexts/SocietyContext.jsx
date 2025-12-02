@@ -10,8 +10,9 @@ import { getSocieties } from "../api/services/society.api";
 import { useNavigate, useLocation } from "react-router-dom";
 import PageLoader from "../pages/error/PageLoader";
 
-const SocietyContext = createContext(null);
+//society context for managing active society and roles
 
+const SocietyContext = createContext(null);
 const getAvailableRoles = (roleInSociety) => {
   const roles = [roleInSociety];
   if (roleInSociety === "admin" && !roles.includes("member")) {
@@ -49,7 +50,6 @@ export const SocietyProvider = ({ children }) => {
     return society;
   }, [societies, activeSocietyId]);
 
-  // Effect to handle default selection and role redirection
   useEffect(() => {
     if (!isSocietiesLoading && societies.length > 0) {
       const defaultId = activeSocietyId || societies[0].societyId;
