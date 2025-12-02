@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Menu, X, Zap, Phone, Mail, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Menu, X, Zap, Phone, Mail, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import useAuthUser from '../../../../hooks/api/auth/useAuthUser'; // ✅ Import your auth hook
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // ✅ Use your existing authentication hook
+  const { authUser, isLoading } = useAuthUser();
+  const isAuthenticated = Boolean(authUser);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -32,7 +37,6 @@ const Navbar = () => {
     { name: "FAQ", href: "#faq" },
   ];
 
-  // Smooth scroll function
   const handleSmoothScroll = (e, href) => {
     e.preventDefault();
 
@@ -40,15 +44,14 @@ const Navbar = () => {
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
-      const navbarHeight = 80; // Height of navbar (h-20 = 80px)
+      const navbarHeight = 80;
       const targetPosition = targetElement.offsetTop - navbarHeight;
 
       window.scrollTo({
         top: targetPosition,
         behavior: "smooth",
       });
-
-      // Close mobile menu if open
+      
       setMobileMenuOpen(false);
     }
   };
@@ -61,7 +64,18 @@ const Navbar = () => {
     navigate("/login");
     setMobileMenuOpen(false);
   };
-  const user = localStorage.getItem("activeRole");
+
+  const handleDashboardClick = () => {
+    // ✅ Navigate based on user's role (super_admin, admin, or member)
+    if (authUser?.globalRole === 'super_admin') {
+      navigate('/super-admin/dashboard');
+    } else {
+      // Will be handled by SocietyContext to redirect to correct dashboard
+      navigate('/dashboard');
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
     <>
       <nav
@@ -73,10 +87,10 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Logo Section - Only Image */}
-            <a
-              href="#home"
-              onClick={(e) => handleSmoothScroll(e, "#home")}
+            {/* Logo Section */}
+            <a 
+              href="#home" 
+              onClick={(e) => handleSmoothScroll(e, '#home')}
               className="flex items-center group"
             >
               <img
@@ -100,26 +114,26 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Desktop Login / Dashboard Button */}
+            {/* Desktop Login/Dashboard Button - Conditional Rendering */}
             <div className="hidden lg:flex items-center gap-3">
-              {/* If user is NOT logged in → show Login button */}
-              {!user ? (
-                <button
-                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
-                  onClick={() => navigate("/login")}
-                >
-                  <Zap className="w-8 h-8" />
-                  Login
-                </button>
-              ) : (
-                /* If user IS logged in → show Dashboard button */
-                <button
-                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
-                  onClick={() => navigate("/user/dashboard")}
-                >
-                  <Zap className="w-8 h-8" />
-                  Dashboard
-                </button>
+              {!isLoading && (
+                isAuthenticated ? (
+                  <button 
+                    onClick={handleDashboardClick}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="w-5 h-5" />
+                    Dashboard
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleLoginClick}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all text-sm flex items-center gap-2"
+                  >
+                    <Zap className="w-5 h-5" />
+                    Login
+                  </button>
+                )
               )}
             </div>
 
@@ -163,18 +177,32 @@ const Navbar = () => {
                 ))}
               </div>
 
-              {/* Mobile Action Buttons */}
+              {/* Mobile Action Buttons - Conditional Rendering */}
               <div className="space-y-3 pt-4 border-t border-slate-200">
-                <button
-                  onClick={handleLoginClick}
-                  className="w-full px-5 py-3 border-2 border-emerald-600 text-emerald-600 rounded-xl font-semibold hover:bg-emerald-50 transition-all"
-                >
-                  Login
-                </button>
-                <button className="w-full px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  Get Started Free
-                </button>
+                {!isLoading && (
+                  isAuthenticated ? (
+                    <button 
+                      onClick={handleDashboardClick}
+                      className="w-full px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <LayoutDashboard className="w-5 h-5" />
+                      Go to Dashboard
+                    </button>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={handleLoginClick}
+                        className="w-full px-5 py-3 border-2 border-emerald-600 text-emerald-600 rounded-xl font-semibold hover:bg-emerald-50 transition-all"
+                      >
+                        Login
+                      </button>
+                      <button className="w-full px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                        <Zap className="w-5 h-5" />
+                        Get Started Free
+                      </button>
+                    </>
+                  )
+                )}
               </div>
 
               {/* Contact Information */}
