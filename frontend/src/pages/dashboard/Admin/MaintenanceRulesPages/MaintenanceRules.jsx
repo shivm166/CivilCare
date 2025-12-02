@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import {
-  DollarSign,
-  Calendar,
-  Clock,
-  AlertCircle,
   Plus,
   Edit2,
   Trash2,
-  Check,
-  X,
   IndianRupee,
-  Loader,
+  Calendar,
+  AlertTriangle,
+  X,
+  CheckCircle2,
+  ShieldAlert,
 } from "lucide-react";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import {
@@ -19,521 +17,352 @@ import {
   useUpdateMaintenanceRule,
   useDeleteMaintenanceRule,
 } from "../../../../hooks/api/usemaintenance";
-import toast from "react-hot-toast";
-
-const UNIT_BHK_TYPES = [
-  "1BHK",
-  "2BHK",
-  "3BHK",
-  "4BHK",
-  "5BHK",
-  "Studio",
-  "Penthouse",
-];
-
-const PENALTY_TYPES = [
-  { value: "fixed_amount", label: "Fixed Amount" },
-  { value: "percentage_of_maintenance", label: "Percentage of Maintenance" },
-  { value: "daily_rate", label: "Daily Rate" },
-];
+import PageLoader from "../../../error/PageLoader";
+import Button from "../../../../components/common/Button/Button";
+import { UNIT_BHK_TYPES } from "../../../../config/unit.config";
 
 const MaintenanceRules = () => {
-  const { activeSociety } = useSocietyContext();
-  const [showModal, setShowModal] = useState(false);
+  const { activeSocietyId } = useSocietyContext();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
-  const [formData, setFormData] = useState({
-    bhkType: "1BHK",
+
+  // Initial Form State
+  const initialFormState = {
+    bhkType: UNIT_BHK_TYPES[0] || "1bhk",
     amount: "",
     dueDay: "",
-    gracePeriod: "",
+    gracePeriod: "0",
     penaltyType: "fixed_amount",
     penaltyValue: "",
     active: true,
-  });
-
-  const {
-    data: rulesData,
-    isLoading,
-    error,
-  } = useGetMaintenanceRules(activeSociety?.societyId);
-  const createMutation = useCreateMaintenanceRule();
-  const updateMutation = useUpdateMaintenanceRule();
-  const deleteMutation = useDeleteMaintenanceRule();
-
-  const rules = rulesData?.maintenanceRules || rulesData?.data || [];
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
   };
+  const [formData, setFormData] = useState(initialFormState);
 
-  const handleSubmit = async () => {
-    if (
-      !formData.amount ||
-      !formData.dueDay ||
-      !formData.gracePeriod ||
-      !formData.penaltyValue
-    ) {
-      toast.error("Please fill all required fields");
-      return;
-    }
+  // React Query Hooks
+  const { data: rules, isLoading } = useGetMaintenanceRules(activeSocietyId);
+  const { mutate: createRule, isPending: isCreating } =
+    useCreateMaintenanceRule();
+  const { mutate: updateRule, isPending: isUpdating } =
+    useUpdateMaintenanceRule();
+  const { mutate: deleteRule, isPending: isDeleting } =
+    useDeleteMaintenanceRule();
 
-    try {
-      const payload = {
-        bhkType: formData.bhkType,
-        amount: Number(formData.amount),
-        dueDay: Number(formData.dueDay),
-        gracePeriod: Number(formData.gracePeriod),
-        penaltyType: formData.penaltyType,
-        penaltyValue: Number(formData.penaltyValue),
-        active: formData.active,
-      };
-
-      if (editingRule) {
-        await updateMutation.mutateAsync({
-          id: editingRule._id,
-          ...payload,
-        });
-        toast.success("Maintenance rule updated successfully!");
-      } else {
-        await createMutation.mutateAsync(payload);
-        toast.success("Maintenance rule created successfully!");
-      }
-
-      resetForm();
-    } catch (error) {
-      console.error("Error saving rule:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to save maintenance rule"
-      );
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      bhkType: "1BHK",
-      amount: "",
-      dueDay: "",
-      gracePeriod: "",
-      penaltyType: "fixed_amount",
-      penaltyValue: "",
-      active: true,
-    });
-    setEditingRule(null);
-    setShowModal(false);
-  };
-
-  const handleEdit = (rule) => {
-    setEditingRule(rule);
-    setFormData({
-      bhkType: rule.bhkType,
-      amount: rule.amount,
-      dueDay: rule.dueDay,
-      gracePeriod: rule.gracePeriod,
-      penaltyType: rule.penaltyType,
-      penaltyValue: rule.penaltyValue,
-      active: rule.active,
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this rule?")) {
-      try {
-        await deleteMutation.mutateAsync(id);
-        toast.success("Maintenance rule deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting rule:", error);
-        toast.error("Failed to delete maintenance rule");
-      }
-    }
-  };
-
-  const toggleStatus = async (rule) => {
-    try {
-      await updateMutation.mutateAsync({
-        id: rule._id,
+  const handleOpenModal = (rule = null) => {
+    if (rule) {
+      setEditingRule(rule);
+      setFormData({
         bhkType: rule.bhkType,
         amount: rule.amount,
         dueDay: rule.dueDay,
         gracePeriod: rule.gracePeriod,
         penaltyType: rule.penaltyType,
         penaltyValue: rule.penaltyValue,
-        active: !rule.active,
+        active: rule.active,
       });
-      toast.success(
-        `Rule ${!rule.active ? "activated" : "deactivated"} successfully!`
+    } else {
+      setEditingRule(null);
+      setFormData(initialFormState);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (editingRule) {
+      updateRule(
+        { id: editingRule._id, ...formData },
+        { onSuccess: () => setIsModalOpen(false) }
       );
-    } catch (error) {
-      console.error("Error toggling status:", error);
-      toast.error("Failed to update status");
+    } else {
+      createRule(formData, { onSuccess: () => setIsModalOpen(false) });
     }
   };
 
-  const getPenaltyDisplay = (rule) => {
-    switch (rule.penaltyType) {
-      case "fixed_amount":
-        return `₹${rule.penaltyValue}`;
-      case "percentage_of_maintenance":
-        return `${rule.penaltyValue}%`;
-      case "daily_rate":
-        return `₹${rule.penaltyValue}/day`;
-      default:
-        return rule.penaltyValue;
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this rule?")) {
+      deleteRule(id);
     }
   };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-800 mb-2">
-            Error Loading Rules
-          </h3>
-          <p className="text-gray-600">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading maintenance rules...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Maintenance Rules
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Manage monthly maintenance charges and penalties
-              </p>
-            </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-            >
-              <Plus className="w-5 h-5" />
-              Add New Rule
-            </button>
-          </div>
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <ShieldAlert className="text-indigo-600" /> Maintenance Rules
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Set monthly maintenance charges and penalties for unit types.
+          </p>
         </div>
+        <Button
+          onClick={() => handleOpenModal()}
+          icon={Plus}
+          className="w-full sm:w-auto"
+        >
+          Add New Rule
+        </Button>
+      </div>
 
-        {rules.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rules.map((rule) => (
+      {/* Rules Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {rules?.length === 0 ? (
+          <div className="col-span-full py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+            <IndianRupee className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">
+              No Rules Defined
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Start by creating a maintenance rule for your society.
+            </p>
+            <Button variant="secondary" onClick={() => handleOpenModal()}>
+              Create Rule
+            </Button>
+          </div>
+        ) : (
+          rules?.map((rule) => (
+            <div
+              key={rule._id}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden relative group"
+            >
+              {/* Status Indicator */}
               <div
-                key={rule._id}
-                className={`bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-200 ${
-                  !rule.active ? "opacity-60" : ""
+                className={`absolute top-0 right-0 w-3 h-3 m-3 rounded-full ${
+                  rule.active ? "bg-green-500" : "bg-gray-300"
                 }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                      <IndianRupee className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">
-                        {rule.bhkType}
-                      </h3>
-                      <p className="text-sm text-gray-500">Unit Type</p>
-                    </div>
+                title={rule.active ? "Active" : "Inactive"}
+              ></div>
+
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-indigo-100">
+                    {rule.bhkType}
+                  </span>
+                  {/* Action Buttons */}
+                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleOpenModal(rule)}
+                      className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(rule._id)}
+                      disabled={isDeleting}
+                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => toggleStatus(rule)}
-                    disabled={updateMutation.isPending}
-                    className={`p-2 rounded-lg transition-all ${
-                      rule.active
-                        ? "bg-green-100 text-green-600 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                    }`}
-                  >
-                    {rule.active ? (
-                      <Check className="w-5 h-5" />
-                    ) : (
-                      <X className="w-5 h-5" />
-                    )}
-                  </button>
                 </div>
 
-                <div className="mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1">
-                    <DollarSign className="w-4 h-4 text-indigo-600" />
-                    <span className="text-sm text-gray-600">
-                      Monthly Maintenance
-                    </span>
-                  </div>
-                  <p className="text-2xl font-bold text-indigo-600">
-                    ₹{rule.amount?.toLocaleString() || 0}
-                  </p>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-3xl font-extrabold text-gray-900">
+                    ₹{rule.amount.toLocaleString()}
+                  </span>
+                  <span className="text-gray-500 text-sm font-medium">
+                    / month
+                  </span>
                 </div>
 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Due Day</span>
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="flex justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar size={14} /> Due Date
                     </div>
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {rule.dueDay}th of month
                     </span>
                   </div>
-
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">
-                        Grace Period
-                      </span>
+                  <div className="flex justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <CheckCircle2 size={14} /> Grace Period
                     </div>
-                    <span className="font-semibold text-gray-800">
-                      {rule.gracePeriod} days
+                    <span className="font-semibold text-gray-900">
+                      {rule.gracePeriod} Days
                     </span>
                   </div>
-
-                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                      <span className="text-sm text-gray-600">
-                        Late Penalty
-                      </span>
+                  <div className="flex justify-between text-sm items-center bg-red-50 p-2 rounded-lg mt-2">
+                    <div className="flex items-center gap-2 text-red-600 font-medium">
+                      <AlertTriangle size={14} /> Penalty
                     </div>
-                    <span className="font-semibold text-red-600">
-                      {getPenaltyDisplay(rule)}
+                    <span className="font-bold text-red-700 text-xs">
+                      {rule.penaltyType === "fixed_amount"
+                        ? `₹${rule.penaltyValue}`
+                        : rule.penaltyType === "percentage_of_maintenance"
+                        ? `${rule.penaltyValue}%`
+                        : `₹${rule.penaltyValue} / Day`}
                     </span>
                   </div>
-                </div>
-
-                <div className="flex gap-2 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => handleEdit(rule)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(rule._id)}
-                    disabled={deleteMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <DollarSign className="w-12 h-12 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              No Maintenance Rules
-            </h3>
-            <p className="text-gray-500 mb-6">
-              Create your first maintenance rule to get started
-            </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
-            >
-              Add First Rule
-            </button>
-          </div>
+          ))
         )}
+      </div>
 
-        {showModal && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) resetForm();
-            }}
-          >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl z-10">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {editingRule
-                      ? "Edit Maintenance Rule"
-                      : "Add New Maintenance Rule"}
-                  </h2>
-                  <button
-                    onClick={resetForm}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+              <h2 className="text-lg font-bold text-gray-800">
+                {editingRule ? "Edit Rule" : "Create Maintenance Rule"}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              <div className="p-6 space-y-6">
+            {/* Modal Body */}
+            <form
+              onSubmit={handleSubmit}
+              className="p-6 space-y-5 overflow-y-auto"
+            >
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Unit Type (BHK) <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Unit Type
                   </label>
                   <select
                     name="bhkType"
                     value={formData.bhkType}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    disabled={!!editingRule} // Prevent changing type on edit to avoid conflicts
                   >
                     {UNIT_BHK_TYPES.map((type) => (
                       <option key={type} value={type}>
-                        {type}
+                        {type.toUpperCase()}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Monthly Maintenance Amount (₹){" "}
-                    <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Amount (₹)
                   </label>
                   <input
                     type="number"
                     name="amount"
                     value={formData.amount}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="Enter amount"
+                    placeholder="e.g. 2500"
+                    required
                     min="0"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Due Day (Day of Month){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="dueDay"
-                    value={formData.dueDay}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="e.g., 5 for 5th of every month"
-                    min="1"
-                    max="31"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      Due Day
+                    </label>
+                    <input
+                      type="number"
+                      name="dueDay"
+                      value={formData.dueDay}
+                      onChange={handleInputChange}
+                      placeholder="1-31"
+                      required
+                      min="1"
+                      max="31"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      Grace (Days)
+                    </label>
+                    <input
+                      type="number"
+                      name="gracePeriod"
+                      value={formData.gracePeriod}
+                      onChange={handleInputChange}
+                      placeholder="e.g. 5"
+                      required
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Grace Period (Days) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="gracePeriod"
-                    value={formData.gracePeriod}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="Number of days"
-                    min="0"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Penalty Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="penaltyType"
-                    value={formData.penaltyType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  >
-                    {PENALTY_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
+                {/* Penalty Section */}
+                <div className="bg-red-50 p-4 rounded-xl border border-red-100 space-y-3">
+                  <p className="text-xs font-bold text-red-800 uppercase tracking-wider flex items-center gap-1">
+                    <AlertTriangle size={12} /> Penalty Settings
+                  </p>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Penalty Type
+                    </label>
+                    <select
+                      name="penaltyType"
+                      value={formData.penaltyType}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white"
+                    >
+                      <option value="fixed_amount">Fixed Amount (₹)</option>
+                      <option value="percentage_of_maintenance">
+                        % of Maintenance
                       </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Penalty Value <span className="text-red-500">*</span>
-                    {formData.penaltyType === "percentage_of_maintenance" &&
-                      " (%)"}
-                    {formData.penaltyType === "fixed_amount" && " (₹)"}
-                    {formData.penaltyType === "daily_rate" && " (₹/day)"}
-                  </label>
-                  <input
-                    type="number"
-                    name="penaltyValue"
-                    value={formData.penaltyValue}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="Enter penalty value"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    id="active"
-                    checked={formData.active}
-                    onChange={handleInputChange}
-                    className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="active"
-                    className="text-sm font-semibold text-gray-700 cursor-pointer"
-                  >
-                    Active Rule (uncheck to disable)
-                  </label>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={resetForm}
-                    disabled={
-                      createMutation.isPending || updateMutation.isPending
-                    }
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={
-                      createMutation.isPending || updateMutation.isPending
-                    }
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {(createMutation.isPending || updateMutation.isPending) && (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    )}
-                    {editingRule ? "Update Rule" : "Create Rule"}
-                  </button>
+                      <option value="daily_rate">Daily Rate (₹ per day)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Penalty Value
+                    </label>
+                    <input
+                      type="number"
+                      name="penaltyValue"
+                      value={formData.penaltyValue}
+                      onChange={handleInputChange}
+                      placeholder="e.g. 100"
+                      required
+                      min="0"
+                      className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* Footer Actions */}
+              <div className="pt-2 flex gap-3">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={isCreating || isUpdating}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+                >
+                  {editingRule ? "Save Changes" : "Create Rule"}
+                </Button>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

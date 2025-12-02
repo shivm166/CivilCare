@@ -1,23 +1,23 @@
-import apiClient from "./apiClient";
+import { axiosInstance } from "../axios";
 
-const BASE_URL = "/api/maintenance";
+const BASE_URL = "/maintenance-rules";
 
 export const getMaintenanceRules = async () => {
-  const response = await apiClient.get(BASE_URL);
-  return response.data;
+  const { data } = await axiosInstance.get(BASE_URL);
+  return data.data; // Returns array of rules
 };
 
-export const createMaintenanceRule = async (data) => {
-  const response = await apiClient.post(BASE_URL, data);
-  return response.data;
+export const createMaintenanceRule = async (ruleData) => {
+  const { data } = await axiosInstance.post(BASE_URL, ruleData);
+  return data.data;
 };
 
-export const updateMaintenanceRule = async (id, data) => {
-  const response = await apiClient.put(`${BASE_URL}/${id}`, data);
-  return response.data;
+export const updateMaintenanceRule = async ({ id, ...ruleData }) => {
+  const { data } = await axiosInstance.put(`${BASE_URL}/${id}`, ruleData);
+  return data.data;
 };
 
 export const deleteMaintenanceRule = async (id) => {
-  const response = await apiClient.delete(`${BASE_URL}/${id}`);
-  return response.data;
+  const { data } = await axiosInstance.delete(`${BASE_URL}/${id}`);
+  return data.data;
 };

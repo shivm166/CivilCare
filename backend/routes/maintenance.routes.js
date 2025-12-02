@@ -4,20 +4,19 @@ import {
   getMaintanenceRules,
   updateMaintenanceRule,
   deleteMaintenanceRule,
-} from "../controllers/maintenance/maintenance_Rule.controllers.js";
-import { protect } from "../middleware/auth.middleware.js";
-import { validateSociety } from "../middleware/society.middleware.js";
-import { adminOnly } from "../middleware/role.middleware.js";
+} from "../controllers/maintenance/maintenance_rule.controllers.js";
+import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
+import attachSocietyContext from "../middleware/attachSocietyContext.js";
 
 const router = express.Router();
 
-// Apply auth + society middleware to all routes
-router.use(protect, validateSociety);
+router.use(protectRoute);
+router.use(attachSocietyContext);
 
-// CRUD Routes
 router.get("/", getMaintanenceRules);
-router.post("/", adminOnly, postMaintanenceRule);
-router.put("/:id", adminOnly, updateMaintenanceRule);
-router.delete("/:id", adminOnly, deleteMaintenanceRule);
+
+router.post("/", requireAdmin, postMaintanenceRule);
+router.put("/:id", requireAdmin, updateMaintenanceRule);
+router.delete("/:id", requireAdmin, deleteMaintenanceRule);
 
 export default router;

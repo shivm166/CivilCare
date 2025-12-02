@@ -50,8 +50,6 @@ const ParkingManagement = lazy(() =>
 const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
-
-// ✅ Maintenance Rules - ADD THIS
 const MaintenanceRules = lazy(() =>
   import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
 );
