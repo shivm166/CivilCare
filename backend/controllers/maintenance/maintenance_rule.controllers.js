@@ -1,4 +1,3 @@
-import express from "express";
 import { MaintenanceRule } from "../../models/Maintenance/maintenance_rule.model.js";
 import { STATUS_CODES } from "../../utils/status.js";
 import {
@@ -6,16 +5,7 @@ import {
   sendErrorResponse,
 } from "../../utils/response.js";
 
-const {
-  SUCCESS,
-  CREATED,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  CONFLICT,
-  NOT_FOUND,
-  SERVER_ERROR,
-  FORBIDDEN,
-} = STATUS_CODES;
+const { SUCCESS, CREATED, SERVER_ERROR, CONFLICT } = STATUS_CODES;
 
 export const postMaintanenceRule = async (req, res) => {
   try {
@@ -27,8 +17,21 @@ export const postMaintanenceRule = async (req, res) => {
       penaltyType,
       penaltyValue,
       active,
-      createdBy,
     } = req.body;
+
+    // Duplicate check (Optional but recommended)
+    const existingRule = await MaintenanceRule.findOne({
+      society: req.society._id,
+      bhkType,
+    });
+    if (existingRule) {
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        "Rule for this BHK type already exists"
+      );
+    }
 
     const newMaintenanceRule = await MaintenanceRule.create({
       bhkType,
@@ -48,7 +51,7 @@ export const postMaintanenceRule = async (req, res) => {
       "Maintenance rule created successfully"
     );
   } catch (error) {
-    console.error("Error craeeting maintenance rule :", error);
+    console.error("Error creating maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
@@ -65,7 +68,7 @@ export const getMaintanenceRules = async (req, res) => {
       "Maintenance rules fetched successfully"
     );
   } catch (error) {
-    console.error("Error fetching maintenance rules :", error);
+    console.error("Error fetching maintenance rules:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
@@ -73,28 +76,9 @@ export const getMaintanenceRules = async (req, res) => {
 export const updateMaintenanceRule = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      bhkType,
-      amount,
-      dueDay,
-      gracePeriod,
-      penaltyType,
-      penaltyValue,
-      active,
-    } = req.body;
-    const updatedRule = await MaintenanceRule.findByIdAndUpdate(
-      id,
-      {
-        bhkType,
-        amount,
-        dueDay,
-        gracePeriod,
-        penaltyType,
-        penaltyValue,
-        active,
-      },
-      { new: true }
-    );
+    const updatedRule = await MaintenanceRule.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     return sendSuccessResponse(
       res,
       SUCCESS,
@@ -102,7 +86,7 @@ export const updateMaintenanceRule = async (req, res) => {
       "Maintenance rule updated successfully"
     );
   } catch (error) {
-    console.error("Error updating maintenance rule :", error);
+    console.error("Error updating maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
 };
@@ -118,7 +102,7 @@ export const deleteMaintenanceRule = async (req, res) => {
       "Maintenance rule deleted successfully"
     );
   } catch (error) {
-    console.error("Error deleting maintenance rule :", error);
+    console.error("Error deleting maintenance rule:", error);
     return sendErrorResponse(res, SERVER_ERROR, error, "Internal server error");
   }
-}
+};

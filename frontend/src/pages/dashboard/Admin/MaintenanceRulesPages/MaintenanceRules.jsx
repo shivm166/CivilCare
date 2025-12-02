@@ -12,13 +12,13 @@ import {
   IndianRupee,
   Loader,
 } from "lucide-react";
-import { useSocietyContext } from "../../contexts/SocietyContext";
+import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import {
   useGetMaintenanceRules,
   useCreateMaintenanceRule,
   useUpdateMaintenanceRule,
   useDeleteMaintenanceRule,
-} from "../../hooks/api/useMaintenanceRules";
+} from "../../../../hooks/api/usemaintenance";
 import toast from "react-hot-toast";
 
 const UNIT_BHK_TYPES = [
@@ -51,15 +51,16 @@ const MaintenanceRules = () => {
     active: true,
   });
 
-  // React Query hooks
-  const { data: rulesData, isLoading } = useGetMaintenanceRules(
-    activeSociety?.societyId
-  );
+  const {
+    data: rulesData,
+    isLoading,
+    error,
+  } = useGetMaintenanceRules(activeSociety?.societyId);
   const createMutation = useCreateMaintenanceRule();
   const updateMutation = useUpdateMaintenanceRule();
   const deleteMutation = useDeleteMaintenanceRule();
 
-  const rules = rulesData?.maintenanceRules || [];
+  const rules = rulesData?.maintenanceRules || rulesData?.data || [];
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -70,13 +71,25 @@ const MaintenanceRules = () => {
   };
 
   const handleSubmit = async () => {
+    if (
+      !formData.amount ||
+      !formData.dueDay ||
+      !formData.gracePeriod ||
+      !formData.penaltyValue
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     try {
       const payload = {
-        ...formData,
+        bhkType: formData.bhkType,
         amount: Number(formData.amount),
         dueDay: Number(formData.dueDay),
         gracePeriod: Number(formData.gracePeriod),
+        penaltyType: formData.penaltyType,
         penaltyValue: Number(formData.penaltyValue),
+        active: formData.active,
       };
 
       if (editingRule) {
@@ -93,7 +106,9 @@ const MaintenanceRules = () => {
       resetForm();
     } catch (error) {
       console.error("Error saving rule:", error);
-      toast.error(error.response?.data?.message || "Failed to save rule");
+      toast.error(
+        error.response?.data?.message || "Failed to save maintenance rule"
+      );
     }
   };
 
@@ -132,7 +147,7 @@ const MaintenanceRules = () => {
         toast.success("Maintenance rule deleted successfully!");
       } catch (error) {
         console.error("Error deleting rule:", error);
-        toast.error("Failed to delete rule");
+        toast.error("Failed to delete maintenance rule");
       }
     }
   };
@@ -171,10 +186,27 @@ const MaintenanceRules = () => {
     }
   };
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            Error Loading Rules
+          </h3>
+          <p className="text-gray-600">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading maintenance rules...</p>
+        </div>
       </div>
     );
   }
@@ -182,7 +214,6 @@ const MaintenanceRules = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -203,115 +234,113 @@ const MaintenanceRules = () => {
           </div>
         </div>
 
-        {/* Rules Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rules.map((rule) => (
-            <div
-              key={rule._id}
-              className={`bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-200 ${
-                !rule.active ? "opacity-60" : ""
-              }`}
-            >
-              {/* Card Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                    <IndianRupee className="w-6 h-6 text-white" />
+        {rules.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rules.map((rule) => (
+              <div
+                key={rule._id}
+                className={`bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-200 ${
+                  !rule.active ? "opacity-60" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                      <IndianRupee className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">
+                        {rule.bhkType}
+                      </h3>
+                      <p className="text-sm text-gray-500">Unit Type</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">
-                      {rule.bhkType}
-                    </h3>
-                    <p className="text-sm text-gray-500">Unit Type</p>
+                  <button
+                    onClick={() => toggleStatus(rule)}
+                    disabled={updateMutation.isPending}
+                    className={`p-2 rounded-lg transition-all ${
+                      rule.active
+                        ? "bg-green-100 text-green-600 hover:bg-green-200"
+                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                    }`}
+                  >
+                    {rule.active ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <X className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1">
+                    <DollarSign className="w-4 h-4 text-indigo-600" />
+                    <span className="text-sm text-gray-600">
+                      Monthly Maintenance
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-600">
+                    ₹{rule.amount?.toLocaleString() || 0}
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">Due Day</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">
+                      {rule.dueDay}th of month
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">
+                        Grace Period
+                      </span>
+                    </div>
+                    <span className="font-semibold text-gray-800">
+                      {rule.gracePeriod} days
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-500" />
+                      <span className="text-sm text-gray-600">
+                        Late Penalty
+                      </span>
+                    </div>
+                    <span className="font-semibold text-red-600">
+                      {getPenaltyDisplay(rule)}
+                    </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => toggleStatus(rule)}
-                  disabled={updateMutation.isPending}
-                  className={`p-2 rounded-lg transition-all ${
-                    rule.active
-                      ? "bg-green-100 text-green-600 hover:bg-green-200"
-                      : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                  }`}
-                >
-                  {rule.active ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    <X className="w-5 h-5" />
-                  )}
-                </button>
+
+                <div className="flex gap-2 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => handleEdit(rule)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rule._id)}
+                    disabled={deleteMutation.isPending}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
               </div>
-
-              {/* Amount */}
-              <div className="mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-indigo-600" />
-                  <span className="text-sm text-gray-600">
-                    Monthly Maintenance
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-indigo-600">
-                  ₹{rule.amount.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Details Grid */}
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">Due Day</span>
-                  </div>
-                  <span className="font-semibold text-gray-800">
-                    {rule.dueDay}th of month
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">Grace Period</span>
-                  </div>
-                  <span className="font-semibold text-gray-800">
-                    {rule.gracePeriod} days
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm text-gray-600">Late Penalty</span>
-                  </div>
-                  <span className="font-semibold text-red-600">
-                    {getPenaltyDisplay(rule)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => handleEdit(rule)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(rule._id)}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {rules.length === 0 && (
+            ))}
+          </div>
+        ) : (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <DollarSign className="w-12 h-12 text-gray-400" />
@@ -331,29 +360,40 @@ const MaintenanceRules = () => {
           </div>
         )}
 
-        {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) resetForm();
+            }}
+          >
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {editingRule
-                    ? "Edit Maintenance Rule"
-                    : "Add New Maintenance Rule"}
-                </h2>
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl z-10">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingRule
+                      ? "Edit Maintenance Rule"
+                      : "Add New Maintenance Rule"}
+                  </h2>
+                  <button
+                    onClick={resetForm}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
               <div className="p-6 space-y-6">
-                {/* BHK Type */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Unit Type (BHK)
+                    Unit Type (BHK) <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="bhkType"
                     value={formData.bhkType}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   >
                     {UNIT_BHK_TYPES.map((type) => (
                       <option key={type} value={type}>
@@ -363,65 +403,63 @@ const MaintenanceRules = () => {
                   </select>
                 </div>
 
-                {/* Amount */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Monthly Maintenance Amount (₹)
+                    Monthly Maintenance Amount (₹){" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     name="amount"
                     value={formData.amount}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     placeholder="Enter amount"
                     min="0"
                   />
                 </div>
 
-                {/* Due Day */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Due Day (Day of Month)
+                    Due Day (Day of Month){" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     name="dueDay"
                     value={formData.dueDay}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     placeholder="e.g., 5 for 5th of every month"
                     min="1"
                     max="31"
                   />
                 </div>
 
-                {/* Grace Period */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Grace Period (Days)
+                    Grace Period (Days) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     name="gracePeriod"
                     value={formData.gracePeriod}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     placeholder="Number of days"
                     min="0"
                   />
                 </div>
 
-                {/* Penalty Type */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Penalty Type
+                    Penalty Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="penaltyType"
                     value={formData.penaltyType}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   >
                     {PENALTY_TYPES.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -431,10 +469,9 @@ const MaintenanceRules = () => {
                   </select>
                 </div>
 
-                {/* Penalty Value */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Penalty Value
+                    Penalty Value <span className="text-red-500">*</span>
                     {formData.penaltyType === "percentage_of_maintenance" &&
                       " (%)"}
                     {formData.penaltyType === "fixed_amount" && " (₹)"}
@@ -445,14 +482,13 @@ const MaintenanceRules = () => {
                     name="penaltyValue"
                     value={formData.penaltyValue}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     placeholder="Enter penalty value"
                     min="0"
                     step="0.01"
                   />
                 </div>
 
-                {/* Active Status */}
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                   <input
                     type="checkbox"
@@ -460,17 +496,16 @@ const MaintenanceRules = () => {
                     id="active"
                     checked={formData.active}
                     onChange={handleInputChange}
-                    className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+                    className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                   />
                   <label
                     htmlFor="active"
-                    className="text-sm font-semibold text-gray-700"
+                    className="text-sm font-semibold text-gray-700 cursor-pointer"
                   >
                     Active Rule (uncheck to disable)
                   </label>
                 </div>
 
-                {/* Form Actions */}
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={resetForm}

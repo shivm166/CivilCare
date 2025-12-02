@@ -4,7 +4,7 @@ import {
   getMaintanenceRules,
   postMaintanenceRule,
   updateMaintenanceRule,
-} from "../../../../controllers/maintenance/maintenance.js";
+} from "../../../../controllers/maintenance/maintenance_rule.controllers.js";
 
 const router = express.Router();
 

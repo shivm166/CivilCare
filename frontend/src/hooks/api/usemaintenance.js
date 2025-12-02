@@ -3,7 +3,6 @@ import axios from "axios";
 
 const API_BASE_URL = "/api/maintenance-rules";
 
-// Fetch all maintenance rules for a society
 export const useGetMaintenanceRules = (societyId) => {
   return useQuery({
     queryKey: ["maintenance-rules", societyId],
@@ -12,14 +11,12 @@ export const useGetMaintenanceRules = (societyId) => {
       return data;
     },
     enabled: !!societyId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 
-// Create new maintenance rule
 export const useCreateMaintenanceRule = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (ruleData) => {
       const { data } = await axios.post(API_BASE_URL, ruleData);
@@ -31,10 +28,8 @@ export const useCreateMaintenanceRule = () => {
   });
 };
 
-// Update maintenance rule
 export const useUpdateMaintenanceRule = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({ id, ...ruleData }) => {
       const { data } = await axios.put(`${API_BASE_URL}/${id}`, ruleData);
@@ -46,10 +41,8 @@ export const useUpdateMaintenanceRule = () => {
   });
 };
 
-// Delete maintenance rule
 export const useDeleteMaintenanceRule = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id) => {
       const { data } = await axios.delete(`${API_BASE_URL}/${id}`);
@@ -60,4 +53,3 @@ export const useDeleteMaintenanceRule = () => {
     },
   });
 };
-

@@ -1,11 +1,9 @@
-// frontend/src/routes/ProtectedRoutes.jsx
 import React, { lazy, Suspense } from "react";
 import { Route, Navigate, Outlet } from "react-router-dom";
-import { SocietyProvider, useSocietyContext } from "../contexts/SocietyContext";
-
+import { useSocietyContext, SocietyProvider } from "../contexts/SocietyContext";
 import PageLoader from "../pages/error/PageLoader";
 
-// Lazy Loaded Pages
+// Lazy imports
 const SocietyOnboarding = lazy(() =>
   import("../pages/onboarding/SocietyOnboarding")
 );
@@ -46,8 +44,6 @@ const BuildingUnitsPage = lazy(() =>
 const UnitDetailPage = lazy(() =>
   import("../pages/dashboard/Admin/UnitManagement/UnitDetailPage")
 );
-
-// Parking Pages
 const ParkingManagement = lazy(() =>
   import("../pages/dashboard/Admin/ParkingManagement/ParkingManagement")
 );
@@ -55,14 +51,17 @@ const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
 
-// Admin-only page
-const MaintenanceRules = lazy(() => import("../pages/admin/MaintenanceRules"));
+// ✅ Maintenance Rules - ADD THIS
+const MaintenanceRules = lazy(() =>
+  import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
+);
 
-// ---------------- Dashboard Wrapper ----------------
 const DashboardWrapper = () => {
   const { societies, activeRole, isSocietiesLoading } = useSocietyContext();
 
-  if (isSocietiesLoading) return <PageLoader />;
+  if (isSocietiesLoading) {
+    return <PageLoader />;
+  }
 
   const hasSociety = societies && societies.length > 0;
 
@@ -74,41 +73,56 @@ const DashboardWrapper = () => {
     );
   }
 
+  if (activeRole === "admin") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AdminDashboard />
+      </Suspense>
+    );
+  }
+
   return (
     <Suspense fallback={<PageLoader />}>
-      {activeRole === "admin" ? <AdminDashboard /> : <ResidentDashboard />}
+      <ResidentDashboard />
     </Suspense>
   );
 };
 
-// ---------------- Society Checker ----------------
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
-  if (!authUser) return <Navigate to="/login" replace />;
-  if (isSocietiesLoading) return <PageLoader />;
+  if (!authUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isSocietiesLoading) {
+    return <PageLoader />;
+  }
 
   const hasSociety = societies && societies.length > 0;
+  const currentPath = window.location.pathname;
 
-  // Allow limited access for users without society
-  const current = window.location.pathname;
-  const allowedWithoutSociety = ["/user/dashboard", "/user/profile"];
-
-  if (
-    !hasSociety &&
-    !allowedWithoutSociety.some((p) => current.startsWith(p))
-  ) {
-    return <Navigate to="/user/dashboard" replace />;
+  if (!hasSociety) {
+    const allowedPaths = [
+      "/user/dashboard",
+      "/user/notifications",
+      "/user/profile",
+    ];
+    if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
+      return <Navigate to="/user/dashboard" replace />;
+    }
   }
 
   return children;
 };
 
-// ---------------- Protected Routes ----------------
 const ProtectedRoutes = ({ authUser, isLoading }) => {
-  if (isLoading) return <PageLoader />;
-  if (!authUser)
+  if (!authUser) {
     return <Route path="*" element={<Navigate to="/login" replace />} />;
+  }
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <Route
@@ -121,12 +135,11 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
         </SocietyProvider>
       }
     >
-      {/* Default Landing Route */}
       <Route index element={<Navigate to="/user/dashboard" replace />} />
 
-      {/* ---------------- ADMIN ROUTES ---------------- */}
+      {/* ================= ADMIN ROUTES ================= */}
       <Route
-        path="admin"
+        path="/admin"
         element={
           <SocietyChecker authUser={authUser}>
             <Outlet />
@@ -154,6 +167,24 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
         />
 
         <Route
+          path="buildings/:buildingId/units"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <BuildingUnitsPage />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="buildings/:buildingId/units/:unitId"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UnitDetailPage />
+            </Suspense>
+          }
+        />
+
+        <Route
           path="complaints"
           element={
             <Suspense fallback={<PageLoader />}>
@@ -167,6 +198,16 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           element={
             <Suspense fallback={<PageLoader />}>
               <ResidentsPage />
+            </Suspense>
+          }
+        />
+
+        {/* ✅ MAINTENANCE RULES - MOVE INSIDE ADMIN SECTION */}
+        <Route
+          path="maintenance-rules"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <MaintenanceRules />
             </Suspense>
           }
         />
@@ -197,40 +238,11 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-
-        {/* Units */}
-        <Route
-          path="buildings/:buildingId/units"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <BuildingUnitsPage />
-            </Suspense>
-          }
-        />
-
-        <Route
-          path="buildings/:buildingId/units/:unitId"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <UnitDetailPage />
-            </Suspense>
-          }
-        />
-
-        {/* Admin only */}
-        <Route
-          path="maintenance-rules"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <MaintenanceRules />
-            </Suspense>
-          }
-        />
       </Route>
 
-      {/* ---------------- USER ROUTES ---------------- */}
+      {/* ================= USER ROUTES ================= */}
       <Route
-        path="user"
+        path="/user"
         element={
           <SocietyChecker authUser={authUser}>
             <Outlet />
@@ -262,6 +274,15 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           element={
             <Suspense fallback={<PageLoader />}>
               <UserParkingPage />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="residents"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ResidentsPage />
             </Suspense>
           }
         />
