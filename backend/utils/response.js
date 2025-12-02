@@ -55,7 +55,6 @@ const sendErrorResponse = (
   data = null,
   code = 0
 ) => {
-  // console.log('error occured : ', error); // console.log removed from final output
   return res.status(status).json({
     success: false,
     data: data,
