@@ -4,10 +4,9 @@ import {
   FileText,
   IndianRupee,
   Calendar,
-  Home,
-  CheckCircle2,
-  AlertTriangle,
   Trash2,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import {
@@ -20,7 +19,6 @@ import PageLoader from "../../../error/PageLoader";
 import Button from "../../../../components/common/Button/Button";
 import Card from "../../../../components/common/Card/Card";
 
-// Helper Functions
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("en-IN", {
@@ -36,7 +34,6 @@ const getStatusColor = (status) => {
       return "text-green-600 bg-green-50 border-green-200";
     case "overdue":
       return "text-red-600 bg-red-50 border-red-200";
-    case "pending":
     default:
       return "text-yellow-600 bg-yellow-50 border-yellow-200";
   }
@@ -48,7 +45,7 @@ const MaintenanceBillPage = () => {
   const [formData, setFormData] = useState({
     unitId: "",
     ruleId: "",
-    forMonth: new Date().toISOString().substring(0, 7), // YYYY-MM format
+    forMonth: new Date().toISOString().substring(0, 7),
   });
 
   const { data: bills, isLoading: isBillsLoading } =
@@ -60,17 +57,8 @@ const MaintenanceBillPage = () => {
   const { mutate: generateBill, isPending: isGenerating } =
     useGenerateMaintenanceBill();
 
-  // Normalize data shapes
-  const rulesList = Array.isArray(rules?.maintenanceRules)
-    ? rules.maintenanceRules
-    : Array.isArray(rules?.data?.maintenanceRules)
-    ? rules.data.maintenanceRules
-    : [];
-  const unitsList = Array.isArray(units)
-    ? units
-    : Array.isArray(units?.units)
-    ? units.units
-    : [];
+  const rulesList = Array.isArray(rules) ? rules : [];
+  const unitsList = Array.isArray(units) ? units : [];
   const billsList = Array.isArray(bills) ? bills : [];
 
   const selectedRule = rulesList.find((r) => r._id === formData.ruleId);
@@ -83,11 +71,7 @@ const MaintenanceBillPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.unitId || !formData.ruleId || !formData.forMonth) {
-      // Simple client-side validation
-      return;
-    }
-
+    if (!formData.unitId || !formData.ruleId || !formData.forMonth) return;
     generateBill(formData, {
       onSuccess: () => {
         setIsModalOpen(false);
@@ -126,7 +110,6 @@ const MaintenanceBillPage = () => {
         </Button>
       </Card>
 
-      {/* Bill List */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-gray-800 border-b pb-2">
           All Maintenance Bills
@@ -205,17 +188,16 @@ const MaintenanceBillPage = () => {
         )}
       </div>
 
-      {/* Generate Bill Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
-            <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
               <h2 className="text-lg font-bold text-indigo-800">
                 Generate Maintenance Bill
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600"
               >
                 <Trash2 size={20} />
               </button>
@@ -234,7 +216,7 @@ const MaintenanceBillPage = () => {
                     name="unitId"
                     value={formData.unitId}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl"
                     required
                   >
                     <option value="">Select Unit</option>
@@ -257,7 +239,7 @@ const MaintenanceBillPage = () => {
                     name="ruleId"
                     value={formData.ruleId}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl"
                     required
                   >
                     <option value="">Select Rule (Filter by BHK Type)</option>
@@ -288,7 +270,7 @@ const MaintenanceBillPage = () => {
                     value={formData.forMonth}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl"
                   />
                 </div>
 
@@ -298,13 +280,18 @@ const MaintenanceBillPage = () => {
                       <CheckCircle2 size={14} /> Ready to Generate:
                     </p>
                     <p>
-                      Unit: **{selectedUnit.unitNumber}** (
+                      Unit: <strong>{selectedUnit.unitNumber}</strong> (
                       {selectedUnit.bhkType})
                     </p>
-                    <p>Resident: **{selectedUnit.resident.name}**</p>
-                    <p>Amount: **₹{selectedRule.amount}**</p>
+                    <p>
+                      Resident: <strong>{selectedUnit.resident.name}</strong>
+                    </p>
+                    <p>
+                      Amount: <strong>₹{selectedRule.amount}</strong>
+                    </p>
                   </div>
                 )}
+
                 {selectedUnit && !selectedUnit.resident && (
                   <div className="bg-yellow-50 p-4 rounded-xl text-sm text-yellow-800">
                     <p className="font-bold flex items-center gap-1">
@@ -320,14 +307,14 @@ const MaintenanceBillPage = () => {
                   variant="ghost"
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="flex-1 border border-gray-300"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   isLoading={isGenerating}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+                  className="flex-1 bg-indigo-600 text-white"
                   disabled={
                     !formData.unitId || !formData.ruleId || isGenerating
                   }

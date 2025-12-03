@@ -45,14 +45,7 @@ const MaintenancePage = () => {
   const { mutate: deleteRule, isPending: isDeleting } =
     useDeleteMaintenanceRule();
 
-  // normalize rules into an array (support different response shapes)
-  const rulesList = Array.isArray(rules)
-    ? rules
-    : Array.isArray(rules?.data)
-    ? rules.data
-    : Array.isArray(rules?.rules)
-    ? rules.rules
-    : [];
+  const rulesList = rules || [];
 
   const handleOpenModal = (rule = null) => {
     if (rule) {
@@ -74,8 +67,11 @@ const MaintenancePage = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -91,9 +87,8 @@ const MaintenancePage = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this rule?")) {
+    if (window.confirm("Are you sure you want to delete this rule?"))
       deleteRule(id);
-    }
   };
 
   if (isLoading) return <PageLoader />;
@@ -106,7 +101,7 @@ const MaintenancePage = () => {
             <ShieldAlert className="text-indigo-600" /> Maintenance Rules
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Set monthly maintenance charges and penalties for unit types.
+            Set monthly maintenance rates for each BHK type.
           </p>
         </div>
         <Button
@@ -120,94 +115,78 @@ const MaintenancePage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rulesList.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+          <div className="col-span-full py-20 text-center bg-gray-50 rounded-2xl border-dashed border-2 border-gray-300">
             <IndianRupee className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">
-              No Rules Defined
+              No Rules Found
             </h3>
-            <p className="text-gray-500 mb-6">
-              Start by creating a maintenance rule for your society.
+            <p className="text-gray-500 mb-4">
+              Start by creating maintenance rules.
             </p>
             <Button variant="secondary" onClick={() => handleOpenModal()}>
-              Create Rule
+              Create Rulee
             </Button>
           </div>
         ) : (
           rulesList.map((rule) => (
             <div
               key={rule._id}
-              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden relative group"
+              className="bg-white rounded-2xl border shadow-sm p-5 relative"
             >
               <div
-                className={`absolute top-0 right-0 w-3 h-3 m-3 rounded-full ${
+                className={`absolute top-3 right-3 w-3 h-3 rounded-full ${
                   rule.active ? "bg-green-500" : "bg-gray-300"
                 }`}
-                title={rule.active ? "Active" : "Inactive"}
-              ></div>
-
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-indigo-100">
-                    {rule.bhkType}
-                  </span>
-                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleOpenModal(rule)}
-                      className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(rule._id)}
-                      disabled={isDeleting}
-                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+              />
+              <div className="flex justify-between items-start mb-4">
+                <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold">
+                  {rule.bhkType}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleOpenModal(rule)}
+                    className="p-2 hover:text-indigo-600"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rule._id)}
+                    disabled={isDeleting}
+                    className="p-2 hover:text-red-600"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
+              </div>
 
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-3xl font-extrabold text-gray-900">
-                    ₹
-                    {typeof rule.amount === "number"
-                      ? rule.amount.toLocaleString()
-                      : Number(rule.amount || 0).toLocaleString()}
+              <div className="text-3xl font-extrabold text-gray-900 mb-2">
+                ₹{Number(rule.amount).toLocaleString()}
+              </div>
+
+              <div className="border-t pt-3 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1 text-gray-600">
+                    <Calendar size={14} /> Due
                   </span>
-                  <span className="text-gray-500 text-sm font-medium">
-                    / month
-                  </span>
+                  <span className="font-semibold">{rule.dueDay}th</span>
                 </div>
-
-                <div className="space-y-3 pt-4 border-t border-gray-100">
-                  <div className="flex justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar size={14} /> Due Date
-                    </div>
-                    <span className="font-semibold text-gray-900">
-                      {rule.dueDay}th of month
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <CheckCircle2 size={14} /> Grace Period
-                    </div>
-                    <span className="font-semibold text-gray-900">
-                      {rule.gracePeriod} Days
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center bg-red-50 p-2 rounded-lg mt-2">
-                    <div className="flex items-center gap-2 text-red-600 font-medium">
-                      <AlertTriangle size={14} /> Penalty
-                    </div>
-                    <span className="font-bold text-red-700 text-xs">
-                      {rule.penaltyType === "fixed_amount"
-                        ? `₹${rule.penaltyValue}`
-                        : rule.penaltyType === "percentage_of_maintenance"
-                        ? `${rule.penaltyValue}%`
-                        : `₹${rule.penaltyValue} / Day`}
-                    </span>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1 text-gray-600">
+                    <CheckCircle2 size={14} /> Grace
+                  </span>
+                  <span className="font-semibold">{rule.gracePeriod} days</span>
+                </div>
+                <div className="flex justify-between bg-red-50 p-2 rounded-lg">
+                  <span className="flex items-center gap-1 text-red-700 font-semibold">
+                    <AlertTriangle size={14} /> Penalty
+                  </span>
+                  <span className="text-red-700 font-bold text-xs">
+                    {rule.penaltyType === "fixed_amount"
+                      ? `₹${rule.penaltyValue}`
+                      : rule.penaltyType === "percentage_of_maintenance"
+                      ? `${rule.penaltyValue}%`
+                      : `₹${rule.penaltyValue} / day`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -216,150 +195,95 @@ const MaintenancePage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
-              <h2 className="text-lg font-bold text-gray-800">
-                {editingRule ? "Edit Rule" : "Create Maintenance Rule"}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold">
+                {editingRule ? "Edit Rule" : "Create Rule"}
               </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <button onClick={() => setIsModalOpen(false)}>
                 <X size={20} />
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="p-6 space-y-5 overflow-y-auto"
-            >
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Unit Type
-                  </label>
-                  <select
-                    name="bhkType"
-                    value={formData.bhkType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    disabled={!!editingRule}
-                  >
-                    {UNIT_BHK_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 2500"
-                    required
-                    min="0"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Due Day
-                    </label>
-                    <input
-                      type="number"
-                      name="dueDay"
-                      value={formData.dueDay}
-                      onChange={handleInputChange}
-                      placeholder="1-31"
-                      required
-                      min="1"
-                      max="31"
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Grace (Days)
-                    </label>
-                    <input
-                      type="number"
-                      name="gracePeriod"
-                      value={formData.gracePeriod}
-                      onChange={handleInputChange}
-                      placeholder="e.g. 5"
-                      required
-                      min="0"
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-xl border border-red-100 space-y-3">
-                  <p className="text-xs font-bold text-red-800 uppercase tracking-wider flex items-center gap-1">
-                    <AlertTriangle size={12} /> Penalty Settings
-                  </p>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Penalty Type
-                    </label>
-                    <select
-                      name="penaltyType"
-                      value={formData.penaltyType}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none bg-white"
-                    >
-                      <option value="fixed_amount">Fixed Amount (₹)</option>
-                      <option value="percentage_of_maintenance">
-                        % of Maintenance
-                      </option>
-                      <option value="daily_rate">Daily Rate (₹ per day)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Penalty Value
-                    </label>
-                    <input
-                      type="number"
-                      name="penaltyValue"
-                      value={formData.penaltyValue}
-                      onChange={handleInputChange}
-                      placeholder="e.g. 100"
-                      required
-                      min="0"
-                      className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                    />
-                  </div>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label>Unit Type</label>
+                <select
+                  name="bhkType"
+                  disabled={!!editingRule}
+                  value={formData.bhkType}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-2"
+                >
+                  {UNIT_BHK_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="pt-2 flex gap-3">
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={isCreating || isUpdating}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
-                >
-                  {editingRule ? "Save Changes" : "Create Rule"}
-                </Button>
-              </div>
+              <input
+                type="number"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                placeholder="Amount"
+                className="w-full border p-2 rounded-md"
+                required
+              />
+
+              <input
+                type="number"
+                name="dueDay"
+                value={formData.dueDay}
+                onChange={handleInputChange}
+                placeholder="Due day"
+                className="w-full border p-2 rounded-md"
+                required
+              />
+
+              <input
+                type="number"
+                name="gracePeriod"
+                value={formData.gracePeriod}
+                onChange={handleInputChange}
+                placeholder="Grace days"
+                className="w-full border p-2 rounded-md"
+                required
+              />
+
+              <select
+                name="penaltyType"
+                value={formData.penaltyType}
+                onChange={handleInputChange}
+                className="w-full border p-2 rounded-md"
+              >
+                <option value="fixed_amount">Fixed Amount</option>
+                <option value="percentage_of_maintenance">
+                  % of Maintenance
+                </option>
+                <option value="daily_rate">Daily Rate</option>
+              </select>
+
+              <input
+                type="number"
+                name="penaltyValue"
+                value={formData.penaltyValue}
+                onChange={handleInputChange}
+                placeholder="Penalty Value"
+                className="w-full border p-2 rounded-md"
+                required
+              />
+
+              <Button
+                type="submit"
+                isLoading={isCreating || isUpdating}
+                className="w-full"
+              >
+                {editingRule ? "Save Changes" : "Create Rule"}
+              </Button>
             </form>
           </div>
         </div>

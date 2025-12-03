@@ -12,12 +12,24 @@ import {
 } from "../../api/services/maintenance.api";
 import toast from "react-hot-toast";
 
-// Rule Management Hooks (Unchanged)
 export const useGetMaintenanceRules = (societyId) => {
   return useQuery({
     queryKey: ["maintenance-rules", societyId],
-    queryFn: getAllRules,
+    queryFn: async () => {
+      const raw = await getAllRules();
+      return raw;
+    },
     enabled: !!societyId,
+    select: (raw) => {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw.maintenanceRules)) return raw.maintenanceRules;
+      if (Array.isArray(raw.data?.maintenanceRules)) return raw.data.maintenanceRules;
+      if (Array.isArray(raw.data)) return raw.data;
+      if (Array.isArray(raw.rules)) return raw.rules;
+      if (Array.isArray(raw.data?.rules)) return raw.data.rules;
+      return [];
+    },
   });
 };
 
@@ -27,7 +39,9 @@ export const useCreateMaintenanceRule = () => {
     mutationFn: createRule,
     onSuccess: () => {
       toast.success("Rule created successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => q.queryKey?.[0] === "maintenance-rules",
+      });
     },
     onError: (err) =>
       toast.error(err.response?.data?.meta?.message || "Failed to create rule"),
@@ -37,10 +51,12 @@ export const useCreateMaintenanceRule = () => {
 export const useUpdateMaintenanceRule = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateRule,
+    mutationFn: ({ id, ...data }) => updateRule(id, data),
     onSuccess: () => {
       toast.success("Rule updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => q.queryKey?.[0] === "maintenance-rules",
+      });
     },
     onError: (err) => toast.error("Failed to update rule"),
   });
@@ -49,18 +65,16 @@ export const useUpdateMaintenanceRule = () => {
 export const useDeleteMaintenanceRule = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteRule,
+    mutationFn: (id) => deleteRule(id),
     onSuccess: () => {
       toast.success("Rule deleted");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => q.queryKey?.[0] === "maintenance-rules",
+      });
     },
     onError: (err) => toast.error("Failed to delete rule"),
   });
 };
-
-// =========================================================
-// ADMIN: BILLS & UNITS HOOKS
-// =========================================================
 
 export const useGetAllMaintenanceBills = (societyId) => {
   return useQuery({
@@ -68,7 +82,7 @@ export const useGetAllMaintenanceBills = (societyId) => {
     queryFn: getAllBills,
     enabled: !!societyId,
     refetchInterval: 60000,
-    select: (data) => data?.bills || data?.data?.bills || [],
+    select: (data) => data?.bills || data?.data?.bills || data || [],
   });
 };
 
@@ -77,7 +91,7 @@ export const useGetUnitsForBillGeneration = (societyId) => {
     queryKey: ["maintenance-units-for-bill", societyId],
     queryFn: getUnitsBySociety,
     enabled: !!societyId,
-    select: (data) => data?.units || data?.data?.units || [],
+    select: (data) => data?.units || data?.data?.units || data || [],
   });
 };
 
@@ -87,7 +101,9 @@ export const useGenerateMaintenanceBill = () => {
     mutationFn: generateBill,
     onSuccess: () => {
       toast.success("Bill generated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-bills"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => q.queryKey?.[0] === "maintenance-bills",
+      });
     },
     onError: (err) =>
       toast.error(
@@ -96,16 +112,13 @@ export const useGenerateMaintenanceBill = () => {
   });
 };
 
-// =========================================================
-// USER: BILLS & PAYMENTS HOOKS (Unchanged from previous step)
-// =========================================================
-
 export const useGetUserMaintenanceBills = (societyId) => {
   return useQuery({
     queryKey: ["user-maintenance-bills", societyId],
     queryFn: getUserBills,
     enabled: !!societyId,
     refetchInterval: 60000,
+    select: (data) => data?.bills || data?.data?.bills || data || [],
   });
 };
 
@@ -113,10 +126,13 @@ export const usePayMaintenanceBill = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: payMaintenanceBill,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Payment recorded successfully!");
-      queryClient.invalidateQueries({ queryKey: ["user-maintenance-bills"] });
-      queryClient.invalidateQueries({ queryKey: ["maintenance-bills"] });
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey?.[0] === "user-maintenance-bills" ||
+          q.queryKey?.[0] === "maintenance-bills",
+      });
     },
     onError: (err) =>
       toast.error(err.response?.data?.meta?.message || "Payment failed"),
