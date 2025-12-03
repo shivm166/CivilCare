@@ -4,7 +4,7 @@ import {
   getMaintanenceRules,
   updateMaintenanceRule,
   deleteMaintenanceRule,
-} from "../controllers/maintenance/maintenance_rule.controllers.js";
+} from "../controllers/maintenance/maintenance.controllers.js";
 import protectRoute, { requireAdmin } from "../middleware/isProtected.js";
 import attachSocietyContext from "../middleware/attachSocietyContext.js";
 

@@ -9,11 +9,10 @@ import {
   Mail,
   User,
   Building2,
-  ScrollText,
-  Wallet,
   Car,
   Menu,
   X,
+  Wallet, // ADDED: Icon for Maintenance
 } from "lucide-react";
 import { useSocietyContext } from "../../../contexts/SocietyContext";
 import { useGetSocietyRequests } from "../../../hooks/api/useRequests";
@@ -32,6 +31,7 @@ const adminMenu = [
   },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Parking", path: "/admin/parking", icon: Car },
+  { name: "Maintenance", path: "/admin/maintenance", icon: Wallet },
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -40,8 +40,9 @@ const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
   { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
-  { name: "Parking", path: "/user/parking", icon: Car }, //
+  { name: "Parking", path: "/user/parking", icon: Car },
   { name: "Residents", path: "/user/residents", icon: Users },
+  { name: "Maintenance", path: "/user/maintenance", icon: Wallet },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
 ];
@@ -109,11 +110,15 @@ const Sidebar = () => {
     menu = adminMenu;
   }
 
+  // Adjusted logic since role is 'member' in context if not 'admin'
+  const isMemberRole = activeRole === "member" || activeRole === "resident";
+
   const getBadgeCount = (itemName) => {
     if (itemName === "Notifications") {
       return activeRole === "admin" ? unreadCount : invitationCount;
     }
-    if (itemName === "Announcements" && activeRole === "member") {
+    // Check if the current user is a member/resident of a society
+    if (itemName === "Announcements" && isMemberRole) {
       return unreadAnnouncementsCount;
     }
     return 0;

@@ -1,24 +1,61 @@
 import express from "express";
+
 import {
-  deleteMaintenanceRule,
-  getAllMaintenancePayments,
-  getMaintanenceRules,
-  getMaintenanceRecord,
   postMaintanenceRule,
-  recordMaintenancePayment,
+  getMaintanenceRules,
+  getMaintenanceRuleById,
   updateMaintenanceRule,
-} from "../../../../controllers/maintenance/maintenance_rule.controllers.js";
+  deleteMaintenanceRule,
+  generateMaintenanceBill,
+  getMaintenanceBills,
+  getMaintenanceBillById,
+  deleteMaintenanceBill,
+  recordMaintenancePayment,
+  getAllMaintenancePayments,
+  getMaintenanceRecord,
+  getMaintenancePaymentById,
+  deleteMaintenancePayment,
+  getUserMaintenanceBills,
+  getUnitsBySocietyForAdmin,
+} from "../../../../controllers/maintenance/maintenance.js";
 
 const router = express.Router();
-//rule route
-router.route("/").post(postMaintanenceRule).get(getMaintanenceRules);
-router.route("/:id").put(updateMaintenanceRule).delete(deleteMaintenanceRule);
 
-//payment route
+// ADMIN: RULE ROUTES
+
+router.route("/rule").post(postMaintanenceRule).get(getMaintanenceRules);
+
+router
+  .route("/rule/:id")
+  .get(getMaintenanceRuleById)
+  .put(updateMaintenanceRule)
+  .delete(deleteMaintenanceRule);
+
+// ADMIN: BILL ROUTES
+
+router.route("/bill").post(generateMaintenanceBill).get(getMaintenanceBills);
+
+router
+  .route("/bill/:id")
+  .get(getMaintenanceBillById)
+  .delete(deleteMaintenanceBill);
+
+//USER: BILL ROUTES
+router.get("/user/bills", getUserMaintenanceBills);
+
+//  ADMIN + USER: PAYMENT ROUTES
+
 router
   .route("/payment")
   .post(recordMaintenancePayment)
   .get(getAllMaintenancePayments);
 
-router.route("/payment/:id").get(getMaintenanceRecord);
+router.get("/payment/:billId", getMaintenanceRecord);
+router.get("/payment/view/:id", getMaintenancePaymentById);
+router.delete("/payment/delete/:id", deleteMaintenancePayment);
+
+// ADMIN: UNIT ROUTES
+
+router.get("/units", getUnitsBySocietyForAdmin);
+
 export default router;

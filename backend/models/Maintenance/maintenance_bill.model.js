@@ -19,6 +19,11 @@ const maintenanceBillSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    rule: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MaintenanceRule",
+      required: true,
+    },
     amount: {
       type: Number,
       required: true,
@@ -30,7 +35,7 @@ const maintenanceBillSchema = new mongoose.Schema(
     forMonth: {
       type: String,
       required: true,
-    }, // e.g. "2025-01"
+    },
     status: {
       type: String,
       enum: ["pending", "paid", "overdue"],

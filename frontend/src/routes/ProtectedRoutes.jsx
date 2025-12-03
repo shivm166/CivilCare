@@ -14,8 +14,12 @@ const ResidentDashboard = lazy(() =>
   import("../pages/dashboard/User/UserDashboard/ResidentDashboard")
 );
 const Layout = lazy(() => import("../components/layout/Layout"));
+
 const ComplaintsPage = lazy(() =>
   import("../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage")
+);
+const RaiseComplaintPage = lazy(() =>
+  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const ResidentsPage = lazy(() =>
   import("../pages/dashboard/Admin/ResidentManagement/ResidentsPage")
@@ -25,9 +29,6 @@ const NotificationsPage = lazy(() =>
 );
 const ProfilePage = lazy(() =>
   import("../pages/dashboard/User/Profile/ProfilePage")
-);
-const RaiseComplaintPage = lazy(() =>
-  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const AdminAnnouncementPage = lazy(() =>
   import("../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage")
@@ -54,6 +55,14 @@ const MaintenanceRules = lazy(() =>
   import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
 );
 
+const AdminMaintenancePage = lazy(() =>
+  import("../pages/dashboard/Admin/MaintenanceManagement/MaintenancePage")
+);
+const UserMaintenancePage = lazy(() =>
+  import("../pages/dashboard/User/Maintenance/MaintenancePage")
+);
+
+// 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
 const DashboardWrapper = () => {
   const { societies, activeRole, isSocietiesLoading } = useSocietyContext();
 
@@ -105,6 +114,10 @@ const SocietyChecker = ({ children, authUser }) => {
       "/user/dashboard",
       "/user/notifications",
       "/user/profile",
+      "/user/raise-complaint",
+      "/admin/dashboard",
+      "/admin/notifications",
+      "/admin/profile",
     ];
     if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
       return <Navigate to="/user/dashboard" replace />;
@@ -163,7 +176,55 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-
+        <Route
+          path="complaints"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ComplaintsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="residents"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ResidentsPage />
+            </Suspense>
+          }
+        />
+        {/* ✨ ADD THIS PARKING ROUTE */}
+        <Route
+          path="parking"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ParkingManagement />
+            </Suspense>
+          }
+        />
+        <Route
+          path="maintenance"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminMaintenancePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <NotificationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ProfilePage />
+            </Suspense>
+          }
+        />
         <Route
           path="buildings/:buildingId/units"
           element={
@@ -276,6 +337,14 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
 
+        <Route
+          path="maintenance"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UserMaintenancePage />
+            </Suspense>
+          }
+        />
         <Route
           path="residents"
           element={
