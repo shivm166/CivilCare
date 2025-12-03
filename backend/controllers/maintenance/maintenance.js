@@ -8,16 +8,8 @@ import {
 import { maintenancePayment } from "../../models/Maintenance/maintenance_payment.model.js";
 import { MaintenanceRule } from "../../models/Maintenance/maintenance_rule.model.js";
 
-const {
-  SUCCESS,
-  CREATED,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  CONFLICT,
-  NOT_FOUND,
-  SERVER_ERROR,
-  FORBIDDEN,
-} = STATUS_CODES;
+const { SUCCESS, CREATED, BAD_REQUEST, CONFLICT, NOT_FOUND, SERVER_ERROR } =
+  STATUS_CODES;
 
 const calculateLateFee = (bill, rule) => {
   if (bill.status === "paid") return bill.lateFeeApplied;
@@ -92,15 +84,30 @@ export const postMaintanenceRule = async (req, res) => {
       penaltyValue,
       active,
     } = req.body;
+    const societyId = req.society._id; // Comes from middleware
 
-    const newMaintenanceRule = await MaintenanceRule.create({
+    // Check for duplicate rule
+    const existingRule = await MaintenanceRule.findOne({
+      society: societyId,
       bhkType,
-      society: req.society._id,
+    });
+    if (existingRule) {
+      return sendErrorResponse(
+        res,
+        CONFLICT,
+        null,
+        `A rule for ${bhkType} already exists.`
+      );
+    }
+
+    const newRule = await MaintenanceRule.create({
+      society: societyId,
+      bhkType,
+      amount,
       dueDay,
       gracePeriod,
       penaltyType,
       penaltyValue,
-      amount,
       active,
       createdBy: req.user._id,
     });
@@ -108,7 +115,7 @@ export const postMaintanenceRule = async (req, res) => {
     return sendSuccessResponse(
       res,
       CREATED,
-      { newMaintenanceRule },
+      newRule,
       "Maintenance rule created successfully"
     );
   } catch (error) {
@@ -120,14 +127,14 @@ export const postMaintanenceRule = async (req, res) => {
 // ADMIN
 export const getMaintanenceRules = async (req, res) => {
   try {
-    const maintenanceRules = await MaintenanceRule.find({
-      society: req.society._id,
-    });
+    const rules = await MaintenanceRule.find({ society: req.society._id }).sort(
+      { amount: 1 }
+    );
     return sendSuccessResponse(
       res,
       SUCCESS,
-      { maintenanceRules },
-      "Maintenance rules fetched successfully"
+      rules,
+      "Maintenance rules fetched"
     );
   } catch (error) {
     console.log("Error fetching maintenance rules:", error);
@@ -166,8 +173,8 @@ export const updateMaintenanceRule = async (req, res) => {
     return sendSuccessResponse(
       res,
       SUCCESS,
-      { updatedRule },
-      "Maintenance rule updated successfully"
+      updatedRule,
+      "Rule updated successfully"
     );
   } catch (error) {
     console.log("Error updating maintenance rule:", error);

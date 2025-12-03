@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,6 +9,11 @@ import {
   Mail,
   User,
   Building2,
+<<<<<<< HEAD
+=======
+  ScrollText,
+  Wallet,
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
   Car,
   Menu,
   X,
@@ -24,9 +29,17 @@ const adminMenu = [
   { name: "Buildings", path: "/admin/buildings", icon: Building2 },
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
+  {
+    name: "Maintenance Rules",
+    path: "/admin/maintenance-rules",
+    icon: ScrollText,
+  },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Parking", path: "/admin/parking", icon: Car },
+<<<<<<< HEAD
   { name: "Maintenance", path: "/admin/maintenance", icon: Wallet },
+=======
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -34,8 +47,13 @@ const adminMenu = [
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
+<<<<<<< HEAD
   { name: "Raise Complaint", path: "/user/complaints", icon: Mail },
   { name: "Parking", path: "/user/parking", icon: Car },
+=======
+  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
+  { name: "Parking", path: "/user/parking", icon: Car }, //
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Maintenance", path: "/user/maintenance", icon: Wallet },
   { name: "Notifications", path: "/user/notifications", icon: Bell },

@@ -52,6 +52,7 @@ const maintenanceRuleSchema = new mongoose.Schema(
   }
 );
 
+maintenanceRuleSchema.index({ society: 1, bhkType: 1 }, { unique: true });
 export const MaintenanceRule = mongoose.model(
   "MaintenanceRule",
   maintenanceRuleSchema,

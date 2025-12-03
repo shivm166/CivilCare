@@ -17,7 +17,7 @@ import {
   deleteMaintenancePayment,
   getUserMaintenanceBills,
   getUnitsBySocietyForAdmin,
-} from "../../../../controllers/maintenance/maintenance.js";
+} from '../../../../controllers/maintenance/maintenance.js'
 
 const router = express.Router();
 
