@@ -16,8 +16,12 @@ const ResidentDashboard = lazy(() =>
   import("../pages/dashboard/User/UserDashboard/ResidentDashboard")
 );
 const Layout = lazy(() => import("../components/layout/Layout"));
+
 const ComplaintsPage = lazy(() =>
   import("../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage")
+);
+const RaiseComplaintPage = lazy(() =>
+  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const ResidentsPage = lazy(() =>
   import("../pages/dashboard/Admin/ResidentManagement/ResidentsPage")
@@ -27,9 +31,6 @@ const NotificationsPage = lazy(() =>
 );
 const ProfilePage = lazy(() =>
   import("../pages/dashboard/User/Profile/ProfilePage")
-);
-const RaiseComplaintPage = lazy(() =>
-  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const AdminAnnouncementPage = lazy(() =>
   import("../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage")
@@ -118,6 +119,10 @@ const SocietyChecker = ({ children, authUser }) => {
       "/user/dashboard",
       "/user/notifications",
       "/user/profile",
+      "/user/raise-complaint",
+      "/admin/dashboard",
+      "/admin/notifications",
+      "/admin/profile",
     ];
     if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
       return <Navigate to="/user/dashboard" replace />;

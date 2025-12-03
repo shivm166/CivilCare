@@ -110,7 +110,8 @@ export const deleteBill = async (id) => {
 
 export const getUserBills = async () => {
   try {
-    const res = await axiosInstance.get("/user/v1/maintenance/user/bills");
+    // FIX: Corrected API path from "/user/v1/maintenance/user/bills"
+    const res = await axiosInstance.get("/user/v1/maintenance/bills");
     return res.data;
   } catch (error) {
     console.log("Error fetching user bills", error);

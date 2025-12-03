@@ -34,7 +34,7 @@ const adminMenu = [
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
-  { name: "Raise Complaint", path: "/user/complaints", icon: Mail },
+  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
   { name: "Parking", path: "/user/parking", icon: Car },
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Maintenance", path: "/user/maintenance", icon: Wallet },
