@@ -123,7 +123,7 @@ export const forgotPassword = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     user.otp = otp;
-    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
     await sendOtpEmail({ to: email, name: user.name, otp });
@@ -135,7 +135,6 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// Verify OTP & Change Password
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;

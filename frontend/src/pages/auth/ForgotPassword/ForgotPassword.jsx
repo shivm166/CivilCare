@@ -17,7 +17,6 @@ const ForgotPassword = () => {
     try {
       await forgotPassword(email);
       toast.success("OTP sent to your email!");
-      // Navigate to Reset Password page passing the email
       navigate("/reset-password", { state: { email } });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send OTP");

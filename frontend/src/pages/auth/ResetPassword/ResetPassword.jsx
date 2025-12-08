@@ -65,7 +65,7 @@ const ResetPassword = () => {
             onChange={handleChange}
             placeholder="your@email.com"
             required
-            disabled={!!location.state?.email} // Disable if email came from prev page
+            disabled={!!location.state?.email} 
           />
 
           <Input
