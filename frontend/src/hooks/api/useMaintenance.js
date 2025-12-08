@@ -163,7 +163,8 @@ export const usePayMaintenanceBill = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ billId, paymentData }) => payMaintenanceBill(billId, paymentData),
+    mutationFn: ({ billId, paymentData }) =>
+      payMaintenanceBill(billId, paymentData),
     onSuccess: (data) => {
       toast.success(data.message || "Payment successful");
       queryClient.invalidateQueries({ queryKey: ["my-maintenance-bills"] });
