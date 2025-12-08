@@ -16,7 +16,7 @@ import {
   useCreateMaintenanceRule,
   useUpdateMaintenanceRule,
   useDeleteMaintenanceRule,
-} from "../../../../hooks/api/usemaintenance";
+} from "../../../../hooks/api/useMaintenance";
 import PageLoader from "../../../error/PageLoader";
 import Button from "../../../../components/common/Button/Button";
 import { UNIT_BHK_TYPES } from "../../../../config/unit.config";
