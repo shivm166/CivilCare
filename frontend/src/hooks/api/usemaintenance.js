@@ -17,6 +17,7 @@ import {
   getMyApplicableMaintenance,
 } from "../../api/services/maintenance.api";
 
+// ==================== RULE HOOKS ====================
 
 // Get all maintenance rules
 export const useMaintenanceRules = (params = {}) => {
@@ -162,7 +163,8 @@ export const usePayMaintenanceBill = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ billId, paymentData }) => payMaintenanceBill(billId, paymentData),
+    mutationFn: ({ billId, paymentData }) =>
+      payMaintenanceBill(billId, paymentData),
     onSuccess: (data) => {
       toast.success(data.message || "Payment successful");
       queryClient.invalidateQueries({ queryKey: ["my-maintenance-bills"] });
