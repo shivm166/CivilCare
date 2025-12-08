@@ -14,8 +14,12 @@ const ResidentDashboard = lazy(() =>
   import("../pages/dashboard/User/UserDashboard/ResidentDashboard")
 );
 const Layout = lazy(() => import("../components/layout/Layout"));
+
 const ComplaintsPage = lazy(() =>
   import("../pages/dashboard/Admin/ComplaintsManagement/ComplaintsPage")
+);
+const RaiseComplaintPage = lazy(() =>
+  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const ResidentsPage = lazy(() =>
   import("../pages/dashboard/Admin/ResidentManagement/ResidentsPage")
@@ -25,9 +29,6 @@ const NotificationsPage = lazy(() =>
 );
 const ProfilePage = lazy(() =>
   import("../pages/dashboard/User/Profile/ProfilePage")
-);
-const RaiseComplaintPage = lazy(() =>
-  import("../pages/dashboard/User/Complaints/RaiseComplaintPage")
 );
 const AdminAnnouncementPage = lazy(() =>
   import("../pages/dashboard/Admin/AnnouncementsManagement/AnnouncementPage")
@@ -44,21 +45,24 @@ const BuildingUnitsPage = lazy(() =>
 const UnitDetailPage = lazy(() =>
   import("../pages/dashboard/Admin/UnitManagement/UnitDetailPage")
 );
+
+// Parking imports
 const ParkingManagement = lazy(() =>
   import("../pages/dashboard/Admin/ParkingManagement/ParkingManagement")
 );
 const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
-const MaintenanceRules = lazy(() =>
-  import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
-);
+// const MaintenanceRules = lazy(() =>
+//   import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
+// );
 
-const AdminMaintenancePage = lazy(() =>
-  import("../pages/dashboard/Admin/MaintenanceManagement/MaintenancePage")
+// ✅ FIXED: Maintenance imports (Changed from MaintenancePage to correct files)
+const MaintenanceRules = lazy(() =>
+  import("../pages/dashboard/Admin/MaintenanceManagement/MaintenanceRules")
 );
 const UserMaintenancePage = lazy(() =>
-  import("../pages/dashboard/User/Maintenance/MaintenancePage")
+  import("../pages/dashboard/User/Maintenance/UserMaintenancePage")
 );
 
 // 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
@@ -113,6 +117,10 @@ const SocietyChecker = ({ children, authUser }) => {
       "/user/dashboard",
       "/user/notifications",
       "/user/profile",
+      "/user/raise-complaint",
+      "/admin/dashboard",
+      "/admin/notifications",
+      "/admin/profile",
     ];
     if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
       return <Navigate to="/user/dashboard" replace />;
@@ -187,7 +195,6 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-        {/* ✨ ADD THIS PARKING ROUTE */}
         <Route
           path="parking"
           element={
@@ -196,14 +203,17 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
+        {/* ✅ FIXED: Maintenance Routes with submenu paths */}
         <Route
-          path="maintenance"
+          path="maintenance/rules"
           element={
             <Suspense fallback={<PageLoader />}>
-              <AdminMaintenancePage />
+              <MaintenanceRules />
             </Suspense>
           }
         />
+
         <Route
           path="notifications"
           element={
@@ -322,7 +332,6 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-
         <Route
           path="parking"
           element={
@@ -332,6 +341,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
 
+        {/* ✅ FIXED: User Maintenance Routes */}
         <Route
           path="maintenance"
           element={
@@ -340,6 +350,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="residents"
           element={

@@ -235,3 +235,4 @@ export const getAllUsers = async (req, res) => {
     return sendErrorResponse(res, SERVER_ERROR, error, "Server Error");
   }
 };
+

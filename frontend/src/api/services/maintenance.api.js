@@ -1,196 +1,191 @@
-// maintenance.api.js
 import { axiosInstance } from "../axios";
 
-export const createRule = async (ruleData) => {
+// ==================== MAINTENANCE RULE APIs ====================
+
+// Create maintenance rule
+export const createMaintenanceRule = async (ruleData) => {
   try {
-    const res = await axiosInstance.post(
-      "/admin/v1/maintenance/rule",
+    const response = await axiosInstance.post("/maintenance/rules", ruleData);
+    return { data: response.data.data, message: response.data.meta.message };
+  } catch (error) {
+    console.error("Error creating maintenance rule:", error);
+    throw {
+      message: error.response?.data?.meta?.message || "Failed to create rule",
+    };
+  }
+};
+
+// Get all maintenance rules
+export const getAllMaintenanceRules = async (params = {}) => {
+  try {
+    const response = await axiosInstance.get("/maintenance/rules", { params });
+    return response.data.data; // Returns { rules, count }
+  } catch (error) {
+    console.error("Error fetching maintenance rules:", error);
+    throw error;
+  }
+};
+
+// Get maintenance rule by ID
+export const getMaintenanceRuleById = async (ruleId) => {
+  try {
+    const response = await axiosInstance.get(`/maintenance/rules/${ruleId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching maintenance rule:", error);
+    throw error;
+  }
+};
+
+// Update maintenance rule
+export const updateMaintenanceRule = async (ruleId, ruleData) => {
+  try {
+    const response = await axiosInstance.put(
+      `/maintenance/rules/${ruleId}`,
       ruleData
     );
-    return res.data;
+    return { data: response.data.data, message: response.data.meta.message };
   } catch (error) {
-    console.log("Error creating rule", error);
-    throw error;
+    console.error("Error updating maintenance rule:", error);
+    throw {
+      message: error.response?.data?.meta?.message || "Failed to update rule",
+    };
   }
 };
 
-export const getAllRules = async () => {
+// Delete maintenance rule
+export const deleteMaintenanceRule = async (ruleId) => {
   try {
-    const res = await axiosInstance.get("/admin/v1/maintenance/rule");
-    return res.data;
+    const response = await axiosInstance.delete(`/maintenance/rules/${ruleId}`);
+    return { message: response.data.meta.message };
   } catch (error) {
-    console.log("Error fetching rules", error);
-    throw error;
+    console.error("Error deleting maintenance rule:", error);
+    throw {
+      message: error.response?.data?.meta?.message || "Failed to delete rule",
+    };
   }
 };
 
-export const getRuleById = async (id) => {
+// Toggle rule status
+export const toggleRuleStatus = async (ruleId) => {
   try {
-    const res = await axiosInstance.get(`/admin/v1/maintenance/rule/${id}`);
-    return res.data;
-  } catch (error) {
-    console.log("Error fetching rule by ID", error);
-    throw error;
-  }
-};
-
-export const updateRule = async (id, data) => {
-  try {
-    const res = await axiosInstance.put(
-      `/admin/v1/maintenance/rule/${id}`,
-      data
+    const response = await axiosInstance.patch(
+      `/maintenance/rules/${ruleId}/toggle-status`
     );
-    return res.data;
+    return { data: response.data.data, message: response.data.meta.message };
   } catch (error) {
-    console.log("Error updating rule", error);
-    throw error;
+    console.error("Error toggling rule status:", error);
+    throw {
+      message:
+        error.response?.data?.meta?.message || "Failed to toggle rule status",
+    };
   }
 };
 
-export const deleteRule = async (id) => {
-  try {
-    const res = await axiosInstance.delete(`/admin/v1/maintenance/rule/${id}`);
-    return res.data;
-  } catch (error) {
-    console.log("Error deleting rule", error);
-    throw error;
-  }
-};
+// ==================== MAINTENANCE BILL APIs ====================
 
-/* ============================================================
-   ADMIN: BILL APIs
-============================================================ */
-
-export const generateBill = async (billData) => {
+// Generate monthly bills
+export const generateMonthlyBills = async (billingData) => {
   try {
-    const res = await axiosInstance.post(
-      "/admin/v1/maintenance/bill",
-      billData
+    const response = await axiosInstance.post(
+      "/maintenance/bills/generate",
+      billingData
     );
-    return res.data;
+    return { data: response.data.data, message: response.data.meta.message };
   } catch (error) {
-    console.log("Error generating bill", error);
-    throw error;
+    console.error("Error generating bills:", error);
+    throw {
+      message: error.response?.data?.meta?.message || "Failed to generate bills",
+    };
   }
 };
 
-export const getAllBills = async () => {
+// Get all bills (admin)
+export const getAllMaintenanceBills = async (params = {}) => {
   try {
-    const res = await axiosInstance.get("/admin/v1/maintenance/bill");
-    return res.data;
+    const response = await axiosInstance.get("/maintenance/bills", { params });
+    return response.data.data; // Returns { bills, count }
   } catch (error) {
-    console.log("Error fetching bills", error);
+    console.error("Error fetching maintenance bills:", error);
     throw error;
   }
 };
 
-export const getBillById = async (id) => {
+// Get bill by ID
+export const getMaintenanceBillById = async (billId) => {
   try {
-    const res = await axiosInstance.get(`/admin/v1/maintenance/bill/${id}`);
-    return res.data;
+    const response = await axiosInstance.get(`/maintenance/bills/${billId}`);
+    return response.data.data;
   } catch (error) {
-    console.log("Error fetching bill by ID", error);
+    console.error("Error fetching maintenance bill:", error);
     throw error;
   }
 };
 
-export const deleteBill = async (id) => {
+// ==================== FUNDS APIs ====================
+
+// Get funds summary
+export const getFundsSummary = async () => {
   try {
-    const res = await axiosInstance.delete(`/admin/v1/maintenance/bill/${id}`);
-    return res.data;
+    const response = await axiosInstance.get("/maintenance/funds/summary");
+    return response.data.data;
   } catch (error) {
-    console.log("Error deleting bill", error);
+    console.error("Error fetching funds summary:", error);
     throw error;
   }
 };
 
-/* ============================================================
-   USER: BILL APIs
-============================================================ */
+// ==================== USER MAINTENANCE APIs ====================
 
-export const getUserBills = async () => {
+// Get my maintenance bills
+export const getMyMaintenanceBills = async (params = {}) => {
   try {
-    const res = await axiosInstance.get("/user/v1/maintenance/user/bills");
-    return res.data;
+    const response = await axiosInstance.get("/maintenance/user/my-bills", {
+      params,
+    });
+    return response.data.data; // Returns { bills, count }
   } catch (error) {
-    console.log("Error fetching user bills", error);
+    console.error("Error fetching my maintenance bills:", error);
     throw error;
   }
 };
 
-/* ============================================================
-   PAYMENT APIs (ADMIN + USER)
-============================================================ */
-
+// Pay maintenance bill
 export const payMaintenanceBill = async (paymentData) => {
   try {
-    const res = await axiosInstance.post(
-      "/user/v1/maintenance/payment",
+    const response = await axiosInstance.post(
+      "/maintenance/user/pay",
       paymentData
     );
-    return res.data;
+    return { data: response.data.data, message: response.data.meta.message };
   } catch (error) {
-    console.log("Error paying maintenance bill", error);
-    throw error;
+    console.error("Error paying maintenance bill:", error);
+    throw {
+      message: error.response?.data?.meta?.message || "Failed to pay bill",
+    };
   }
 };
 
-export const getAllPayments = async () => {
+// Get my payment history
+export const getMyPaymentHistory = async () => {
   try {
-    const res = await axiosInstance.get("/admin/v1/maintenance/payment");
-    return res.data;
-  } catch (error) {
-    console.log("Error fetching payments", error);
-    throw error;
-  }
-};
-
-export const getPaymentsByBill = async (billId) => {
-  try {
-    const res = await axiosInstance.get(
-      `/admin/v1/maintenance/payment/${billId}`
+    const response = await axiosInstance.get(
+      "/maintenance/user/payment-history"
     );
-    return res.data;
+    return response.data.data; // Returns { payments, count }
   } catch (error) {
-    console.log("Error fetching bill payments", error);
+    console.error("Error fetching payment history:", error);
     throw error;
   }
 };
 
-export const getPaymentById = async (id) => {
+// ✅ NEW: Get applicable maintenance for current user
+export const getMyApplicableMaintenance = async () => {
   try {
-    const res = await axiosInstance.get(
-      `/admin/v1/maintenance/payment/view/${id}`
-    );
-    return res.data;
+    const response = await axiosInstance.get("/maintenance/user/applicable");
+    return response.data.data;
   } catch (error) {
-    console.log("Error fetching payment", error);
-    throw error;
-  }
-};
-
-export const deletePayment = async (id) => {
-  try {
-    const res = await axiosInstance.delete(
-      `/admin/v1/maintenance/payment/delete/${id}`
-    );
-    return res.data;
-  } catch (error) {
-    console.log("Error deleting payment", error);
-    throw error;
-  }
-};
-
-/* ============================================================
-   ADMIN: UNITS APIs
-============================================================ */
-
-export const getUnitsBySociety = async () => {
-  try {
-    const res = await axiosInstance.get("/admin/v1/maintenance/units");
-    return res.data;
-  } catch (error) {
-    console.log("Error fetching units", error);
+    console.error("Error fetching applicable maintenance:", error);
     throw error;
   }
 };

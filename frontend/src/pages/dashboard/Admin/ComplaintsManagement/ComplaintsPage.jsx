@@ -6,7 +6,6 @@ import {
 } from "../../../../hooks/api/useComplaints.js";
 import { Loader2 } from "lucide-react";
 import React, { useState } from "react";
-
 import {
   ComplaintsHeader,
   EmptyState,
@@ -33,14 +32,17 @@ export default function ComplaintsPage() {
     }
   );
 
-  const handleUpdateStatus = ({ id, status }) => {
-    updateStatus({ id, status });
+  const handleUpdateStatus = async ({ id, status }) => {
+    try {
+      await updateStatus({ id, status });
+    } catch (err) {
+      console.log(err)
+    }
   };
 
   const { data: myComplaints, isLoading: isLoadingMy } = useGetMyComplaints(
     isAdmin ? null : activeSocietyId
   );
-
   const { data: allComplaints, isLoading: isLoadingAll } = useGetAllComplaints(
     isAdmin ? activeSocietyId : null
   );
@@ -64,7 +66,6 @@ export default function ComplaintsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-3 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <ComplaintsHeader
           title={isAdmin ? "Society Complaints" : "My Complaints"}
           subtitle={
@@ -78,20 +79,16 @@ export default function ComplaintsPage() {
           }
         />
 
-        {/* Complaints List Container */}
         <div>
           {!complaints || complaints.length === 0 ? (
             <EmptyState isAdmin={isAdmin} />
           ) : (
-            <>
-              {/* Complaints List (Card view) */}
-              <ComplaintTable
-                complaints={complaints}
-                isAdmin={isAdmin}
-                onUpdateStatus={handleUpdateStatus}
-                isUpdating={updateState}
-              />
-            </>
+            <ComplaintTable
+              complaints={complaints}
+              isAdmin={isAdmin}
+              onUpdateStatus={handleUpdateStatus}
+              updating={updateState}
+            />
           )}
         </div>
       </div>

@@ -1,115 +1,202 @@
-// /frontend/src/hooks/api/useMaintenance.js
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   createMaintenanceRule,
-  getMaintenanceRules,
+  getAllMaintenanceRules,
+  getMaintenanceRuleById,
   updateMaintenanceRule,
   deleteMaintenanceRule,
-  generateMaintenanceBill,
-  getAdminMaintenanceBills,
-  getUserMaintenanceBills,
+  toggleRuleStatus,
+  generateMonthlyBills,
+  getAllMaintenanceBills,
+  getMaintenanceBillById,
+  getFundsSummary,
+  getMyMaintenanceBills,
   payMaintenanceBill,
+  getMyPaymentHistory,
+  getMyApplicableMaintenance,
 } from "../../api/services/maintenance.api";
 
-// Query keys for caching
-const QUERY_KEYS = {
-  RULES: "maintenanceRules",
-  ADMIN_BILLS: "adminMaintenanceBills",
-  USER_BILLS: "userMaintenanceBills",
-};
+// ==================== RULE HOOKS ====================
 
-// --- ADMIN HOOKS ---
-
-export const useMaintenanceRules = () => {
+// Get all maintenance rules
+export const useMaintenanceRules = (params = {}) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.RULES],
-    queryFn: getMaintenanceRules,
-    select: (data) => data.data.maintenanceRules, // Adjust based on your response structure
+    queryKey: ["maintenance-rules", params],
+    queryFn: () => getAllMaintenanceRules(params),
   });
 };
 
-export const useCreateRule = () => {
+// Get maintenance rule by ID
+export const useMaintenanceRule = (ruleId) => {
+  return useQuery({
+    queryKey: ["maintenance-rule", ruleId],
+    queryFn: () => getMaintenanceRuleById(ruleId),
+    enabled: !!ruleId,
+  });
+};
+
+// Create maintenance rule
+export const useCreateMaintenanceRule = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createMaintenanceRule,
-    // On success, invalidate the rules query to refetch the list
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RULES] });
+    onSuccess: (data) => {
+      toast.success(data.message || "Rule created successfully");
+      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create rule");
     },
   });
 };
 
-export const useUpdateRule = () => {
+// Update maintenance rule
+export const useUpdateMaintenanceRule = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (data) => updateMaintenanceRule(data.id, data.ruleData),
-    // On success, invalidate the rules query
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RULES] });
+    mutationFn: ({ ruleId, ruleData }) =>
+      updateMaintenanceRule(ruleId, ruleData),
+    onSuccess: (data) => {
+      toast.success(data.message || "Rule updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+      queryClient.invalidateQueries({ queryKey: ["maintenance-rule"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update rule");
     },
   });
 };
 
-export const useDeleteRule = () => {
+// Delete maintenance rule
+export const useDeleteMaintenanceRule = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: deleteMaintenanceRule,
-    // On success, invalidate the rules query
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RULES] });
+    onSuccess: (data) => {
+      toast.success(data.message || "Rule deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete rule");
     },
   });
 };
 
-export const useGenerateBill = () => {
+// Toggle rule status
+export const useToggleRuleStatus = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: generateMaintenanceBill,
-    // On success, invalidate the admin bills query to show the new bill
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ADMIN_BILLS] });
+    mutationFn: toggleRuleStatus,
+    onSuccess: (data) => {
+      toast.success(data.message || "Rule status updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to toggle rule status");
     },
   });
 };
 
-export const useAdminMaintenanceBills = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.ADMIN_BILLS],
-    queryFn: getAdminMaintenanceBills,
-    select: (data) => data.data.bills,
-  });
-};
+// ==================== BILL HOOKS ====================
 
-// --- USER HOOKS ---
-
-export const useUserMaintenanceBills = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.USER_BILLS],
-    queryFn: getUserMaintenanceBills,
-    select: (data) => data.data.bills,
-  });
-};
-
-// Hook for user to pay a bill
-export const usePayMaintenance = () => {
+// Generate monthly bills
+export const useGenerateMonthlyBills = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: payMaintenanceBill,
-    onSuccess: (response) => {
-      const updatedBill = response.data.updatedBill;
-
-      // Update the cache for the user's bill list immediately
-      // without a full refetch for a smoother UX.
-      queryClient.setQueryData([QUERY_KEYS.USER_BILLS], (oldBills) => {
-        if (!oldBills) return [];
-        return oldBills.map((bill) =>
-          bill._id === updatedBill._id ? updatedBill : bill
-        );
-      });
-
-      // Invalidate the admin list as well, as its data changed
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ADMIN_BILLS] });
+    mutationFn: generateMonthlyBills,
+    onSuccess: (data) => {
+      toast.success(data.message || "Bills generated successfully");
+      queryClient.invalidateQueries({ queryKey: ["maintenance-bills"] });
+      queryClient.invalidateQueries({ queryKey: ["funds-summary"] });
     },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate bills");
+    },
+  });
+};
+
+// Get all maintenance bills (admin)
+export const useMaintenanceBills = (params = {}) => {
+  return useQuery({
+    queryKey: ["maintenance-bills", params],
+    queryFn: () => getAllMaintenanceBills(params),
+  });
+};
+
+// Get maintenance bill by ID
+export const useMaintenanceBill = (billId) => {
+  return useQuery({
+    queryKey: ["maintenance-bill", billId],
+    queryFn: () => getMaintenanceBillById(billId),
+    enabled: !!billId,
+  });
+};
+
+// ==================== FUNDS HOOKS ====================
+
+// Get funds summary
+export const useFundsSummary = () => {
+  return useQuery({
+    queryKey: ["funds-summary"],
+    queryFn: getFundsSummary,
+  });
+};
+
+// ==================== USER HOOKS ====================
+
+// Get my maintenance bills
+export const useMyMaintenanceBills = (params = {}) => {
+  return useQuery({
+    queryKey: ["my-maintenance-bills", params],
+    queryFn: () => getMyMaintenanceBills(params),
+  });
+};
+
+// Pay maintenance bill
+export const usePayMaintenanceBill = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ billId, paymentData }) => payMaintenanceBill(billId, paymentData),
+    onSuccess: (data) => {
+      toast.success(data.message || "Payment successful");
+      queryClient.invalidateQueries({ queryKey: ["my-maintenance-bills"] });
+      queryClient.invalidateQueries({ queryKey: ["my-payment-history"] });
+      queryClient.invalidateQueries({ queryKey: ["maintenance-bills"] });
+      queryClient.invalidateQueries({ queryKey: ["funds-summary"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Payment failed");
+    },
+  });
+};
+
+// Get my payment history
+export const useMyPaymentHistory = () => {
+  return useQuery({
+    queryKey: ["my-payment-history"],
+    queryFn: getMyPaymentHistory,
+  });
+};
+
+// ==================== ALIAS EXPORTS (for page compatibility) ====================
+
+// Alias for MaintenanceRules.jsx compatibility
+export const useToggleMaintenanceRuleStatus = useToggleRuleStatus;
+
+// Alias for FundsManagement.jsx compatibility
+export const useMaintenanceFunds = useFundsSummary;
+
+// ✅ NEW: Get applicable maintenance (before bills are generated)
+export const useMyApplicableMaintenance = () => {
+  return useQuery({
+    queryKey: ["my-applicable-maintenance"],
+    queryFn: getMyApplicableMaintenance,
   });
 };
