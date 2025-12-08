@@ -7,6 +7,7 @@ import {
 } from "../../utils/response.js";
 
 import { STATUS_CODES } from "../../utils/status.js";
+import { sendOtpEmail } from "../../utils/sendEmail.js";
 
 const {
   SUCCESS,
@@ -122,7 +123,7 @@ export const forgotPassword = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     user.otp = otp;
-    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 
     await user.save();
 
     await sendOtpEmail({ to: email, name: user.name, otp });
