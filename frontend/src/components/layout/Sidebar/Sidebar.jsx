@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+import React, { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
+=======
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+>>>>>>> 418e9e36e074f1350fa3392a7b68fdcc004047f5
 import {
   LayoutDashboard,
   Megaphone,
@@ -9,6 +14,11 @@ import {
   Mail,
   User,
   Building2,
+<<<<<<< HEAD
+=======
+  ScrollText,
+  Wallet,
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
   Car,
   X,
   Wallet,
@@ -28,9 +38,21 @@ const adminMenu = [
   { name: "Buildings", path: "/admin/buildings", icon: Building2 },
   { name: "Announcements", path: "/admin/announcements", icon: Megaphone },
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
+  {
+    name: "Maintenance Rules",
+    path: "/admin/maintenance-rules",
+    icon: ScrollText,
+  },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Parking", path: "/admin/parking", icon: Car },
+<<<<<<< HEAD
+<<<<<<< HEAD
+  { name: "Maintenance", path: "/admin/maintenance", icon: Wallet },
+=======
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
+=======
   { name: "Maintenance", path: "/admin/maintenance/rules", icon: FileText },
+>>>>>>> 418e9e36e074f1350fa3392a7b68fdcc004047f5
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -38,8 +60,17 @@ const adminMenu = [
 const userMenu = [
   { name: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   { name: "Announcements", path: "/user/announcements", icon: Megaphone },
+<<<<<<< HEAD
+<<<<<<< HEAD
+  { name: "Raise Complaint", path: "/user/complaints", icon: Mail },
+=======
   { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
+>>>>>>> 418e9e36e074f1350fa3392a7b68fdcc004047f5
   { name: "Parking", path: "/user/parking", icon: Car },
+=======
+  { name: "Raise Complaint", path: "/user/raise-complaint", icon: Mail },
+  { name: "Parking", path: "/user/parking", icon: Car }, //
+>>>>>>> 0868b38a6f58f9f36d2df78938d99f5ad889ce05
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Maintenance", path: "/user/maintenance", icon: FileText },
   { name: "Notifications", path: "/user/notifications", icon: Bell },

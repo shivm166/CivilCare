@@ -8,7 +8,6 @@ const router = Router();
 
 router.use("/superadmin", superAdminRoutes);
 
-// Admin Routes
 router.use("/", adminRoutes);
 router.use("/admin/v1", v1Routes);
 router.use("/user", userRoutes);

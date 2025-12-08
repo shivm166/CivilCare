@@ -110,6 +110,58 @@ export const login = async (req, res) => {
   }
 };
 
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return sendErrorResponse(res, BAD_REQUEST, null, "Email is required");
+
+    const user = await User.findOne({ email });
+    if (!user) return sendErrorResponse(res, NOT_FOUND, null, "User not found");
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    user.otp = otp;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    await sendOtpEmail({ to: email, name: user.name, otp });
+
+    return sendSuccessResponse(res, SUCCESS, null, "OTP sent to your email");
+  } catch (error) {
+    console.error(error);
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server Error");
+  }
+};
+
+// Verify OTP & Change Password
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return sendErrorResponse(res, BAD_REQUEST, null, "All fields are required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return sendErrorResponse(res, NOT_FOUND, null, "User not found");
+
+    if (user.otp !== otp || user.otpExpiry < Date.now()) {
+      return sendErrorResponse(res, BAD_REQUEST, null, "Invalid or expired OTP");
+    }
+
+    user.password = newPassword;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    return sendSuccessResponse(res, SUCCESS, null, "Password reset successfully. Please login.");
+  } catch (error) {
+    console.error(error);
+    return sendErrorResponse(res, SERVER_ERROR, error, "Server Error");
+  }
+};
+
 export const getprofile = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
