@@ -17,7 +17,6 @@ import {
   getMyApplicableMaintenance,
 } from "../../api/services/maintenance.api";
 
-// ==================== RULE HOOKS ====================
 
 // Get all maintenance rules
 export const useMaintenanceRules = (params = {}) => {
