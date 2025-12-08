@@ -1,4 +1,7 @@
 import React from "react";
+import { Wrench, Clock, User, Zap, CheckCircle2, XCircle } from "lucide-react";
+import  Button  from "../../../../../components/common/Button/Button";
+import StatusBadge from "../../../../../components/common/StatusBadge/StatusBadge"; 
 
 const actionMap = {
   pending: { icon: Clock, label: "Pending", variant: "secondary" },
@@ -198,7 +201,6 @@ export const ComplaintTable = ({
         </tbody>
       </table>
 
-      {/* Mobile view */}
       <div className="sm:hidden p-4">
         {complaints.map((c, i) => (
           <div

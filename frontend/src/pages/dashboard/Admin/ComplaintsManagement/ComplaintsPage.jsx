@@ -4,7 +4,7 @@ import {
   useUpdateComplaintStatus,
   useGetAllComplaints,
 } from "../../../../hooks/api/useComplaints.js";
-import { Loader2 } from "lucide-react";
+import { Loader2, } from "lucide-react";
 import React, { useState } from "react";
 import {
   ComplaintsHeader,
