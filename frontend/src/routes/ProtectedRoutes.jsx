@@ -1,11 +1,9 @@
-// frontend/src/routes/ProtectedRoutes.jsx (Optimized for Code Splitting)
 import React, { lazy, Suspense } from "react";
 import { Route, Navigate, Outlet } from "react-router-dom";
 import { useSocietyContext, SocietyProvider } from "../contexts/SocietyContext";
-
 import PageLoader from "../pages/error/PageLoader";
 
-// 1. Lazy load all large feature components
+// Lazy imports
 const SocietyOnboarding = lazy(() =>
   import("../pages/onboarding/SocietyOnboarding")
 );
@@ -55,6 +53,9 @@ const ParkingManagement = lazy(() =>
 const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
+// const MaintenanceRules = lazy(() =>
+//   import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
+// );
 
 // ✅ FIXED: Maintenance imports (Changed from MaintenancePage to correct files)
 const MaintenanceRules = lazy(() =>
@@ -63,7 +64,6 @@ const MaintenanceRules = lazy(() =>
 const UserMaintenancePage = lazy(() =>
   import("../pages/dashboard/User/Maintenance/UserMaintenancePage")
 );
-
 
 // 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
 const DashboardWrapper = () => {
@@ -98,20 +98,15 @@ const DashboardWrapper = () => {
   );
 };
 
-// 3. Society Checker Wrapper provides context and basic access control
 const SocietyChecker = ({ children, authUser }) => {
-  const { societies, isSocietiesLoading, activeRole } = useSocietyContext();
+  const { societies, isSocietiesLoading } = useSocietyContext();
 
   if (!authUser) {
     return <Navigate to="/login" replace />;
   }
 
   if (isSocietiesLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const hasSociety = societies && societies.length > 0;
@@ -144,12 +139,10 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
   }
 
   return (
-    // Top-level route for layout and context provider
     <Route
       path="/"
       element={
         <SocietyProvider>
-          {/* Wrap Layout in Suspense as it's lazy-loaded */}
           <Suspense fallback={<PageLoader />}>
             <Layout />
           </Suspense>
@@ -158,7 +151,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
     >
       <Route index element={<Navigate to="/user/dashboard" replace />} />
 
-      {/* Admin Routes */}
+      {/* ================= ADMIN ROUTES ================= */}
       <Route
         path="/admin"
         element={
@@ -168,7 +161,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
         }
       >
         <Route path="dashboard" element={<DashboardWrapper />} />
-        {/* Wrap all feature routes in Suspense directly inside the element prop */}
+
         <Route
           path="announcements"
           element={
@@ -177,6 +170,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="buildings"
           element={
@@ -209,7 +203,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-        
+
         {/* ✅ FIXED: Maintenance Routes with submenu paths */}
         <Route
           path="maintenance/rules"
@@ -244,6 +238,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="buildings/:buildingId/units/:unitId"
           element={
@@ -252,9 +247,64 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
+        <Route
+          path="complaints"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ComplaintsPage />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="residents"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ResidentsPage />
+            </Suspense>
+          }
+        />
+
+        {/* ✅ MAINTENANCE RULES - MOVE INSIDE ADMIN SECTION */}
+        <Route
+          path="maintenance-rules"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <MaintenanceRules />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="parking"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ParkingManagement />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <NotificationsPage />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="profile"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ProfilePage />
+            </Suspense>
+          }
+        />
       </Route>
 
-      {/* User/Resident Routes */}
+      {/* ================= USER ROUTES ================= */}
       <Route
         path="/user"
         element={
@@ -264,6 +314,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
         }
       >
         <Route path="dashboard" element={<DashboardWrapper />} />
+
         <Route
           path="announcements"
           element={
@@ -272,6 +323,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="raise-complaint"
           element={
@@ -288,7 +340,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-        
+
         {/* ✅ FIXED: User Maintenance Routes */}
         <Route
           path="maintenance"
@@ -298,7 +350,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-                
+
         <Route
           path="residents"
           element={
@@ -307,6 +359,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="notifications"
           element={
@@ -315,6 +368,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="profile"
           element={
@@ -325,6 +379,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
         />
       </Route>
 
+      {/* Fallback route */}
       <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
     </Route>
   );

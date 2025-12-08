@@ -1,7 +1,4 @@
 import React from "react";
-import { Wrench, User, Clock, Zap, CheckCircle2, XCircle } from "lucide-react";
-import Button from "../../../../../components/common/Button/Button";
-import StatusBadge from "../../../../../components/common/StatusBadge/StatusBadge";
 
 const actionMap = {
   pending: { icon: Clock, label: "Pending", variant: "secondary" },

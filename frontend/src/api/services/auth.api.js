@@ -3,7 +3,7 @@ import { axiosInstance } from "../axios";
 export const getProfile = async () => {
   try {
     const response = await axiosInstance.get("/user/profile");
-    return response.data; 
+    return response.data;
   } catch (error) {
     console.log("Error fetching profile", error);
     throw error;
@@ -46,5 +46,27 @@ export const logout = async () => {
     return response.data;
   } catch (error) {
     console.log("Error in logout", error);
+  }
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await axiosInstance.post("/user/forgot-password", {
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    console.log("Error in forgot password", error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const response = await axiosInstance.post("/user/reset-password", data);
+    return response.data;
+  } catch (error) {
+    console.log("Error in reset password", error);
+    throw error;
   }
 };
