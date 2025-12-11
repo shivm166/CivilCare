@@ -14,6 +14,7 @@ import {
   Zap,
   Loader2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Container from "../../../../components/layout/Container/Container";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import { useGetAllComplaints } from "../../../../hooks/api/useComplaints";
@@ -23,7 +24,30 @@ import { useGetSocietyRequests } from "../../../../hooks/api/useRequests";
 import useProfile from "../../../../hooks/api/auth/useProfile";
 import DashboardCard from "../../../../components/features/features/dashboard/DashboardCard";
 
+// Custom Action Card with Text Overflow Prevention
+const CompactActionCard = ({ title, desc, icon: Icon, link, color }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      onClick={() => navigate(link)}
+      className="bg-white rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer group hover:-translate-y-1 w-full overflow-hidden"
+    >
+      <div
+        className={`${color} w-9 h-9 rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform flex-shrink-0`}
+      >
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <h3 className="font-bold text-gray-900 text-xs leading-tight truncate mb-0.5">
+        {title}
+      </h3>
+      <p className="text-[10px] text-gray-500 leading-tight truncate">{desc}</p>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { activeSocietyId } = useSocietyContext();
   const { user, loading: userLoading } = useProfile();
   const { data: complaints, isLoading: L1 } =
@@ -53,7 +77,7 @@ const AdminDashboard = () => {
         inProgress: totalComp - pending.length - resolved.length,
         requests: req.length,
         announcements: ann.length,
-        buildings: 8, // Mock data
+        buildings: 8,
         complaints: totalComp,
       },
       recentComplaints: pending.slice(0, 4),
@@ -66,7 +90,7 @@ const AdminDashboard = () => {
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <Loader2 className="w-16 h-16 animate-spin text-indigo-600" />
+        <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 animate-spin text-indigo-600" />
       </div>
     );
 
@@ -75,15 +99,47 @@ const AdminDashboard = () => {
       ? `${Math.round((stats.resolved / stats.complaints) * 100)}%`
       : "0%";
 
+  // Card data with navigation links
+  const topStatsData = [
+    {
+      title: "Total Residents",
+      value: stats.residents,
+      icon: Users,
+      link: "/admin/residents",
+      gradient: "bg-gradient-to-br from-blue-400 to-indigo-600",
+    },
+    {
+      title: "Pending Issues",
+      value: stats.pending,
+      icon: AlertCircle,
+      link: "/admin/complaints",
+      gradient: "bg-gradient-to-br from-orange-400 to-red-600",
+    },
+    {
+      title: "Join Requests",
+      value: stats.requests,
+      icon: Bell,
+      link: "/admin/notifications",
+      gradient: "bg-gradient-to-br from-pink-500 to-purple-600",
+    },
+    {
+      title: "Announcements",
+      value: stats.announcements,
+      icon: Megaphone,
+      link: "/admin/announcements",
+      gradient: "bg-gradient-to-br from-purple-500 to-fuchsia-600",
+    },
+  ];
+
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
-      <Container className="py-6 sm:py-8 lg:py-10 space-y-6 sm:space-y-8 lg:space-y-10">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 overflow-x-hidden">
+      <Container className="py-3 sm:py-6 lg:py-10 px-3 sm:px-4 lg:px-6 space-y-4 sm:space-y-6 lg:space-y-8 max-w-full">
         {/* HEADER */}
-        <div>
-          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-400 bg-clip-text text-transparent">
+        <div className="px-1">
+          <h1 className="text-xl sm:text-3xl lg:text-5xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-400 bg-clip-text text-transparent break-words">
             Hello, {user?.name?.split(" ")[0] || "Admin"}!
           </h1>
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
@@ -93,52 +149,21 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        {/* TOP STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <DashboardCard
-            type="stat"
-            data={{
-              title: "Total Residents",
-              value: stats.residents,
-              icon: Users,
-              link: "/admin/residents",
-              gradient: "bg-gradient-to-br from-blue-400 to-indigo-600",
-            }}
-          />
-          <DashboardCard
-            type="stat"
-            data={{
-              title: "Pending Issues",
-              value: stats.pending,
-              icon: AlertCircle,
-              link: "/admin/complaints",
-              gradient: "bg-gradient-to-br from-orange-400 to-red-600",
-            }}
-          />
-          <DashboardCard
-            type="stat"
-            data={{
-              title: "Join Requests",
-              value: stats.requests,
-              icon: Bell,
-              link: "/admin/notifications",
-              gradient: "bg-gradient-to-br from-pink-500 to-purple-600",
-            }}
-          />
-          <DashboardCard
-            type="stat"
-            data={{
-              title: "Announcements",
-              value: stats.announcements,
-              icon: Megaphone,
-              link: "/admin/announcements",
-              gradient: "bg-gradient-to-br from-purple-500 to-fuchsia-600",
-            }}
-          />
+        {/* TOP STATS - 2x2 GRID ON MOBILE WITH SMALLER CARDS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 w-full">
+          {topStatsData.map((card, index) => (
+            <div
+              key={index}
+              onClick={() => navigate(card.link)}
+              className="cursor-pointer w-full min-w-0"
+            >
+              <DashboardCard type="stat" data={card} />
+            </div>
+          ))}
         </div>
 
-        {/* MINI STATS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* MINI STATS - 2x2 ON MOBILE WITH COMPACT DESIGN */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 w-full">
           <DashboardCard
             type="mini"
             data={{
@@ -177,58 +202,48 @@ const AdminDashboard = () => {
           />
         </div>
 
-        {/* QUICK ACTIONS */}
-        <div>
-          <div className="flex gap-2 mb-4 items-center">
-            <Zap className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl sm:text-2xl font-black">Quick Actions</h2>
+        {/* QUICK ACTIONS - CUSTOM COMPACT CARDS */}
+        <div className="w-full">
+          <div className="flex gap-2 mb-3 sm:mb-4 items-center px-1">
+            <Zap className="w-4 h-4 sm:w-6 sm:h-6 text-indigo-600 flex-shrink-0" />
+            <h2 className="text-base sm:text-xl lg:text-2xl font-black truncate">
+              Quick Actions
+            </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <DashboardCard
-              type="action"
-              data={{
-                title: "Add Resident",
-                desc: "Register new members",
-                icon: UserPlus,
-                link: "/admin/residents",
-                color: "bg-purple-600",
-              }}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 w-full">
+            <CompactActionCard
+              title="Resident"
+              desc="Add new"
+              icon={UserPlus}
+              link="/admin/residents"
+              color="bg-purple-600"
             />
-            <DashboardCard
-              type="action"
-              data={{
-                title: "Manage Buildings",
-                desc: "View/add society buildings",
-                icon: Building2,
-                link: "/admin/buildings",
-                color: "bg-blue-600",
-              }}
+            <CompactActionCard
+              title="Buildings"
+              desc="Manage"
+              icon={Building2}
+              link="/admin/buildings"
+              color="bg-blue-600"
             />
-            <DashboardCard
-              type="action"
-              data={{
-                title: "New Announcement",
-                desc: "Send notices to residents",
-                icon: Megaphone,
-                link: "/admin/announcements",
-                color: "bg-cyan-600",
-              }}
+            <CompactActionCard
+              title="Announce"
+              desc="Send notice"
+              icon={Megaphone}
+              link="/admin/announcements"
+              color="bg-cyan-600"
             />
-            <DashboardCard
-              type="action"
-              data={{
-                title: "Complaints",
-                desc: "Review and manage all issues",
-                icon: Wrench,
-                link: "/admin/complaints",
-                color: "bg-red-600",
-              }}
+            <CompactActionCard
+              title="Issues"
+              desc="Manage"
+              icon={Wrench}
+              link="/admin/complaints"
+              color="bg-red-600"
             />
           </div>
         </div>
 
-        {/* RECENT DATA */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* RECENT DATA - STACK ON MOBILE WITH FULL WIDTH */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 w-full">
           <DashboardCard
             type="recent-items"
             data={{

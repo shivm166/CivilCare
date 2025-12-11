@@ -10,6 +10,7 @@ import {
   User,
   Building2,
   Car,
+  ScrollText,
   Menu,
   X,
   Wallet, // ADDED: Icon for Maintenance
