@@ -9,17 +9,16 @@ import {
   Send,
   X,
   Zap,
-  ListTodo, // New Icon for List
-  Flame, // For High Priority
-  Triangle, // For Medium Priority
-  Droplet, // For Low Priority
+  ListTodo,
+  Flame, 
+  Triangle, 
+  Droplet, 
 } from "lucide-react";
 
 import {
   useCreateComplaint,
   useGetMyComplaints,
 } from "../../../../hooks/api/useComplaints";
-// import { Link } from "react-router-dom"; // Assuming Complaint list items should eventually link somewhere
 import StatusBadge from "../../../../components/common/StatusBadge/StatusBadge"; // Reusing StatusBadge
 
 const priorityOptions = [
@@ -55,7 +54,6 @@ export default function RaiseComplaintPage() {
   const { createComplaint, isCreating } = useCreateComplaint();
   const { data: complaints = [], isLoading, error } = useGetMyComplaints();
 
-  // Auto-hide toast
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => setShowToast(false), 5000);
@@ -75,7 +73,6 @@ export default function RaiseComplaintPage() {
     });
   };
 
-  // Helper function to map priority level to styling for the list item
   const getPriorityAccentClass = (priority) => {
     switch (priority) {
       case "high":
@@ -95,7 +92,6 @@ export default function RaiseComplaintPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* TOAST MESSAGE - Retained existing clean implementation */}
       {showToast && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
           <div className="bg-white rounded-xl shadow-2xl border-2 border-green-400 p-4 pr-12 min-w-[320px] relative overflow-hidden">
@@ -113,7 +109,6 @@ export default function RaiseComplaintPage() {
               </div>
             </div>
 
-            {/* Close Button */}
             <button
               onClick={() => setShowToast(false)}
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
@@ -124,7 +119,6 @@ export default function RaiseComplaintPage() {
         </div>
       )}
 
-      {/* Custom Animations - Retained existing */}
       <style>{`
         @keyframes slide-in { 
           from { transform: translateX(400px); opacity: 0; } 
@@ -133,9 +127,7 @@ export default function RaiseComplaintPage() {
         .animate-slide-in { animation: slide-in 0.4s ease-out; }
       `}</style>
 
-      {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* HEADER - Updated colors and font styling for a modern look */}
         <div className="mb-8 sm:mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold text-gray-900 mb-2">
             Raise & Track Issues
@@ -145,9 +137,7 @@ export default function RaiseComplaintPage() {
           </p>
         </div>
 
-        {/* COLUMN LAYOUT: Switched to a responsive 2/5 and 3/5 split on desktop (lg) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
-          {/* COLUMN 1: NEW COMPLAINT FORM (Sticky on Desktop, lg:col-span-2) */}
           <div className="lg:col-span-2 h-fit lg:sticky lg:top-6">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-indigo-600 px-6 py-4">
@@ -159,7 +149,6 @@ export default function RaiseComplaintPage() {
 
               <div className="p-6 sm:p-8 space-y-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Title */}
                   <div>
                     <label
                       htmlFor="title"
@@ -179,7 +168,6 @@ export default function RaiseComplaintPage() {
                     />
                   </div>
 
-                  {/* Description */}
                   <div>
                     <label
                       htmlFor="description"
@@ -199,7 +187,6 @@ export default function RaiseComplaintPage() {
                     ></textarea>
                   </div>
 
-                  {/* Priority - Redesigned as a group of button-like selections */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Priority Level
@@ -224,12 +211,10 @@ export default function RaiseComplaintPage() {
                           >
                             <Icon className="w-4 h-4" />
                             {label.split(" ")[0]}{" "}
-                            {/* Display only High/Medium/Low */}
                           </button>
                         )
                       )}
                     </div>
-                    {/* Visual feedback for selected priority */}
                     <p
                       className={`mt-2 text-xs font-medium ${
                         selectedPriority.color.split(" ")[0]
@@ -240,7 +225,6 @@ export default function RaiseComplaintPage() {
                     </p>
                   </div>
 
-                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={isCreating || !form.title || !form.description}
@@ -263,7 +247,6 @@ export default function RaiseComplaintPage() {
             </div>
           </div>
 
-          {/* COLUMN 2: COMPLAINT LIST (Right Column on Desktop, lg:col-span-3) */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-purple-600 px-6 py-4 flex items-center justify-between">
@@ -277,7 +260,6 @@ export default function RaiseComplaintPage() {
               </div>
 
               <div className="p-4 sm:p-6">
-                {/* Loading & Error */}
                 {(isLoading || error) && (
                   <div className="text-center py-12">
                     {isLoading ? (
@@ -293,7 +275,6 @@ export default function RaiseComplaintPage() {
                   </div>
                 )}
 
-                {/* No Data */}
                 {!isLoading && !error && complaints.length === 0 && (
                   <div className="text-center py-12">
                     <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -303,7 +284,6 @@ export default function RaiseComplaintPage() {
                   </div>
                 )}
 
-                {/* List (Redesigned as clean, responsive cards) */}
                 <div className="space-y-4">
                   {complaints.map((c) => {
                     const accentClass = getPriorityAccentClass(c.priority);
@@ -312,14 +292,11 @@ export default function RaiseComplaintPage() {
                         ?.icon || Zap;
 
                     return (
-                      // Complaint Card - Responsive layout
                       <div
                         key={c._id}
-                        // Using a border-l-4 for accent color, shadow for visual depth
                         className={`block p-4 bg-white border-l-4 rounded-lg shadow-sm transition-all hover:shadow-lg hover:border-l-8 ${accentClass} cursor-pointer`}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          {/* Title and Description */}
                           <div className="flex-1 min-w-0 pr-4">
                             <p className="font-bold text-gray-900 text-base line-clamp-1">
                               {c.title}
@@ -329,7 +306,6 @@ export default function RaiseComplaintPage() {
                             </p>
                           </div>
 
-                          {/* Status Badge (aligned top right) */}
                           <div className="flex-shrink-0">
                             <StatusBadge
                               type={c.status}
@@ -342,9 +318,7 @@ export default function RaiseComplaintPage() {
                           </div>
                         </div>
 
-                        {/* Footer / Meta Info (Always visible, responsive alignment) */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 border-t border-gray-100 mt-2">
-                          {/* Priority Indicator */}
                           <div className="flex items-center gap-2 text-sm text-gray-700 font-medium capitalize">
                             <PriorityIcon
                               className={`w-4 h-4 ${
@@ -358,7 +332,6 @@ export default function RaiseComplaintPage() {
                             {c.priority} Priority
                           </div>
 
-                          {/* Date */}
                           <div className="text-xs text-gray-500 flex items-center gap-1 mt-1 sm:mt-0">
                             <Clock className="w-3 h-3" />
                             Filed on:{" "}

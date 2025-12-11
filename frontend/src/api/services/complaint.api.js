@@ -1,54 +1,23 @@
-import { axiosInstance } from "../axios";
-
-//user post/get complaints
+// src/api/services/complaint.api.js
+import { axiosInstance } from "../axios"; 
 export const createComplaint = async (formdata) => {
-  try {
-    const res = await axiosInstance.post(
-      "/complaint/createComplaint",
-      formdata
-    );
-    console.log(res.data);
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching users", error);
-    throw error;
-  }
+  const res = await axiosInstance.post("/complaint/createComplaint", formdata);
+  return res.data;
 };
 
-export const getMyComplaint = async () => {
-  try {
-    const res = await axiosInstance.get("/complaint/getMyComplaints");
-    console.log(res.data);
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching users", error);
-    throw error;
-  }
+export const getMyComplaints = async (societyId) => {
+  const url = societyId ? `/complaint/getMyComplaints?societyId=${societyId}` : "/complaint/getMyComplaints";
+  const res = await axiosInstance.get(url);
+  return res.data;
 };
-//admin getAll and update complaint status
-export const getAllComplaints = async () => {
-  try {
-    const res = await axiosInstance.get("/complaint/getAllComplaints");
-    console.log(res.data);
-    return res.data;
-  } catch (error) {
-    console.error(
-      "Error fetching all complaints:",
-      error.response?.data || error
-    );
-    throw error.response?.data || error;
-  }
+
+export const getAllComplaints = async (societyId) => {
+  const url = societyId ? `/complaint/getAllComplaints?societyId=${societyId}` : "/complaint/getAllComplaints";
+  const res = await axiosInstance.get(url);
+  return res.data;
 };
 
 export const updateComplaintStatus = async (id, status) => {
-  try {
-    const res = await axiosInstance.patch(
-      `/complaint/updateComplaint/${id}/status`,
-      { status }
-    );
-    return res.data;
-  } catch (error) {
-    console.error("Error updating status:", error.response?.data || error);
-    throw error.response?.data || error;
-  }
+  const res = await axiosInstance.patch(`/complaint/updateComplaint/${id}/status`, { status });
+  return res.data;
 };

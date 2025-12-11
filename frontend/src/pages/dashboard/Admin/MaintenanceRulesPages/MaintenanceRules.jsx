@@ -28,7 +28,7 @@ const MaintenanceRules = () => {
 
   // Initial Form State
   const initialFormState = {
-    bhkType: UNIT_BHK_TYPES[0] || "1bhk",
+    bhkType: UNIT_BHK_TYPES[0] || "1BHK",
     amount: "",
     dueDay: "",
     gracePeriod: "0",
