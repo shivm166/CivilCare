@@ -3,7 +3,9 @@ import LandingPage from "../pages/public/Landing/LandingPage";
 import Login from "../pages/auth/Login/Login";
 import Signup from "../pages/auth/SIgnup/Signup";
 import PublicLayout from "../components/layout/PublicLayout/PublicLayout";
-import PageLoader from "../pages/error/PageLoader"; // New Import
+import PageLoader from "../pages/error/PageLoader";
+import ForgotPassword from "../pages/auth/ForgotPassword/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword/ResetPassword";
 
 const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
   const getRedirectPath = () => {
@@ -35,6 +37,7 @@ const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
           )
         }
       />
+
       <Route
         path="/signup"
         element={
@@ -42,6 +45,26 @@ const PublicRoutes = ({ isAuthenticated, authUser, isLoading }) => {
             <PageLoader />
           ) : !isAuthenticated ? (
             <Signup />
+          ) : (
+            <Navigate to={redirectPath} replace />
+          )
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          !isAuthenticated ? (
+            <ForgotPassword />
+          ) : (
+            <Navigate to={redirectPath} replace />
+          )
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          !isAuthenticated ? (
+            <ResetPassword />
           ) : (
             <Navigate to={redirectPath} replace />
           )

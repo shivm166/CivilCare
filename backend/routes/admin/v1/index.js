@@ -4,6 +4,7 @@ import unitRoutes from "./unit/unit.route.js";
 import attachSocietyContext from "../../../middleware/attachSocietyContext.js";
 import { checkAdmin } from "../../../middleware/checkAdmin.js";
 
+
 const router = Router();
 
 router.use(attachSocietyContext);

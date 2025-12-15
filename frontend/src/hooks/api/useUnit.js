@@ -1,6 +1,13 @@
-import { useQueryClient,useMutation, useQuery } from "@tanstack/react-query";
-import { assignResidentToUnit, createUnit, deleteUnit, updateUnit, getUnitById } from "../../api/services/unit.api";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  assignResidentToUnit,
+  createUnit,
+  deleteUnit,
+  updateUnit,
+  getUnitById,
+} from "../../api/services/unit.api";
 import toast from "react-hot-toast";
+import { axiosInstance } from "../../api/axios";
 // ==================== UNIT HOOKS ====================
 
 // Create unit
@@ -73,5 +80,27 @@ export const useUnitById = (unitId) => {
     queryKey: ["unit", unitId],
     queryFn: () => getUnitById(unitId),
     enabled: !!unitId,
+  });
+};
+
+export const getUnitsBySociety = async () => {
+  try {
+    const response = await axiosInstance.get(`/admin/v1/unit`);
+    // Assuming the response structure returns the array of units in response.data.data
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching units by society:", error);
+    throw error;
+  }
+};
+
+export const useUnitsBySociety = () => {
+  return useQuery({
+    queryKey: ["unitsBySociety"],
+    queryFn: getUnitsBySociety,
+    select: (data) => data.units || data,
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to fetch units");
+    },
   });
 };

@@ -1,4 +1,4 @@
-// Simplified/Stubbed COMMON_STATUS_MESSAGES for implementation purposes
+// sommon status message for implementation purposes
 const COMMON_STATUS_MESSAGES = {
   SERVER_ERROR: "Internal Server Error",
 };
@@ -55,7 +55,6 @@ const sendErrorResponse = (
   data = null,
   code = 0
 ) => {
-  // console.log('error occured : ', error); // console.log removed from final output
   return res.status(status).json({
     success: false,
     data: data,

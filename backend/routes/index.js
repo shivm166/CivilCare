@@ -6,10 +6,8 @@ import v1Routes from "./admin/v1/index.js";
 
 const router = Router();
 
-// Super Admin Routes
 router.use("/superadmin", superAdminRoutes);
 
-// Admin Routes (membership, invitations, etc.)
 router.use("/", adminRoutes);
 router.use("/admin/v1", v1Routes);
 router.use("/user", userRoutes);

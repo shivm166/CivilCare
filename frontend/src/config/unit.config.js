@@ -1,6 +1,1 @@
-export const UNIT_BHK_TYPES = [
-    "1bhk",
-    "2bhk",
-    "3bhk",
-    "penthouse",
-]
+export const UNIT_BHK_TYPES = ["1BHK", "2BHK", "3BHK", "4BHK"];

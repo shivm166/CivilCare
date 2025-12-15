@@ -281,3 +281,33 @@ export const testEmailConfig = async () => {
     return false;
   }
 };
+
+export const sendOtpEmail = async ({ to, name, otp }) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: {
+        name: "CivilCare Support",
+        address: process.env.EMAIL_USER,
+      },
+      to: to,
+      subject: "Password Reset OTP - CivilCare",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Hello ${name},</h2>
+          <p>You requested to reset your password.</p>
+          <p>Your OTP code is:</p>
+          <h1 style="color: #e53e3e; letter-spacing: 5px;">${otp}</h1>
+          <p>This OTP is valid for 10 minutes.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+    console.log(` OTP sent to ${to}`);
+    return { success: true };
+  } catch (error) {
+    console.error(" Error sending OTP:", error);
+    throw new Error(`Failed to send OTP: ${error.message}`);
+  }
+};

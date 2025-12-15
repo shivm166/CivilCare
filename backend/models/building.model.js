@@ -20,6 +20,10 @@ const buildingSchema = new mongoose.Schema(
             ref: "Society",
             required: true,
         },
+        maintenanceRule: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "MaintenanceRule",
+        },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

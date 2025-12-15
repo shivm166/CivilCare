@@ -1,5 +1,5 @@
 import React from 'react'
-import { UNIT_BHK_TYPES } from '../../../config/unit.config'
+import { UNIT_BHK_TYPES } from '../../../config/unit.config.js'
 
 function UnitTypeSelect({value, onChange, error, required = true, disabled = false}) {
   return (

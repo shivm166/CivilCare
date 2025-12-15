@@ -7,6 +7,8 @@ import {
   signup,
   updateProfile,
   getAllUsers,
+  forgotPassword,
+  resetPassword,
 } from "../../controllers/auth/user.controllers.js";
 
 import {
@@ -21,6 +23,11 @@ const router = express.Router();
 // Public Auth Routes
 router.post("/signup", validateRequest(validateUser), signup);
 router.post("/login", validateRequest(validateLogin), login);
+
+
+// forgot Password Routes
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 // Protected User Routes
 router.use(protectRoute);

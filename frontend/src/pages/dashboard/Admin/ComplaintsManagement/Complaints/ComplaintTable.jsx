@@ -1,11 +1,8 @@
 import React from "react";
-import { Wrench, User, Clock, Zap, CheckCircle2, XCircle } from "lucide-react";
-import Button from "../../../../../components/common/Button/Button";
-import StatusBadge from "../../../../../components/common/StatusBadge/StatusBadge";
+import { Wrench, Clock, User, Zap, CheckCircle2, XCircle } from "lucide-react";
+import  Button  from "../../../../../components/common/Button/Button";
+import StatusBadge from "../../../../../components/common/StatusBadge/StatusBadge"; 
 
-// =====================================================
-// ACTION BUTTON MAP
-// =====================================================
 const actionMap = {
   pending: { icon: Clock, label: "Pending", variant: "secondary" },
   in_progress: { icon: Zap, label: "In Progress", variant: "primary" },
@@ -13,9 +10,6 @@ const actionMap = {
   closed: { icon: XCircle, label: "Closed", variant: "ghost" },
 };
 
-// =====================================================
-// STATUS ACCENT (used only for active/selected status)
-// =====================================================
 const getStatusAccent = (status) => {
   switch (status) {
     case "pending":
@@ -31,9 +25,6 @@ const getStatusAccent = (status) => {
   }
 };
 
-// =====================================================
-// HEADER
-// =====================================================
 export const ComplaintsHeader = ({ title, subtitle, icon: Icon = Wrench }) => (
   <div className="mb-6 sm:mb-10">
     <div className="flex items-center gap-3 mb-3">
@@ -71,13 +62,13 @@ const ComplaintRow = ({
   index,
   isAdmin,
   onUpdateStatus,
-  isUpdating,
+  updating,
 }) => {
   const activeStatusClass = getStatusAccent(complaint.status);
+  const isRowUpdating = updating?.id === complaint._id;
 
   return (
     <tr className="border-b last:border-b-0">
-      {/* INDEX + ISSUE */}
       <td className="p-4 align-top">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-gray-800 bg-gray-100">
@@ -119,7 +110,6 @@ const ComplaintRow = ({
         </div>
       </td>
 
-      {/* STATUS */}
       <td className="p-4 align-top text-center">
         <div
           className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${activeStatusClass}`}
@@ -131,20 +121,22 @@ const ComplaintRow = ({
         </div>
       </td>
 
-      {/* PRIORITY */}
       <td className="p-4 align-top text-center">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-50 font-semibold">
           <StatusBadge type={complaint.priority} compact />
         </div>
       </td>
 
-      {/* ACTIONS */}
       <td className="p-4 align-top">
         <div className="flex justify-end items-center gap-2">
           {isAdmin ? (
             <div className="flex gap-2 flex-wrap justify-end">
               {Object.entries(actionMap).map(([key, action]) => {
                 const isActive = complaint.status === key;
+                const isActionLoading =
+                  isRowUpdating && updating?.statusKey === key;
+                const isDisabled =
+                  (isRowUpdating && !isActionLoading) || isActive;
 
                 return (
                   <Button
@@ -155,8 +147,8 @@ const ComplaintRow = ({
                     onClick={() =>
                       onUpdateStatus?.({ id: complaint._id, status: key })
                     }
-                    disabled={isUpdating || isActive}
-                    isLoading={isUpdating && !isActive}
+                    disabled={isDisabled}
+                    isLoading={isActionLoading}
                     className={`min-w-[110px] !rounded-full ${
                       isActive ? "!bg-gray-800 text-white" : ""
                     }`}
@@ -179,13 +171,13 @@ export const ComplaintTable = ({
   complaints = [],
   isAdmin = false,
   onUpdateStatus,
-  isUpdating = false,
+  updating = {},
 }) => {
   if (!complaints || complaints.length === 0) return null;
 
   return (
     <div className="overflow-x-auto bg-white rounded-xl border shadow-sm">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm hidden sm:table">
         <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
           <tr>
             <th className="p-4 text-left w-[45%]">Issue & Reporter</th>
@@ -203,11 +195,77 @@ export const ComplaintTable = ({
               index={i}
               isAdmin={isAdmin}
               onUpdateStatus={onUpdateStatus}
-              isUpdating={isUpdating}
+              updating={updating}
             />
           ))}
         </tbody>
       </table>
+
+      <div className="sm:hidden p-4">
+        {complaints.map((c, i) => (
+          <div
+            key={c._id}
+            className="bg-white rounded-lg shadow mt-3 p-4 border"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <h4 className="font-semibold">{c.title}</h4>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {c.description}
+                </p>
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <User className="w-4 h-4 text-indigo-500" />
+                    <span className="font-medium">{c.createdBy?.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span className="font-medium">
+                      {new Date(c.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getStatusAccent(
+                    c.status
+                  )}`}
+                >
+                  <StatusBadge type={c.status} compact hideText />
+                  <span className="ml-2 text-xs capitalize">
+                    {c.status.replace("_", " ")}
+                  </span>
+                </div>
+                <div className="mt-3">
+                  <div className="flex gap-2 justify-end">
+                    {isAdmin ? (
+                      Object.entries(actionMap)
+                        .slice(0, 2)
+                        .map(([key, action]) => (
+                          <Button
+                            key={key}
+                            size="xs"
+                            variant={action.variant}
+                            icon={action.icon}
+                            onClick={() =>
+                              onUpdateStatus({ id: c._id, status: key })
+                            }
+                          >
+                            <span className="text-xs">{action.label}</span>
+                          </Button>
+                        ))
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

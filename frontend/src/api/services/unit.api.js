@@ -1,8 +1,5 @@
 import { axiosInstance } from "../axios";
 
-// ==================== UNIT APIs ====================
-
-// Create unit in building
 export const createUnit = async (buildingId, unitData) => {
   try {
     const response = await axiosInstance.post(
