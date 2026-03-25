@@ -8,18 +8,21 @@ import {
   TrendingUp,
   Power,
   AlertCircle,
+  Wallet,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   useMaintenanceRules,
   useDeleteMaintenanceRule,
   useToggleMaintenanceRuleStatus,
-} from "../../../../hooks/api/useMaintenance";
+} from "../../../../hooks/api/usemaintenance";
 import { useSocietyContext } from "../../../../contexts/SocietyContext";
 import CreateRuleModal from "../../../../components/features/maintenance/CreateRuleModal";
 import EditRuleModal from "../../../../components/features/maintenance/EditRuleModal";
 import RuleCard from "../../../../components/features/maintenance/RuleCard";
 
 const MaintenanceRules = () => {
+  const navigate = useNavigate();
   const { currentSociety } = useSocietyContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -148,7 +151,9 @@ const MaintenanceRules = () => {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
-          <p className="text-gray-600 font-medium text-sm sm:text-base">Loading maintenance rules...</p>
+          <p className="text-gray-600 font-medium text-sm sm:text-base">
+            Loading maintenance rules...
+          </p>
         </div>
       </div>
     );
@@ -164,16 +169,31 @@ const MaintenanceRules = () => {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
                 Maintenance Rules
               </h1>
-              <p className="text-gray-600 text-xs sm:text-sm mt-1">{currentSociety?.name}</p>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1">
+                {currentSociety?.name}
+              </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm font-medium"
-            >
-              <Plus size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden xs:inline">Create New Rule</span>
-              <span className="xs:hidden">Create Rule</span>
-            </button>
+            
+            {/* ✅ NEW: Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/admin/maintenance/funds")}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm font-medium"
+              >
+                <Wallet size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">View Funds</span>
+                <span className="sm:hidden">Funds</span>
+              </button>
+              
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm font-medium"
+              >
+                <Plus size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline">Create New Rule</span>
+                <span className="xs:hidden">Create Rule</span>
+              </button>
+            </div>
           </div>
 
           {/* Stats Cards */}
@@ -184,8 +204,12 @@ const MaintenanceRules = () => {
                   <FileText className="text-blue-600" size={16} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-gray-500 text-[10px] sm:text-xs">Total Rules</p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{stats.total}</p>
+                  <p className="text-gray-500 text-[10px] sm:text-xs">
+                    Total Rules
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
+                    {stats.total}
+                  </p>
                 </div>
               </div>
             </div>
@@ -197,7 +221,9 @@ const MaintenanceRules = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="text-gray-500 text-[10px] sm:text-xs">Active</p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{stats.active}</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
+                    {stats.active}
+                  </p>
                 </div>
               </div>
             </div>
@@ -208,8 +234,12 @@ const MaintenanceRules = () => {
                   <Power className="text-gray-600" size={16} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-gray-500 text-[10px] sm:text-xs">Inactive</p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{stats.inactive}</p>
+                  <p className="text-gray-500 text-[10px] sm:text-xs">
+                    Inactive
+                  </p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
+                    {stats.inactive}
+                  </p>
                 </div>
               </div>
             </div>
@@ -220,7 +250,9 @@ const MaintenanceRules = () => {
                   <AlertCircle className="text-red-600" size={16} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-gray-500 text-[10px] sm:text-xs">With Penalty</p>
+                  <p className="text-gray-500 text-[10px] sm:text-xs">
+                    With Penalty
+                  </p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                     {stats.withPenalty}
                   </p>

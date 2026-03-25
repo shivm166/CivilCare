@@ -1,204 +1,273 @@
-import React from "react";
-import {
-  DollarSign,
-  Calendar,
-  AlertCircle,
-  Building2,
-  Home,
-  Info,
-  Clock,
-} from "lucide-react";
-import {
-  useMyApplicableMaintenance,
-  useMyMaintenanceBills,
-} from '../../../../hooks/api/useMaintenance'
-// "../../../../hooks/api/useMaintenance";
-const UserMaintenancePage = () => {
-  const { data: applicableData, isLoading: loadingApplicable } =
-    useMyApplicableMaintenance();
-  const { data: billsData, isLoading: loadingBills } = useMyMaintenanceBills();
+import React, { useState } from "react";
+import { AlertCircle } from "lucide-react";
+import { useSocietyContext } from "../../../../contexts/SocietyContext";
+import { useMyBills, useProcessPayment } from "../../../../hooks/api/useBills";
+import MaintenanceBillCard from "../../../../components/features/maintenance/MaintenanceBillCard";
+import PenaltyCard from "../../../../components/features/maintenance/PenaltyCard";
+import PaymentModal from "../../../../components/features/maintenance/PaymentModal";
 
-  if (loadingApplicable || loadingBills) {
+const UserMaintenancePage = () => {
+  const { currentSociety } = useSocietyContext();
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [paymentType, setPaymentType] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
+  // Fetch user bills
+  const { data: billsData, isLoading, error, refetch } = useMyBills({});
+  const { mutate: processPayment, isLoading: isProcessing } = useProcessPayment();
+
+  const bills = billsData?.bills || [];
+
+  // Separate bills by status
+  const pendingBills = bills.filter((bill) => bill.status !== "paid");
+  const paidBills = bills.filter((bill) => bill.status === "paid");
+
+  // Separate overdue bills with penalty
+  const overdueBillsWithPenalty = pendingBills.filter(
+    (bill) => 
+      (bill.status === "overdue" || bill.status === "partially_paid") && 
+      bill.penaltyAmount > 0
+  );
+
+  const regularPendingBills = pendingBills.filter(
+    (bill) => 
+      !(bill.status === "overdue" || bill.status === "partially_paid") || 
+      bill.penaltyAmount === 0
+  );
+
+  // Handle payment initiation
+  const handlePayNow = (bill, type) => {
+    console.log("💳 Payment initiated:", { bill: bill._id, type });
+    setSelectedBill(bill);
+    setPaymentType(type);
+    setIsPaymentModalOpen(true);
+  };
+
+  // Handle payment confirmation
+  const handlePaymentConfirm = (paymentData) => {
+    console.log("✅ Processing payment:", paymentData);
+    
+    processPayment(paymentData, {
+      onSuccess: () => {
+        setIsPaymentModalOpen(false);
+        setSelectedBill(null);
+        setPaymentType(null);
+        refetch();
+      },
+      onError: (error) => {
+        console.error("❌ Payment error:", error);
+      },
+    });
+  };
+
+  if (!currentSociety) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-orange-500 mx-auto mb-2 sm:mb-3"></div>
-          <p className="text-gray-600 text-xs sm:text-sm font-medium">Loading your maintenance info...</p>
+      <div className="p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600" />
+          <p className="text-yellow-800">
+            Please select a society to view maintenance bills
+          </p>
         </div>
       </div>
     );
   }
 
-  const { hasUnit, unit, maintenance } = applicableData || {};
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <p className="text-red-800">Error loading bills: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 p-2 sm:p-3 lg:p-4">
-      <div className="w-full space-y-2.5 sm:space-y-3">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg p-2.5 sm:p-3 lg:p-4 text-white shadow-md">
-          <h1 className="text-base sm:text-xl lg:text-2xl font-bold mb-0.5 sm:mb-1">My Maintenance</h1>
-          <p className="text-orange-100 text-[10px] sm:text-xs">
-            View your maintenance charges and payment history
-          </p>
-        </div>
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Maintenance Payments
+        </h1>
+        <p className="text-gray-600 mt-2">
+          View and pay your maintenance bills
+        </p>
+      </div>
 
-        {/* No Unit Assigned */}
-        {!hasUnit && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2.5 sm:p-3 lg:p-4 rounded-lg shadow-md">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={16} />
-              <div>
-                <h3 className="font-semibold text-yellow-800 text-xs sm:text-sm">
-                  No Unit Assigned
+      {/* Overdue Bills with Penalty - Priority Section */}
+      {overdueBillsWithPenalty.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-100 p-2 rounded-lg">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-red-700">
+                Urgent: Penalty Payments Required
+              </h2>
+              <p className="text-red-600 text-sm">
+                Pay penalties first to unlock maintenance payments
+              </p>
+            </div>
+            <span className="ml-auto bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+              {overdueBillsWithPenalty.length} Overdue
+            </span>
+          </div>
+
+          {/* Alert Banner */}
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="bg-red-100 p-2 rounded-full">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-900 mb-1">
+                  Important Payment Rule
                 </h3>
-                <p className="text-yellow-700 text-[10px] sm:text-xs mt-0.5">
-                  You don't have any unit assigned yet. Please contact your
-                  society admin.
+                <p className="text-red-800 text-sm leading-relaxed">
+                  For overdue bills, you must first pay the{" "}
+                  <span className="font-bold">penalty amount</span> before you
+                  can pay the maintenance amount. This is to ensure timely
+                  payments in the future.
                 </p>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Unit Info & Applicable Maintenance */}
-        {hasUnit && (
-          <>
-            {/* Unit Information Card */}
-            <div className="bg-white rounded-lg shadow-md p-2.5 sm:p-3 lg:p-4 border border-gray-200">
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <h2 className="text-sm sm:text-base lg:text-lg font-bold text-gray-800">Your Unit</h2>
-                <Home className="text-orange-600 flex-shrink-0" size={16} />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div className="flex items-center gap-1.5 p-2 bg-gradient-to-br from-orange-50 to-pink-50 rounded-lg border border-orange-100">
-                  <Building2 className="text-orange-600 flex-shrink-0" size={14} />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-500">Building</p>
-                    <p className="font-semibold text-gray-800 text-xs truncate">
-                      {unit.building || "N/A"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 p-2 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
-                  <Home className="text-blue-600 flex-shrink-0" size={14} />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-500">Unit</p>
-                    <p className="font-semibold text-gray-800 text-xs truncate">{unit.name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-                  <Info className="text-purple-600 flex-shrink-0" size={14} />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-500">Type</p>
-                    <p className="font-semibold text-gray-800 text-xs uppercase truncate">
-                      {unit.bhkType}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Applicable Maintenance Amount */}
-            {maintenance ? (
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl shadow-md p-3 sm:p-5 border-2 border-green-200">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800">
-                    Your Maintenance Amount
-                  </h2>
-                  <DollarSign className="text-green-600 flex-shrink-0" size={20} />
-                </div>
-
-                {/* Amount Display */}
-                <div className="bg-white rounded-lg p-4 sm:p-6 mb-3 sm:mb-4 shadow-sm border border-green-200">
-                  <div className="text-center">
-                    <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Monthly Amount</p>
-                    <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-600">
-                      ₹{maintenance.amount.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Rule Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-white rounded-lg border border-green-100">
-                    <Calendar className="text-blue-600 flex-shrink-0" size={16} />
-                    <div className="min-w-0">
-                      <p className="text-[10px] sm:text-xs text-gray-500">Billing Day</p>
-                      <p className="font-semibold text-gray-800 text-xs sm:text-sm">
-                        {maintenance.billingDay}
-                        {["th", "st", "nd", "rd"][
-                          maintenance.billingDay > 3
-                            ? 0
-                            : maintenance.billingDay
-                        ]}{" "}
-                        of month
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 sm:p-3 bg-white rounded-lg border border-green-100">
-                    <Clock className="text-orange-600 flex-shrink-0" size={16} />
-                    <div className="min-w-0">
-                      <p className="text-[10px] sm:text-xs text-gray-500">Payment Due</p>
-                      <p className="font-semibold text-gray-800 text-xs sm:text-sm">
-                        Within {maintenance.dueDays} days
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Penalty Info */}
-                {maintenance.penaltyEnabled && (
-                  <div className="bg-red-50 border-l-4 border-red-400 p-2.5 sm:p-3 rounded mb-3 sm:mb-4">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={14} />
-                      <div>
-                        <p className="text-xs sm:text-sm font-semibold text-red-800">
-                          Late Payment Penalty
-                        </p>
-                        <p className="text-xs text-red-700 mt-0.5">
-                          {maintenance.penaltyType === "percentage"
-                            ? `${maintenance.penaltyValue}% of base amount`
-                            : maintenance.penaltyType === "fixed"
-                            ? `₹${maintenance.penaltyValue} fixed charge`
-                            : `₹${maintenance.penaltyValue} per day`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+          {/* Overdue Bill Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {overdueBillsWithPenalty.map((bill) => (
+              <div key={bill._id} className="space-y-4">
+                {/* Penalty Card - Shows ONLY if penalty not paid */}
+                {!bill.isPenaltyPaid && bill.penaltyAmount > 0 && (
+                  <PenaltyCard
+                    bill={bill}
+                    onPayClick={() => handlePayNow(bill, "penalty")}
+                  />
                 )}
 
-                {/* Rule Info */}
-                <div className="p-2.5 sm:p-3 bg-white rounded-lg border border-green-100">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5">Applied Rule</p>
-                  <p className="font-semibold text-gray-800 text-xs sm:text-sm">
-                    {maintenance.rule.name}
-                  </p>
-                  {maintenance.rule.description && (
-                    <p className="text-xs text-gray-600 mt-1 sm:mt-2">
-                      {maintenance.rule.description}
-                    </p>
-                  )}
-                </div>
+                {/* Maintenance Card - Shows ALWAYS but disabled if penalty unpaid */}
+                <MaintenanceBillCard
+                  bill={bill}
+                  onPayClick={() => handlePayNow(bill, "maintenance")}
+                  disabled={!bill.isPenaltyPaid && bill.penaltyAmount > 0}
+                />
               </div>
-            ) : (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-5 rounded-lg shadow-md">
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <Info className="text-yellow-600 flex-shrink-0 mt-0.5" size={18} />
-                  <div>
-                    <h3 className="font-semibold text-yellow-800 text-sm sm:text-base">
-                      No Maintenance Rule Applied
-                    </h3>
-                    <p className="text-yellow-700 text-xs sm:text-sm mt-1">
-                      No maintenance rules are currently applied to your unit.
-                      Contact admin for details.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Regular Pending Bills */}
+      {regularPendingBills.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-gray-900">Pending Bills</h2>
+            <span className="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold">
+              {regularPendingBills.length}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {regularPendingBills.map((bill) => (
+              <MaintenanceBillCard
+                key={bill._id}
+                bill={bill}
+                onPayClick={() => handlePayNow(bill, "maintenance")}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No Pending Bills */}
+      {pendingBills.length === 0 && (
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-10 text-center">
+          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-10 h-10 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-green-900 mb-2">
+            All Caught Up!
+          </h3>
+          <p className="text-green-700 text-lg">
+            You have no pending maintenance bills.
+          </p>
+          <p className="text-green-600 text-sm mt-2">
+            Check back next month for your new bill.
+          </p>
+        </div>
+      )}
+
+      {/* Payment History */}
+      {paidBills.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-gray-900">
+              Payment History
+            </h2>
+            <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-sm font-semibold">
+              {paidBills.length} Paid
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paidBills.slice(0, 6).map((bill) => (
+              <MaintenanceBillCard key={bill._id} bill={bill} isPaid={true} />
+            ))}
+          </div>
+
+          {paidBills.length > 6 && (
+            <div className="text-center">
+              <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                View All Payment History →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedBill(null);
+          setPaymentType(null);
+        }}
+        bill={selectedBill}
+        paymentType={paymentType}
+        onConfirm={handlePaymentConfirm}
+        isProcessing={isProcessing}
+      />
     </div>
   );
 };

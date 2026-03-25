@@ -30,7 +30,16 @@ const adminMenu = [
   { name: "Complaints", path: "/admin/complaints", icon: Wrench },
   { name: "Residents", path: "/admin/residents", icon: Users },
   { name: "Parking", path: "/admin/parking", icon: Car },
-  { name: "Maintenance", path: "/admin/maintenance/rules", icon: FileText },
+  // ✅ NEW: Maintenance with submenu
+  {
+    name: "Maintenance",
+    path: "/admin/maintenance/rules",
+    icon: FileText,
+    submenu: [
+      { name: "Rules", path: "/admin/maintenance/rules", icon: FileText },
+      { name: "Funds", path: "/admin/maintenance/funds", icon: Wallet },
+    ],
+  },
   { name: "Notifications", path: "/admin/notifications", icon: Bell },
   { name: "Profile", path: "/admin/profile", icon: User },
 ];
@@ -42,6 +51,7 @@ const userMenu = [
   { name: "Parking", path: "/user/parking", icon: Car },
   { name: "Residents", path: "/user/residents", icon: Users },
   { name: "Maintenance", path: "/user/maintenance", icon: FileText },
+  { name: "Society Funds", path: "/user/funds", icon: Wallet },
   { name: "Notifications", path: "/user/notifications", icon: Bell },
   { name: "Profile", path: "/user/profile", icon: User },
 ];

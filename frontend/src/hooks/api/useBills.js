@@ -1,17 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  createMaintenanceRule,
-  getAllMaintenanceRules,
-  getMaintenanceRuleById,
-  updateMaintenanceRule,
-  deleteMaintenanceRule,
-  toggleRuleStatus,
-  getMyApplicableMaintenance,
-} from "../../api/services/maintenance.api";
-
-// Import bill APIs
-import {
   generateMonthlyBills,
   getAllBills,
   getBillById,
@@ -26,101 +15,9 @@ import {
   getUserFundSummary,
 } from "../../api/services/bill.api";
 
-// ==================== RULE HOOKS ====================
+// ==================== ADMIN HOOKS ====================
 
-// Get all maintenance rules
-export const useMaintenanceRules = (params = {}) => {
-  return useQuery({
-    queryKey: ["maintenance-rules", params],
-    queryFn: () => getAllMaintenanceRules(params),
-  });
-};
-
-// Get maintenance rule by ID
-export const useMaintenanceRule = (ruleId) => {
-  return useQuery({
-    queryKey: ["maintenance-rule", ruleId],
-    queryFn: () => getMaintenanceRuleById(ruleId),
-    enabled: !!ruleId,
-  });
-};
-
-// Create maintenance rule
-export const useCreateMaintenanceRule = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createMaintenanceRule,
-    onSuccess: (data) => {
-      toast.success(data.message || "Rule created successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to create rule");
-    },
-  });
-};
-
-// Update maintenance rule
-export const useUpdateMaintenanceRule = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ ruleId, ruleData }) =>
-      updateMaintenanceRule(ruleId, ruleData),
-    onSuccess: (data) => {
-      toast.success(data.message || "Rule updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rule"] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update rule");
-    },
-  });
-};
-
-// Delete maintenance rule
-export const useDeleteMaintenanceRule = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deleteMaintenanceRule,
-    onSuccess: (data) => {
-      toast.success(data.message || "Rule deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete rule");
-    },
-  });
-};
-
-// Toggle rule status
-export const useToggleRuleStatus = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: toggleRuleStatus,
-    onSuccess: (data) => {
-      toast.success(data.message || "Rule status updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["maintenance-rules"] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to toggle rule status");
-    },
-  });
-};
-
-// Alias for compatibility
-export const useToggleMaintenanceRuleStatus = useToggleRuleStatus;
-
-// Get applicable maintenance
-export const useMyApplicableMaintenance = () => {
-  return useQuery({
-    queryKey: ["my-applicable-maintenance"],
-    queryFn: getMyApplicableMaintenance,
-  });
-};
-
-// ==================== BILL HOOKS (ADMIN) ====================
-
-// Generate monthly bills
+// Generate bills
 export const useGenerateBills = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -161,8 +58,6 @@ export const useMemberPaymentStatus = (params = {}) => {
     queryFn: () => getMemberPaymentStatus(params),
   });
 };
-
-// ==================== FUND HOOKS ====================
 
 // Get fund summary (admin)
 export const useFundSummary = () => {

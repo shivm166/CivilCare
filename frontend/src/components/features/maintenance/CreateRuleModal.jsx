@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X, FileText, Building, DollarSign, Calendar } from "lucide-react";
-import { useCreateMaintenanceRule } from "../../../hooks/api/useMaintenance";
+import { useCreateMaintenanceRule } from "../../../hooks/api/usemaintenance";
 import { useBuildings } from "../../../hooks/api/useBuildings";
 import { UNIT_BHK_TYPES } from "../../../config/unit.config";
 import toast from "react-hot-toast";
