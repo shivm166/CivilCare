@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, FileText, Building, DollarSign, Calendar, AlertCircle, Lock } from "lucide-react";
-import { useUpdateMaintenanceRule } from "../../../hooks/api/useMaintenance";
+import { useUpdateMaintenanceRule } from "../../../hooks/api/usemaintenance";
 import toast from "react-hot-toast";
 
 const EditRuleModal = ({ isOpen, onClose, rule }) => {

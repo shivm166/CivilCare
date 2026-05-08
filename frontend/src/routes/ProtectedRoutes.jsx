@@ -53,19 +53,24 @@ const ParkingManagement = lazy(() =>
 const UserParkingPage = lazy(() =>
   import("../pages/dashboard/User/Parking/UserParkingPage")
 );
-// const MaintenanceRules = lazy(() =>
-//   import("../pages/dashboard/Admin/MaintenanceRulesPages/MaintenanceRules")
-// );
 
-// ✅ FIXED: Maintenance imports (Changed from MaintenancePage to correct files)
+// ✅ Maintenance imports
 const MaintenanceRules = lazy(() =>
   import("../pages/dashboard/Admin/MaintenanceManagement/MaintenanceRules")
 );
-const UserMaintenancePage = lazy(() =>
-  import("../pages/dashboard/User/Maintenance/UserMaintenancePage")
+
+// ✅ Payment & Funds imports
+const FundsManagementPage = lazy(() =>
+  import("../pages/dashboard/Admin/FundsManagement/FundsManagementPage")
+);
+const UserMaintenancePaymentPage = lazy(() =>
+  import("../pages/dashboard/User/Maintenance/UserMaintenancePaymentPage")
+);
+const UserFundsPage = lazy(() =>
+  import("../pages/dashboard/User/Funds/UserFundsPage")
 );
 
-// 2. Dashboard wrapper handles conditional rendering & wraps component in Suspense
+// Dashboard wrapper handles conditional rendering & wraps component in Suspense
 const DashboardWrapper = () => {
   const { societies, activeRole, isSocietiesLoading } = useSocietyContext();
 
@@ -98,6 +103,7 @@ const DashboardWrapper = () => {
   );
 };
 
+// ✅ UPDATED SocietyChecker with proper path handling
 const SocietyChecker = ({ children, authUser }) => {
   const { societies, isSocietiesLoading } = useSocietyContext();
 
@@ -112,19 +118,24 @@ const SocietyChecker = ({ children, authUser }) => {
   const hasSociety = societies && societies.length > 0;
   const currentPath = window.location.pathname;
 
-  if (!hasSociety) {
-    const allowedPaths = [
-      "/user/dashboard",
-      "/user/notifications",
-      "/user/profile",
-      "/user/raise-complaint",
-      "/admin/dashboard",
-      "/admin/notifications",
-      "/admin/profile",
-    ];
-    if (!allowedPaths.some((path) => currentPath.startsWith(path))) {
-      return <Navigate to="/user/dashboard" replace />;
-    }
+  // ✅ If user has society, allow all routes
+  if (hasSociety) {
+    return children;
+  }
+
+  // ✅ If no society, only allow specific paths
+  const allowedPathsWithoutSociety = [
+    "/user/dashboard",
+    "/user/notifications",
+    "/user/profile",
+    "/user/raise-complaint",
+    "/admin/dashboard",
+    "/admin/notifications",
+    "/admin/profile",
+  ];
+
+  if (!allowedPathsWithoutSociety.some((path) => currentPath.startsWith(path))) {
+    return <Navigate to="/user/dashboard" replace />;
   }
 
   return children;
@@ -179,57 +190,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
-        <Route
-          path="complaints"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <ComplaintsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="residents"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <ResidentsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="parking"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <ParkingManagement />
-            </Suspense>
-          }
-        />
 
-        {/* ✅ FIXED: Maintenance Routes with submenu paths */}
-        <Route
-          path="maintenance/rules"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <MaintenanceRules />
-            </Suspense>
-          }
-        />
-
-        <Route
-          path="notifications"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <NotificationsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="profile"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <ProfilePage />
-            </Suspense>
-          }
-        />
         <Route
           path="buildings/:buildingId/units"
           element={
@@ -266,9 +227,18 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
 
-        {/* ✅ MAINTENANCE RULES - MOVE INSIDE ADMIN SECTION */}
         <Route
-          path="maintenance-rules"
+          path="parking"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <ParkingManagement />
+            </Suspense>
+          }
+        />
+
+        {/* ✅ Maintenance Routes */}
+        <Route
+          path="maintenance/rules"
           element={
             <Suspense fallback={<PageLoader />}>
               <MaintenanceRules />
@@ -276,11 +246,12 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
 
+        {/* ✅ FUNDS Route */}
         <Route
-          path="parking"
+          path="maintenance/funds"
           element={
             <Suspense fallback={<PageLoader />}>
-              <ParkingManagement />
+              <FundsManagementPage />
             </Suspense>
           }
         />
@@ -332,6 +303,7 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
             </Suspense>
           }
         />
+
         <Route
           path="parking"
           element={
@@ -341,12 +313,22 @@ const ProtectedRoutes = ({ authUser, isLoading }) => {
           }
         />
 
-        {/* ✅ FIXED: User Maintenance Routes */}
+        {/* ✅ User Maintenance with Payment */}
         <Route
           path="maintenance"
           element={
             <Suspense fallback={<PageLoader />}>
-              <UserMaintenancePage />
+              <UserMaintenancePaymentPage />
+            </Suspense>
+          }
+        />
+
+        {/* ✅ User Funds Page */}
+        <Route
+          path="funds"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <UserFundsPage />
             </Suspense>
           }
         />
